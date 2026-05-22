@@ -9,7 +9,14 @@
   chat** thì công việc vẫn còn nguyên trong repo.
 - `docs/` là **nguồn sự thật** (tài liệu sống, chi tiết); `CLAUDE.md` là bản **tóm tắt quyết
   định gọn** (đọc tự động mỗi phiên) — chốt gì ở docs thì cập nhật lại đây.
-- Chỉ **commit/push khi user yêu cầu**.
+- **Mỗi khi xong một việc / tạo hoặc sửa xong file → commit & push lên git NGAY** (không chờ
+  user nhắc). Repo `taivnn9/ui-testing`, branch `main`.
+- **User mạnh về lập trình & tin tưởng đề xuất kỹ thuật** → chủ động **SUGGEST** tech stack /
+  lib / cách làm, KHÔNG hỏi từng quyết định nhỏ; chỉ nêu rõ các lựa chọn lớn để user nắm.
+  Mỗi analyzer/agent: **list rõ technique + lib (bám Python)**. Agent: mạnh dạn đề xuất
+  prompting / skill / rule.
+- **Chủ động & thường xuyên cập nhật memory session** (quyết định, preference, tiến độ) để
+  xuyên phiên không mất ngữ cảnh.
 
 ## 1. Mục tiêu
 Xây **API service** tự động phát hiện lỗi giao diện (UI/UX) trên ảnh chụp màn hình app
