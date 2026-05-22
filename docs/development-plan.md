@@ -34,7 +34,7 @@
 - [~] **A1 — Tree Parser** (DOM/XML → schema) `[Mode A]` — **spec ✅** [`analyzers/A1-tree-parser.md`](analyzers/A1-tree-parser.md); chờ chốt Web Capture Contract
 - [~] **A2 — Style Reader** (computed-style → canonical style) `[A]` — **spec ✅** [`analyzers/A2-style-reader.md`](analyzers/A2-style-reader.md). Mode A only; contrast tất định khi nền đặc; Mode B/XML style do A4/A8 bù.
 - [~] **A3 — Box/Layout Detector** `[B]` — **spec ✅** [`analyzers/A3-box-layout-detector.md`](analyzers/A3-box-layout-detector.md). Hybrid OpenCV+OCR (UIED-style); chờ chốt CV-thuần vs +ML-detector (OmniParser/GroundingDINO).
-- [ ] **A5 — OCR / Text Extractor** (text + box) `[B]`
+- [~] **A5 — OCR / Text Extractor** (text + box) `[A·B]` — **spec ✅** [`analyzers/A5-ocr-text-extractor.md`](analyzers/A5-ocr-text-extractor.md). PaddleOCR primary + Tesseract fallback; chạy CẢ 2 mode (Mode A đối chiếu DOM-text↔ảnh để bắt tofu/che/cắt). Chờ chốt engine + bộ ngôn ngữ.
 - [ ] **A12 — Interactivity Classifier** (đoán phần tử nào tương tác) `[B]` — ⚠ khó
 - [ ] **A6 — Icon/Graphic Detector** `[A·B]`
 - [ ] **A7 — Image Region + Meta Reader** (intrinsic vs displayed) `[A·B]` — ⚠ B yếu
