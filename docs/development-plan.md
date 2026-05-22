@@ -35,17 +35,17 @@
 - [~] **A2 — Style Reader** (computed-style → canonical style) `[A]` — **spec ✅** [`analyzers/A2-style-reader.md`](analyzers/A2-style-reader.md). Mode A only; contrast tất định khi nền đặc; Mode B/XML style do A4/A8 bù.
 - [~] **A3 — Box/Layout Detector** `[B]` — **spec ✅** [`analyzers/A3-box-layout-detector.md`](analyzers/A3-box-layout-detector.md). Hybrid OpenCV+OCR (UIED-style); chờ chốt CV-thuần vs +ML-detector (OmniParser/GroundingDINO).
 - [~] **A5 — OCR / Text Extractor** (text + box) `[A·B]` — **spec ✅** [`analyzers/A5-ocr-text-extractor.md`](analyzers/A5-ocr-text-extractor.md). PaddleOCR primary + Tesseract fallback; chạy CẢ 2 mode (Mode A đối chiếu DOM-text↔ảnh để bắt tofu/che/cắt). Chờ chốt engine + bộ ngôn ngữ.
-- [ ] **A12 — Interactivity Classifier** (đoán phần tử nào tương tác) `[B]` — ⚠ khó
-- [ ] **A6 — Icon/Graphic Detector** `[A·B]`
-- [ ] **A7 — Image Region + Meta Reader** (intrinsic vs displayed) `[A·B]` — ⚠ B yếu
+- [~] **A12 — Interactivity Classifier** (đoán phần tử nào tương tác) `[B]` — ⚠ khó — **spec ✅** [`analyzers/A12-interactivity-classifier.md`](analyzers/A12-interactivity-classifier.md). Mode B only (Mode A đã có `interactive`); heuristic đa tín hiệu, precision-first; chờ chốt heuristic-only vs +ML.
+- [~] **A6 — Icon/Graphic Detector** `[A·B]` — **spec ✅** [`analyzers/A6-icon-graphic-detector.md`](analyzers/A6-icon-graphic-detector.md). Mode A từ DOM svg/icon-font; Mode B CV (color_count + edge_density). Chờ chốt CV-thuần vs +ML.
+- [~] **A7 — Image Region + Meta Reader** (intrinsic vs displayed) `[A·B]` — ⚠ B yếu — **spec ✅** [`analyzers/A7-image-region-meta-reader.md`](analyzers/A7-image-region-meta-reader.md). Mode A đọc naturalW/H → IMG-09 méo; Mode B chỉ blur_score (thiếu intrinsic).
 
 **Nhóm "đo diện mạo" (chạy ở CẢ hai mode):**
-- [ ] **A4 — Pixel Color Sampler** (contrast/dark/opacity từ pixel thực) `[A·B]`
-- [ ] **A8 — Pixel/Glyph Inspector** (tofu □ / mờ / emoji-box / banding) `[B]`
-- [ ] **A9 — Pixel Pattern Detector** (skeleton/spinner/overlay/keyboard/splash/broken/blank) `[B]`
-- [ ] **A10 — Perceptual Hashing** (ảnh/item trùng — trong-màn ở Phase 1) `[A·B]`
-- [ ] **A11 — Face/Text-in-image Detector** (cho IMG-04 crop) `[B]` — ưu tiên thấp
-- [ ] **A13 — Device/Env Metadata provider** (safe_area/dpr/bar/orientation) `[—]`
+- [~] **A4 — Pixel Color Sampler** (contrast/dark/opacity từ pixel thực) `[A·B]` — **spec ✅** [`analyzers/A4-pixel-color-sampler.md`](analyzers/A4-pixel-color-sampler.md). K-means k=2 (Lab) tách fg/bg + WCAG tự code; bù A2 khi nền ảnh/gradient + toàn bộ Mode B/XML.
+- [~] **A8 — Pixel/Glyph Inspector** (tofu □ / mờ / emoji-box / banding) `[B]` — **spec ✅** [`analyzers/A8-pixel-glyph-inspector.md`](analyzers/A8-pixel-glyph-inspector.md). CV tất định (Laplacian + connected-comp); **CHỐT cờ `has_replacement` mà A5 chỉ NGHI**.
+- [~] **A9 — Pixel Pattern Detector** (skeleton/spinner/overlay/keyboard/splash/broken/blank) `[B]` — **spec ✅** [`analyzers/A9-pixel-pattern-detector.md`](analyzers/A9-pixel-pattern-detector.md). 7 sub-detector CV; 1-frame (cờ `temporal` → "kẹt" chờ Phase 2 đa-frame).
+- [~] **A10 — Perceptual Hashing** (ảnh/item trùng — trong-màn ở Phase 1) `[A·B]` — **spec ✅** [`analyzers/A10-perceptual-hashing.md`](analyzers/A10-perceptual-hashing.md). `imagehash.phash` + Hamming; in-screen (cross-screen→Phase 2). Chờ chốt ngưỡng + xử lý trùng-chủ-ý.
+- [~] **A11 — Face/Text-in-image Detector** (cho IMG-04 crop) `[B]` — ưu tiên thấp — **spec ✅** [`analyzers/A11-face-text-in-image-detector.md`](analyzers/A11-face-text-in-image-detector.md). MediaPipe face (pretrained) + text-in-image qua IoU(A5,A7). Có thể để Phase 2.
+- [~] **A13 — Device/Env Metadata provider** (safe_area/dpr/bar/orientation) `[—]` — **spec ✅** [`analyzers/A13-device-env-metadata.md`](analyzers/A13-device-env-metadata.md). Chạy đầu pipeline; 3 tầng nguồn: tester-meta → device-profile → pixel-infer. Chờ chốt bắt buộc meta? + phạm vi bảng device.
 
 **Gộp:**
 - [ ] **A0 — Normalize + Relation pre-computer** (gộp output analyzer → schema chung, tiền tính `relations`: overlap/gap/align; routing Mode A/B/mixed, gán `source` theo field)
