@@ -32,7 +32,7 @@
 
 **Nhóm "dựng cấu trúc" (Mode A đọc cây / Mode B phải tự dựng):**
 - [~] **A1 — Tree Parser** (DOM/XML → schema) `[Mode A]` — **spec ✅** [`analyzers/A1-tree-parser.md`](analyzers/A1-tree-parser.md); chờ chốt Web Capture Contract
-- [ ] **A2 — Style Reader** (computed-style: font/màu/border/align/opacity) `[A]`
+- [~] **A2 — Style Reader** (computed-style → canonical style) `[A]` — **spec ✅** [`analyzers/A2-style-reader.md`](analyzers/A2-style-reader.md). Mode A only; contrast tất định khi nền đặc; Mode B/XML style do A4/A8 bù.
 - [ ] **A3 — Box/Layout Detector** (element detect + segment + cluster → bounds/parent/child) `[B]`
 - [ ] **A5 — OCR / Text Extractor** (text + box) `[B]`
 - [ ] **A12 — Interactivity Classifier** (đoán phần tử nào tương tác) `[B]` — ⚠ khó
