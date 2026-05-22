@@ -3,6 +3,14 @@
 > File này là bối cảnh dự án cho mọi phiên Claude Code / agent làm việc trong repo này.
 > Trao đổi với chủ dự án **bằng tiếng Việt** (user là kỹ sư QA mobile).
 
+## 0. Quy tắc làm việc (agent — QUAN TRỌNG)
+- **Luôn ghi phân tích/thiết kế/quyết định ra file trong `docs/` NGAY khi trao đổi**, cập nhật
+  tăng dần theo từng phần đã chốt — KHÔNG chỉ giữ trong chat. Lý do: **đề phòng mất session
+  chat** thì công việc vẫn còn nguyên trong repo.
+- `docs/` là **nguồn sự thật** (tài liệu sống, chi tiết); `CLAUDE.md` là bản **tóm tắt quyết
+  định gọn** (đọc tự động mỗi phiên) — chốt gì ở docs thì cập nhật lại đây.
+- Chỉ **commit/push khi user yêu cầu**.
+
 ## 1. Mục tiêu
 Xây **API service** tự động phát hiện lỗi giao diện (UI/UX) trên ảnh chụp màn hình app
 (mobile + web), theo hướng **Zero-Reference**: KHÔNG đối chiếu design mẫu, KHÔNG dùng
