@@ -24,7 +24,7 @@
 ## Phase 0 — Nền tảng (làm TRƯỚC, gate mọi thứ)
 - [x] **F0.1** Tech stack: **Python + FastAPI** + OpenCV/Pillow/numpy + OCR (PaddleOCR/Tesseract) + lxml/pydantic + VLM qua API.
 - [x] **F0.2** Lock **Canonical Schema v1** → [`docs/F0.2-canonical-schema.md`](F0.2-canonical-schema.md): `screen / image / elements[] / relations[] / candidate_issues[]` + field-level `_sources` + severity **5 mức** (`critical/high/medium/low/trivial`) + Pydantic v2 skeleton.
-- [ ] **F0.3** Scaffold repo: cấu trúc thư mục, test framework, lint, CI, định dạng crop/evidence.
+- [x] **F0.3** Scaffold repo → `src/ui_defect/{schema,analyzers,rules,agents,api,utils}` + `tests/` + `pyproject.toml` + `requirements*.txt` (pip). Python 3.12 hệ thống.
 - [x] **F0.4** Chốt **đơn vị & ngưỡng chuẩn** → [`docs/F0.4-thresholds.md`](F0.4-thresholds.md): pt/dp/px↔dpr, touch 44pt/48dp, contrast 4.5/3:1, font 11px, blur Laplacian, hash Hamming, grid 8pt. Ngưỡng `[tune]` cần golden set.
 
 ## Phase 1 — Analyzers (bóc tách từng cái → `docs/analyzers/<id>.md`)
