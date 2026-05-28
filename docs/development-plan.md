@@ -23,9 +23,9 @@
 
 ## Phase 0 — Nền tảng (làm TRƯỚC, gate mọi thứ)
 - [x] **F0.1** Tech stack: **Python + FastAPI** + OpenCV/Pillow/numpy + OCR (PaddleOCR/Tesseract) + lxml/pydantic + VLM qua API.
-- [ ] **F0.2** Lock **Canonical Schema v1** (hoàn thiện từ CLAUDE.md §5): `screen / image / elements[] / relations[] / candidate_issues[]` + `source` (dom|xml|vision) + `confidence` + `mode` ở cấp field. → Đây là **contract** mọi analyzer ghi vào.
+- [x] **F0.2** Lock **Canonical Schema v1** → [`docs/F0.2-canonical-schema.md`](F0.2-canonical-schema.md): `screen / image / elements[] / relations[] / candidate_issues[]` + field-level `_sources` + severity **5 mức** (`critical/high/medium/low/trivial`) + Pydantic v2 skeleton.
 - [ ] **F0.3** Scaffold repo: cấu trúc thư mục, test framework, lint, CI, định dạng crop/evidence.
-- [ ] **F0.4** Chốt **đơn vị & ngưỡng chuẩn**: pt/dp/px↔dpr, touch≥44pt/48dp, contrast 4.5/3, grid 8pt (bảng ngưỡng dùng chung cho Rule Engine).
+- [x] **F0.4** Chốt **đơn vị & ngưỡng chuẩn** → [`docs/F0.4-thresholds.md`](F0.4-thresholds.md): pt/dp/px↔dpr, touch 44pt/48dp, contrast 4.5/3:1, font 11px, blur Laplacian, hash Hamming, grid 8pt. Ngưỡng `[tune]` cần golden set.
 
 ## Phase 1 — Analyzers (bóc tách từng cái → `docs/analyzers/<id>.md`)
 > Thứ tự ưu tiên = mở khoá nhiều tiêu chí nhất + chuẩn zero-ref nhất.

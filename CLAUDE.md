@@ -76,28 +76,44 @@ Stage **Normalize** có nhiều adapter, đầu ra luôn về schema mục 5; th
 - Lưu ý: tiêu chí "nội dung hợp lý" là khó nhất với zero-reference (cần ngữ cảnh màn/intent test).
 
 ## 5. Schema dữ liệu chung (DOM + XML quy về một)
+> **Chi tiết đầy đủ + Pydantic v2 skeleton:** [`docs/F0.2-canonical-schema.md`](docs/F0.2-canonical-schema.md)
+> **Đơn vị & ngưỡng:** [`docs/F0.4-thresholds.md`](docs/F0.4-thresholds.md)
+
+Tóm tắt nhanh:
+- `mode`: `A_tree | B_vision | mixed` — `mixed` = có cây nhưng thiếu field
+- Toạ độ nội bộ: **device px** (CSS px × dpr / dp × dpr / pt × dpr)
+- `style._sources`: dict override source theo field (vd: `contrast_ratio: "pixel"`)
+- `candidate_issues.severity`: **5 mức** `critical | high | medium | low | trivial`
+  (bỏ 4 mức cũ `blocker/major/minor/cosmetic`)
+- `candidate_issues.severity_range`: Rule Engine ghi range, VLM chốt mức cuối
+
 ```jsonc
 {
   "screen": { "id","platform":"android|ios|web","route",
-              "mode":"A_tree|B_vision",
-              "viewport":{ "w":0,"h":0,"dpr":0 },
-              "safe_area":{ "top":0,"bottom":0,"left":0,"right":0 },
+              "mode":"A_tree|B_vision|mixed",
+              "viewport":{"w":0,"h":0,"dpr":0},
+              "safe_area":{"top":0,"bottom":0,"left":0,"right":0},
               "theme":"light|dark","locale","font_scale","ts" },
   "image":  { "full":"path.png","w":0,"h":0 },
   "elements":[{
      "id":"e12","role":"button|text|image|icon|input|toggle|...",
      "source":"dom|xml|vision","confidence":1.0,
-     "bbox":{ "x":0,"y":0,"w":0,"h":0 }, "bbox_norm":{},
+     "bbox":{"x":0,"y":0,"w":0,"h":0},"bbox_norm":{},
      "parent":"e3","children":["e13"],"z":2,
      "text":"","text_truncated":false,
-     "style":{ "font_size":0,"font_family":"","color":"","bg_color":"",
-               "contrast_ratio":0,"opacity":1,"border_radius":0 },
-     "image_meta":{ "intrinsic_w":0,"intrinsic_h":0,"displayed_w":0,"displayed_h":0,"scale_mode":"" },
-     "interactive":true,"touch_target":{ "w":0,"h":0 },
+     "style":{"font_size":0,"font_family":"","color":"","bg_color":"",
+              "contrast_ratio":0,"opacity":1,"border_radius":0,
+              "_sources":{"contrast_ratio":"pixel"}},
+     "image_meta":{"intrinsic_w":0,"intrinsic_h":0,"displayed_w":0,"displayed_h":0,"scale_mode":""},
+     "interactive":true,"touch_target":{"w":0,"h":0},
      "visible":true,"clipped":false,"offscreen":false,"crop":"crops/e12.png"
   }],
-  "relations":[ { "a":"e7","rel":"left_of|above|contains|overlaps","b":"e8","gap":0,"iou":0 } ],
-  "candidate_issues":[ { "rule":"touch_target_min","element":"e12","severity":"major","detail":"" } ]
+  "relations":[{"a":"e7","rel":"left_of|above|contains|overlaps","b":"e8","gap":0,"iou":0}],
+  "candidate_issues":[{
+     "rule":"touch_target_min","element":"e12",
+     "severity":"high","severity_range":{"min":"medium","max":"critical"},
+     "confidence":1.0,"detail":"","evidence":{"bbox":{},"crop":""}
+  }]
 }
 ```
 - Phân cấp: `parent/children` + `z`. Quan hệ tương đối **tiền-tính** trong `relations`
