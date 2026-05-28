@@ -14,7 +14,6 @@ def minimal_screen() -> Screen:
     return Screen(
         id="scr_test",
         platform="android",
-        mode="B_vision",
         viewport=Viewport(w=1080, h=2400, dpr=3.0),
         safe_area=SafeArea(top=72, bottom=102),
     )
