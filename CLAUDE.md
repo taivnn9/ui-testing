@@ -25,34 +25,22 @@ object detection kiểu YOLO (tránh phải gán nhãn / train lại liên tục
 
 ## 2. Kiến trúc đã chốt
 **Mô hình triển khai: API service.**
-- **Input** (tester gửi lên): `screenshot (PNG)` **bắt buộc** + cây phần tử **TÙY CHỌN**:
-  - Web → `HTML/DOM` (từ Playwright).
-  - Mobile native → `XML` (Android uiautomator dump / iOS element tree).
-  - **Đôi khi tester CHỈ có ảnh, không có cây** → phải xử lý được.
+- **Input** (tester gửi lên): `screenshot (PNG)` — **duy nhất, không nhận DOM/XML/HTML**.
 - **Output**: danh sách lỗi có cấu trúc, mỗi lỗi kèm `severity`, `confidence`, `evidence` (element_id, bbox, crop).
-- Phải hỗ trợ **lai web + mobile** → DOM và XML quy về **một schema chung** (mục 5).
+- Hỗ trợ **cả web + mobile** — phân biệt qua metadata (platform, dpr, safe_area).
 - **Runtime / orchestration**: tool nội bộ kiểu **n8n** (gọi qua API) và/hoặc **Cline (VSCode)**.
   Model suy luận: **open model self-host gọi qua API** (và/hoặc hosted VLM).
 
-### 2.1. HAI CHẾ ĐỘ VẬN HÀNH (cùng một schema đầu ra, xuống cấp mượt)
-Stage **Normalize** có nhiều adapter, đầu ra luôn về schema mục 5; thêm `source`/`confidence`
-để downstream biết độ tin cậy.
-- **Mode A — có cây (DOM/XML):** ground truth toạ độ/role/text/style. Rule engine chạy
-  ĐẦY ĐỦ. Precision cao. `source: "dom" | "xml"`.
-- **Mode B — chỉ ảnh (vision-only):** dựng `elements[]` bằng **OCR (text+box) + element/icon
-  detection + VLM**. Thiếu computed-style → các trị như contrast phải **đo từ pixel**, không
-  đọc từ CSS. Rule engine chạy TẬP CON (chỉ những gì tính được từ box+pixel); VLM gánh nhiều
-  hơn. Confidence thấp hơn, đánh dấu rõ. `source: "vision"`.
-- Element/field từ cây có thể **trộn** với phát hiện từ pixel (vd: cây cho box, pixel cho
-  contrast/clip thực tế). Luôn ghi `source` ở cấp element/field.
+### 2.1. MỘT CHẾ ĐỘ DUY NHẤT: vision-only
+Chỉ có một mode: **vision-only**. Toàn bộ element, style, geometry đều lấy từ ảnh thông qua
+**OCR + CV + VLM**. Không có DOM/XML adapter, không có Mode A/B.
 
 ## 3. Nguyên tắc thiết kế (QUAN TRỌNG — đừng làm sai)
 1. **Đa phương thức (multimodal)**: đưa cho model **CẢ ảnh + JSON map**, không chỉ JSON.
    Hơn nửa tiêu chí (contrast, distortion, font tofu, ảnh vỡ, ngữ cảnh) không phán đoán
    được từ toạ độ/text → bắt buộc cần pixel. JSON cho hình học chính xác; ảnh cho diện mạo.
-2. **Hierarchy-first, nhưng KHÔNG bắt buộc**: khi có DOM/XML thì lấy ground truth trực tiếp
-   (Mode A). Khi chỉ có ảnh thì xuống cấp sang OCR+CV+VLM (Mode B) — xem mục 2.1. Hệ thống
-   PHẢI chạy được cả khi không có cây. Đừng viết code giả định luôn có hierarchy.
+2. **Vision-only là nguồn duy nhất**: mọi element/geometry/style đều suy ra từ ảnh qua
+   OCR + CV + VLM. Không có DOM/XML; không giả định có hierarchy sẵn.
 3. **Tách tất định khỏi phán đoán**: cái gì TÍNH ĐƯỢC bằng code (overlap, touch-target nhỏ,
    contrast ratio, off-screen, vượt safe-area, tỉ lệ ảnh méo) → **rule engine** làm, KHÔNG
    hỏi LLM (LLM dở số học toạ độ, hay bịa). LLM chỉ lo: xác nhận candidate có "vô lý" thật
@@ -75,13 +63,13 @@ Stage **Normalize** có nhiều adapter, đầu ra luôn về schema mục 5; th
 - Truncation chủ ý vs lỗi · Z-order/occlusion · Trùng lặp/thiếu phần tử · Lệch grid/optical alignment.
 - Lưu ý: tiêu chí "nội dung hợp lý" là khó nhất với zero-reference (cần ngữ cảnh màn/intent test).
 
-## 5. Schema dữ liệu chung (DOM + XML quy về một)
+## 5. Schema dữ liệu chung (vision-only)
 > **Chi tiết đầy đủ + Pydantic v2 skeleton:** [`docs/F0.2-canonical-schema.md`](docs/F0.2-canonical-schema.md)
 > **Đơn vị & ngưỡng:** [`docs/F0.4-thresholds.md`](docs/F0.4-thresholds.md)
 
 Tóm tắt nhanh:
-- `mode`: `A_tree | B_vision | mixed` — `mixed` = có cây nhưng thiếu field
 - Toạ độ nội bộ: **device px** (CSS px × dpr / dp × dpr / pt × dpr)
+- `source` ở cấp element/field: `"vision" | "pixel"` (không còn `"dom" | "xml"`)
 - `style._sources`: dict override source theo field (vd: `contrast_ratio: "pixel"`)
 - `candidate_issues.severity`: **5 mức** `critical | high | medium | low | trivial`
   (bỏ 4 mức cũ `blocker/major/minor/cosmetic`)
@@ -90,14 +78,13 @@ Tóm tắt nhanh:
 ```jsonc
 {
   "screen": { "id","platform":"android|ios|web","route",
-              "mode":"A_tree|B_vision|mixed",
               "viewport":{"w":0,"h":0,"dpr":0},
               "safe_area":{"top":0,"bottom":0,"left":0,"right":0},
               "theme":"light|dark","locale","font_scale","ts" },
   "image":  { "full":"path.png","w":0,"h":0 },
   "elements":[{
      "id":"e12","role":"button|text|image|icon|input|toggle|...",
-     "source":"dom|xml|vision","confidence":1.0,
+     "source":"vision|pixel","confidence":1.0,
      "bbox":{"x":0,"y":0,"w":0,"h":0},"bbox_norm":{},
      "parent":"e3","children":["e13"],"z":2,
      "text":"","text_truncated":false,
@@ -122,11 +109,9 @@ Tóm tắt nhanh:
 
 ## 6. Pipeline xử lý
 ```
-Input (ảnh [+ DOM/XML tùy chọn])
-  →  Normalize qua adapter → schema mục 5:
-        có cây?  DOM adapter | XML adapter        (Mode A)
-        chỉ ảnh? Vision adapter: OCR + detect + VLM (Mode B)
-  →  Rule Engine (Mode A: full checks · Mode B: tập con tính được từ box+pixel) → candidate_issues
+Input (ảnh PNG)
+  →  Vision Adapter: OCR + CV element detect + VLM → schema mục 5
+  →  Rule Engine (tập con tính được từ box+pixel) → candidate_issues
   →  VLM Reasoning (ảnh + JSON + candidates → confirm/reject + lỗi phán đoán + severity)
   →  Verify/Critic pass (giảm false positive)
   →  Aggregate + dedupe → trả về API
@@ -136,10 +121,8 @@ Input (ảnh [+ DOM/XML tùy chọn])
 không đoán toạ độ) · few-shot có nhãn để calibrate severity · self-critique trước khi báo.
 
 ## 7. Trạng thái & việc tiếp theo
-- [x] Chốt kiến trúc (API service, input ảnh+DOM/XML, multimodal, rule+VLM).
-- [ ] Viết parser DOM(HTML) → schema chung (Mode A).
-- [ ] Viết parser XML (Android uiautomator) → schema chung (Mode A).
-- [ ] Vision adapter cho Mode B (chỉ ảnh): OCR + element/icon detect + đo contrast/clip từ pixel.
+- [x] Chốt kiến trúc (API service, input ảnh duy nhất, vision-only, rule+VLM).
+- [ ] Vision adapter (OCR + CV element/icon detect + đo contrast/clip từ pixel) → schema chung.
 - [ ] Rule engine cho các check tất định + ngưỡng (touch ≥44pt iOS/48dp Android, contrast ≥4.5:1, gap grid 8pt...).
 - [ ] Prompt template + few-shot cho từng nhóm tiêu chí.
 - [ ] Golden set + script đo precision/recall (mutation testing UI).

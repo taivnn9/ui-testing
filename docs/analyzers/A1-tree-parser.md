@@ -1,7 +1,11 @@
-# A1 — Tree Parser (DOM/XML → Canonical Schema)
+# ~~A1 — Tree Parser~~ (ĐÃ BỎ)
 
-> Bóc tách chi tiết. Thuộc Phase 1, nhóm "dựng cấu trúc". Tech: **Python**.
-> Liên quan: [`../development-plan.md`](../development-plan.md) · [`../buoc-2-kien-truc-xu-ly.md`](../buoc-2-kien-truc-xu-ly.md)
+> ⚠ **Analyzer này đã bị loại bỏ.** Hệ thống không còn nhận DOM/XML input — chỉ nhận ảnh.
+> Giữ lại file để tham khảo lịch sử.
+
+---
+
+*(Nội dung gốc bên dưới — chỉ để tham khảo, không còn áp dụng)*
 
 ## 1. Trách nhiệm
 Khi input **có cây** (Mode A), parse **DOM (web)** hoặc **XML (Android uiautomator / iOS
@@ -114,4 +118,4 @@ z→`LAY-06` occlusion; image_meta→`IMG-02` distortion. (Chi tiết mapping: b
 - test: node ẩn giữ `visible=false`, không bị loại.
 - test: mixed (raw HTML) → style/geometry source đánh dấu đúng.
 
-## Trạng thái: spec ✅ — chờ chốt mục 9, sau đó code.
+## Trạng thái: ~~spec ✅~~ **ĐÃ BỎ — không còn áp dụng**

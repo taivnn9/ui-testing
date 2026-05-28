@@ -1,16 +1,20 @@
-# A2 — Style Reader (computed-style → canonical `style`)
+# ~~A2 — Style Reader~~ (ĐÃ BỎ)
 
-> Bóc tách chi tiết. Phase 1, nhóm "dựng cấu trúc". Tech: **Python**. **Mode A only.**
-> Liên quan: [`A1-tree-parser.md`](A1-tree-parser.md) · [`../development-plan.md`](../development-plan.md)
+> ⚠ **Analyzer này đã bị loại bỏ.** Hệ thống không còn nhận DOM/XML input — chỉ nhận ảnh.
+> Giữ lại file để tham khảo lịch sử.
+
+---
+
+*(Nội dung gốc bên dưới — chỉ để tham khảo, không còn áp dụng)*
 
 ## 1. Trách nhiệm
 Nhận **computed-style** từ web capture (do A1 parse) → chuẩn hoá thành canonical `style`
 object, và **tính các trị tất định KHÔNG cần pixel** — đáng giá nhất là **`contrast_ratio`
 khi nền là màu đặc**. **KHÔNG đo pixel** (đó là A4/A8).
 
-> ⚠ **Ranh giới (đính chính):** A2 chỉ chạy Mode A (có computed-style). Mode B (chỉ ảnh) và
-> XML (android/ios — không có style) → field style do **A4** (màu/contrast từ pixel) + **A8**
-> (font-size từ glyph) điền, **A0 Normalize** gộp. A2 KHÔNG gánh Mode B.
+> ⚠ **Ranh giới (đính chính):** A2 chỉ chạy khi có computed-style. Khi chỉ có ảnh
+> và XML (android/ios — không có style) → field style do **A4** (màu/contrast từ pixel) + **A8**
+> (font-size từ glyph) điền, **A0 Normalize** gộp. A2 KHÔNG gánh vision-only.
 
 ## 2. Input
 - **Web capture** `style{}` mỗi node (từ A1): `fontSize, fontFamily, fontWeight, color,
@@ -48,7 +52,7 @@ khi nền là màu đặc**. **KHÔNG đo pixel** (đó là A4/A8).
 
 ## 5. Giá trị lớn: tính tất định KHÔNG cần pixel
 - **`contrast_ratio` (WCAG)** khi `bg_is_solid`: lấy `color` + `bg_color` hiệu dụng → công
-  thức relative-luminance → **bật ngay STY-01/02 ở Mode A, miễn pixel**. Nếu nền là
+  thức relative-luminance → **bật ngay STY-01/02, miễn pixel**. Nếu nền là
   ảnh/gradient/không xác định → `contrast_ratio=null` + cờ "cần A4 đo pixel".
 - **bg kế thừa:** element bg trong suốt → truy `bg_color` của cha (lên dần) để ra nền hiệu
   dụng. *Điểm tinh tế hay sai — phải làm.*
@@ -57,7 +61,7 @@ khi nền là màu đặc**. **KHÔNG đo pixel** (đó là A4/A8).
 - **`visible`:** tổng hợp display/visibility/opacity/size.
 
 ## 6. Tiêu chí phục vụ
-STY-01/02 (contrast — Mode A tính thẳng), STY-03 (màu cho dark), STY-05 (opacity),
+STY-01/02 (contrast — tính thẳng từ computed-style), STY-03 (màu cho dark), STY-05 (opacity),
 STY-07 (so màu disabled vs sibling), TYP-05 (font-size), TYP-03 (`truncation_styled`),
 TYP-07 (line-height), TYP-10 (align), TYP-13 (font-mix qua font_family).
 
@@ -82,4 +86,4 @@ TYP-07 (line-height), TYP-10 (align), TYP-13 (font-mix qua font_family).
 - test `visible` từ display/visibility/opacity/size.
 - test XML input → `style` rỗng + cờ "cần pixel".
 
-## Trạng thái: spec ✅ — phụ thuộc F0.4 (đơn vị) + Web Capture Contract (A1).
+## Trạng thái: ~~spec ✅~~ **ĐÃ BỎ — không còn áp dụng**
