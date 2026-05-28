@@ -4,8 +4,7 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
-SourceType = Literal["dom", "xml", "vision", "pixel"]
-ModeType = Literal["A_tree", "B_vision", "mixed"]
+SourceType = Literal["vision", "pixel"]
 PlatformType = Literal["android", "ios", "web"]
 SeverityType = Literal["critical", "high", "medium", "low", "trivial"]
 RelType = Literal["left_of", "right_of", "above", "below", "contains", "overlaps", "sibling"]
@@ -39,7 +38,6 @@ class Screen(BaseModel):
     id: str
     platform: PlatformType
     route: Optional[str] = None
-    mode: ModeType
     viewport: Viewport
     safe_area: SafeArea = Field(default_factory=SafeArea)
     theme: Literal["light", "dark", "system"] = "light"
