@@ -1,7 +1,7 @@
 [project]
 name = "ui-defect"
 version = "0.1.0"
-description = "Zero-reference UI defect detection API"
+description = "API phát hiện lỗi UI không cần ảnh tham chiếu (zero-reference)"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.111",
