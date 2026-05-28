@@ -40,7 +40,7 @@ trả text **đã chuẩn hoá unicode** + độ tin cậy. **KHÔNG** quyết "
 a. **Detection** — tìm box chứa text (kể cả text nhỏ/đa cỡ trên UI).
 b. **Recognition** — đọc ký tự + confidence; **đa ngôn ngữ** (i18n là trọng tâm dự án).
 c. **Reading order / grouping** — gom word→line→block, sắp đúng thứ tự đọc (cả RTL).
-d. **Script/lang detect** — phân loại chữ viết (phục vụ CNT-03 lẫn RTL TYP-12).
+d. **Nhận dạng script/ngôn ngữ** — phân loại chữ viết (phục vụ CNT-03 lẫn RTL TYP-12).
 
 ## 4. Kỹ thuật / lib (Python) — list + đề xuất
 | Việc | Lib/tool (Python) | Ưu | Nhược | Khuyến nghị |
@@ -62,7 +62,7 @@ d. **Script/lang detect** — phân loại chữ viết (phục vụ CNT-03 lẫ
 1. **Chọn vùng:** có bbox từ A1/A3 → OCR theo từng vùng/crop; không có → quét full ảnh.
 2. **Tiền xử lý có điều kiện:** ước lượng cỡ chữ; nếu < ngưỡng px → **upscale** crop (giữ bản
    gốc cho A8). Giữ ảnh màu (không ép nhị phân — UI nhiều nền).
-3. **Detect + Recognize** (PaddleOCR): box + text + conf + angle, theo bộ ngôn ngữ đã chọn.
+3. **Phát hiện + Nhận dạng** (PaddleOCR): box + text + conf + angle, theo bộ ngôn ngữ đã chọn.
 4. **Normalize:** NFC, strip, gộp khoảng trắng; cờ `has_replacement` nếu thấy `�`/chuỗi `□`.
 5. **Grouping:** word→line (cluster theo overlap trục y + gần trục x) → block; gán
    `parent/level`; suy **reading order** (LTR mặc định; RTL nếu script=arabic/hebrew).
@@ -103,7 +103,7 @@ d. **Script/lang detect** — phân loại chữ viết (phục vụ CNT-03 lẫ
 - **RTL/bidi** → reading order phải đảo; sai chiều là chính lỗi TYP-12.
 
 ## 9. Open decisions (cần anh chốt — lựa chọn lớn)
-- [ ] **OCR engine chính:** đề xuất **PaddleOCR primary + Tesseract fallback/cross-check**.
+- [ ] **OCR engine chính:** đề xuất **PaddleOCR chính + Tesseract dự phòng/đối chiếu chéo**.
   Chốt vì ảnh hưởng dependency (paddle nặng) & GPU. (Anh quyết: Paddle-only cho gọn, hay giữ
   cả 2 để đối chiếu?)
 - [ ] **Mode A có luôn chạy OCR để đối chiếu không?** Đề xuất **CÓ** — rẻ tương đối mà bắt được

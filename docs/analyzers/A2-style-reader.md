@@ -71,7 +71,7 @@ TYP-07 (line-height), TYP-10 (align), TYP-13 (font-mix qua font_family).
 ## 8. Open decisions (cần anh chốt)
 - [ ] **F0.4 quy ước đơn vị** (px/pt/dp ↔ dpr) — A2 + Rule engine dùng chung. *(đề xuất: lưu
   cả `*_px` device-px và `*_pt`/`*_dp` logic; ngưỡng a11y so theo pt iOS / dp Android.)*
-- [ ] Web Capture Contract phải include đủ style key ở mục 2 — chốt **cùng A1**.
+- [ ] Web Capture Contract phải bao gồm đủ style key ở mục 2 — chốt **cùng A1**.
 
 ## 9. TDD outline
 - test parse màu hex/rgb/rgba/hsl/named → RGB.

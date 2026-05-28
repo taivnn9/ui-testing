@@ -89,7 +89,7 @@ d. **Suy diễn dark-mode, opacity, disabled** — từ phân tích màu toàn v
 1. Chuyển crop sang **Lab** (perceptual) để phân cụm đều hơn RGB.
 2. K-means k=2: cluster 1 = foreground (chữ), cluster 2 = background.
 3. Chọn cluster nhỏ hơn = fg (chữ thường ít pixel hơn nền); kiểm tra bằng edge density.
-4. Fallback: Canny → pixel cạnh → fg; phần còn lại → bg.
+4. Dự phòng: Canny → pixel cạnh → fg; phần còn lại → bg.
 
 **Element `role=image/icon`:**
 - Không có "chữ" để tách → lấy màu trội tổng thể bằng k-means k=3–5 → `dominant_colors`.
@@ -97,7 +97,7 @@ d. **Suy diễn dark-mode, opacity, disabled** — từ phân tích màu toàn v
 
 **Nền ảnh sau text (trường hợp khó nhất):**
 - Lấy crop nền (lớp dưới element text — A0 cấp nếu có z-order) → trung vị màu → bg.
-- Fallback: blur crop → lấy màu trung vị góc (thường ít chữ nhất).
+- Dự phòng: blur crop → lấy màu trung vị góc (thường ít chữ nhất).
 
 ## 5. Pipeline A4 (đề xuất)
 
@@ -148,7 +148,7 @@ d. **Suy diễn dark-mode, opacity, disabled** — từ phân tích màu toàn v
 - **Element crop lệch (Mode B):** bbox A3 sai → crop nhầm nền/phần tử khác → màu vô nghĩa.
   → Thêm `crop_confidence` (= confidence của bbox từ A3); nếu < ngưỡng thì `contrast_ratio_px=null`.
 - **Transparent/RGBA ảnh:** ảnh UI xuất PNG có alpha → channel A thể hiện opacity thực.
-  → Blend với nền trắng/đen theo convention trước khi đo màu.
+  → Trộn (blend) với nền trắng/đen theo quy ước trước khi đo màu.
 - **Text màu gradient:** foreground không đồng nhất → k-means cho >2 cluster chữ.
   → Lấy màu trội nhất của fg; ghi `color_px_quality="gradient"`.
 - **Emoji / icon màu nhiều sắc:** không có fg/bg rõ ràng → skip contrast; chỉ ghi dominant_colors.
@@ -157,7 +157,7 @@ d. **Suy diễn dark-mode, opacity, disabled** — từ phân tích màu toàn v
 
 ## 9. Open decisions (cần anh chốt — lựa chọn lớn)
 
-- [ ] **Thuật toán tách fg/bg:** đề xuất **K-means k=2 + fallback Canny** (trình bày ở mục 4.1).
+- [ ] **Thuật toán tách fg/bg:** đề xuất **K-means k=2 + dự phòng Canny** (trình bày ở mục 4.1).
   Chốt vì ảnh hưởng toàn bộ precision — nên test trên golden set trước khi lock.
 - [ ] **Ngưỡng `bg_is_solid_px`** (variance pixel bg) → **tune bằng golden set (GS)**. Đề xuất
   ban đầu: `std(L) > 15` (trên thang 0–255) → không đặc.

@@ -68,12 +68,12 @@ b. **Text-in-image overlap** → IoU giữa text_segment bbox (A5) và image ele
 
 | Việc | Lib/tool (Python) | Ưu | Nhược | Khuyến nghị |
 |---|---|---|---|---|
-| **Face detect — MediaPipe** | `mediapipe` (`FaceDetector`) | nhẹ (~3MB model), nhanh (CPU), pretrained, không train lại, API Python đơn giản | cần cài mediapipe; iOS/Android face có thể bị cắt góc → miss | ✅ **khuyến nghị primary** |
-| **Face detect — OpenCV DNN** | `cv2.dnn` + model `res10_300x300_ssd` (Caffe, ~10MB) | nhẹ, built-in OpenCV, không dep extra | kém hơn MediaPipe với face nhỏ/nghiêng | ✅ fallback nhẹ |
-| **Face detect — Haar Cascade** | `cv2.CascadeClassifier` (`haarcascade_frontalface`) | cực nhẹ, offline | nhiều false positive, chỉ mặt thẳng | ⚠ fallback cuối nếu không có DNN |
-| **Face detect — RetinaFace** | `retinaface` (InsightFace) | chính xác nhất (kể cả profile/góc) | nặng hơn MediaPipe, dep phức tạp | ⏭ tùy chọn nếu recall MediaPipe kém |
-| **Text-in-image check** | **thuần numpy** — IoU bbox text_segment (A5) ∩ bbox ảnh (A7) | deterministic, không ML | — | ✅ **không cần ML** |
-| **Check face bị cắt** | thuần Python: so `face_bbox` vs `image_region_bbox` → edge overlap | deterministic | — | ✅ |
+| **Phát hiện mặt — MediaPipe** | `mediapipe` (`FaceDetector`) | nhẹ (~3MB model), nhanh (CPU), pretrained, không train lại, API Python đơn giản | cần cài mediapipe; iOS/Android face có thể bị cắt góc → miss | ✅ **khuyến nghị primary** |
+| **Phát hiện mặt — OpenCV DNN** | `cv2.dnn` + model `res10_300x300_ssd` (Caffe, ~10MB) | nhẹ, built-in OpenCV, không cần dep ngoài | kém hơn MediaPipe với face nhỏ/nghiêng | ✅ fallback nhẹ |
+| **Phát hiện mặt — Haar Cascade** | `cv2.CascadeClassifier` (`haarcascade_frontalface`) | cực nhẹ, offline | nhiều false positive, chỉ mặt thẳng | ⚠ fallback cuối nếu không có DNN |
+| **Phát hiện mặt — RetinaFace** | `retinaface` (InsightFace) | chính xác nhất (kể cả profile/góc) | nặng hơn MediaPipe, dep phức tạp | ⏭ tùy chọn nếu recall MediaPipe kém |
+| **Kiểm tra text-in-image** | **thuần numpy** — IoU bbox text_segment (A5) ∩ bbox ảnh (A7) | deterministic, không ML | — | ✅ **không cần ML** |
+| **Kiểm tra face bị cắt** | thuần Python: so `face_bbox` vs `image_region_bbox` → edge overlap | deterministic | — | ✅ |
 
 > ✅ **Pretrained ≠ train lại:** MediaPipe FaceDetector, OpenCV DNN SSD — đều là **general
 > pretrained model**, KHÔNG train lại per app / per dataset. Vẫn hoàn toàn hợp nguyên tắc

@@ -68,12 +68,12 @@ Mỗi tín hiệu cộng điểm confidence; ngưỡng để gán `interactive=t
 
 | Việc | Lib/tool (Python) | Ưu | Nhược | Khuyến nghị |
 |---|---|---|---|---|
-| Detect bo góc / shape | **OpenCV** (`approxPolyDP`, `minEnclosingCircle`, `HoughCircles`) | deterministic, nhanh | nhạy nhiễu flat design | ✅ **core** |
-| Detect border / edge | **OpenCV** (Canny + `findContours`) | sẵn từ A3 | — | ✅ reuse A3 |
-| Màu nền box (contrast vs ngoài) | **Pillow + numpy** (sample pixel trong / ngoài bbox) | đơn giản | — | ✅ |
-| Text label + căn chỉnh | output **A5 OCR** (text + bbox) | không tính lại | phụ thuộc A5 | ✅ reuse |
-| Từ điển action label | dict tĩnh Python (vi/en) | controllable, dễ mở rộng | cần maintain | ✅ |
-| Icon detection | output **A6** (role=icon) | không tính lại | phụ thuộc A6 | ✅ reuse |
+| Phát hiện bo góc / hình dạng | **OpenCV** (`approxPolyDP`, `minEnclosingCircle`, `HoughCircles`) | deterministic, nhanh | nhạy nhiễu flat design | ✅ **core** |
+| Phát hiện viền / cạnh | **OpenCV** (Canny + `findContours`) | tái dùng từ A3 | — | ✅ tái dùng A3 |
+| Màu nền box (contrast vs ngoài) | **Pillow + numpy** (lấy mẫu pixel trong / ngoài bbox) | đơn giản | — | ✅ |
+| Text label + căn chỉnh | output **A5 OCR** (text + bbox) | không tính lại | phụ thuộc A5 | ✅ tái dùng |
+| Từ điển action label | dict tĩnh Python (vi/en) | kiểm soát được, dễ mở rộng | cần bảo trì | ✅ |
+| Phát hiện icon | output **A6** (role=icon) | không tính lại | phụ thuộc A6 | ✅ tái dùng |
 | ML pretrained UI classifier | **CLIP** (zero-shot "button / text / image") | không train, recall cao | ⚠ thêm dependency, nặng, có thể FP | tùy chọn — anh quyết (mục 8) |
 | ML pretrained UI classifier | **ScreenRecognition / UIBert** (fine-tuned trên UI screenshots) | chuyên biệt | phụ thuộc model sẵn; còn hỏng trên app domain khác | tùy chọn nếu heuristic không đủ |
 

@@ -46,7 +46,7 @@ Tìm và khoanh vùng tất cả **icon / đồ hoạ nhỏ non-text** trên mà
 a. **Mode A — trích từ cây:** duyệt `elements[]` A1, lọc icon theo tag/role/size.
 b. **Mode B — phát hiện từ pixel:** tìm region nhỏ, ít màu, edge density cao.
 c. **Phân loại subtype:** svg / icon-font / img nhỏ / bitmap / decorative.
-d. **Template matching** icon phổ biến (tùy chọn): tăng recall cho placeholder-detect (IMG-08).
+d. **Template matching** icon phổ biến (tùy chọn): tăng recall cho phát hiện placeholder (IMG-08).
 
 ## 4. Kỹ thuật / lib (Python) — list + đề xuất
 
@@ -111,7 +111,7 @@ d. **Template matching** icon phổ biến (tùy chọn): tăng recall cho place
 
 ## 8. Open decisions (cần anh chốt — lựa chọn lớn)
 
-- [ ] **Phase 1 dùng ML pretrained cho icon detect (OmniParser/GroundingDINO) hay thuần CV?**
+- [ ] **Phase 1 dùng ML pretrained để phát hiện icon (OmniParser/GroundingDINO) hay thuần CV?**
   Đề xuất: **core CV thuần** (contour + màu + edge + template) cho Phase 1; **thêm ML nếu golden set cho thấy recall icon < 70%**. Lý do: CV đủ bắt được icon phổ biến, tránh dependency nặng; ML add-on dễ bật sau.
 - [ ] **Ngưỡng size icon (min/max px):** đề xuất 16–80px cạnh ngắn, aspect 0.5–2.0. Tune bằng golden set.
 - [ ] **Bộ template matching:** có dựng sẵn bộ template icon phổ biến (arrow, hamburger, X, search, back, share...) không? Khoảng 20–30 template đủ bắt IMG-08 placeholder phổ biến.
@@ -122,7 +122,7 @@ d. **Template matching** icon phổ biến (tùy chọn): tăng recall cho place
 - **Icon-font render thành glyph Unicode:** A5 OCR có thể đọc ký tự → A6 nhận cờ `text_region` từ A5 và **không re-classify thành icon**. Phân biệt bằng font-family (Mode A) hoặc bằng kích thước + isolation (Mode B).
 - **SVG inline nhiều màu (illustration):** kích thước lớn → không phải icon → A7. Dùng `color_count` + `bbox area` để lọc.
 - **Icon badge (số nổi trên icon):** A6 nên giữ cả icon chính + badge là 2 element riêng (containment qua A3).
-- **Icon placeholder (ô vuông xám, dấu ?):** đây là lỗi IMG-08 — A6 vẫn phải detect như icon region, gắn thêm cờ `possible_placeholder=true` để Rule R3 xử lý.
+- **Icon placeholder (ô vuông xám, dấu ?):** đây là lỗi IMG-08 — A6 vẫn phải phát hiện như icon region, gắn thêm cờ `possible_placeholder=true` để Rule R3 xử lý.
 - **Flat design / monochrome UI:** icon màu trắng/đen trên nền trắng/đen — edge density thấp → confidence thấp; đánh dấu, không bỏ qua.
 - **Icon trong ảnh (logo trên banner):** A7 đã crop vùng ảnh → A6 KHÔNG chạy lại trên toàn ảnh mà chỉ nhận vùng ngoài ảnh. A11 lo icon/text trong ảnh.
 

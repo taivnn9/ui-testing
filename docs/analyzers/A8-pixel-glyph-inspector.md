@@ -78,10 +78,10 @@ c. **Phát hiện emoji-box / banding** — vùng đáng màu lại đơn sắc;
 | Đọc ảnh, crop | **Pillow + numpy** | chuẩn, nhanh | — | ✅ core |
 | Laplacian variance (đo nét) | **OpenCV `Laplacian`** → `cv2.Laplacian(img, cv2.CV_64F).var()` | 1 dòng, chuẩn công nghiệp | ngưỡng cần tune theo dpr | ✅ **primary blur detect** |
 | Connected components (hình học nét) | **OpenCV `connectedComponentsWithStats`** | phân tách từng glyph riêng | cần threshold trước | ✅ |
-| Tofu box detect | **numpy**: sau threshold → `shape_uniformity` = `filled_area / bbox_area` → gần 1 = đặc đều | deterministic, nhanh | nhầm với ô checked, icon solid | ✅ đề xuất primary |
-| Edge regularity | **OpenCV Canny** → đếm pixel cạnh theo tỉ lệ bbox → tofu có cạnh ngoài đều, không có nét bên trong | — | cần tinh chỉnh kernel | ✅ bổ sung |
+| Phát hiện tofu box | **numpy**: sau threshold → `shape_uniformity` = `filled_area / bbox_area` → gần 1 = đặc đều | deterministic, nhanh | nhầm với ô checked, icon solid | ✅ đề xuất primary |
+| Độ đều cạnh (edge regularity) | **OpenCV Canny** → đếm pixel cạnh theo tỉ lệ bbox → tofu có cạnh ngoài đều, không có nét bên trong | — | cần tinh chỉnh kernel | ✅ bổ sung |
 | Histogram màu | **numpy `np.histogram`** trên grayscale → variance thấp = đơn sắc | xác nhận tofu/emoji-box | — | ✅ |
-| Banding detect | **numpy** row/col mean → gradient dự kiến mịn → nếu có sọc đột ngột (std cục bộ cao) → banding | — | cần biết vùng đáng gradient | ✅ |
+| Phát hiện banding | **numpy** row/col mean → gradient dự kiến mịn → nếu có sọc đột ngột (std cục bộ cao) → banding | — | cần biết vùng đáng gradient | ✅ |
 | Outline box (`.notdef`) | Morphological operations: erode → dilate → nếu "lõi" biến mất → rỗng bên trong = outline box | — | cần threshold sạch | ✅ |
 | Emoji-box | Vùng square nhỏ đơn sắc (< 3 màu trong 10×10px) nơi OCR trả `□`/`🟥` rỗng | — | nhầm với icon đặc | ⚠ kết hợp với A5 `has_replacement` |
 
@@ -163,7 +163,7 @@ Kết hợp: cạnh chữ (Canny) có `edge_irregularity` cao → răng cưa (ja
 - **Mixed script trên 1 dòng** (Latin + CJK): component checker chạy per-glyph → CJK box có thể
   nhầm tofu. → Dùng `expected_script` từ A5 để loại false positive.
 - **Anti-aliasing subpixel (LCD rendering):** pixel viền có màu RGB offset (fringe) → không phải banding.
-  → Detect fringe pattern → exclude khỏi banding check.
+  → Phát hiện mẫu fringe (màu viền lệch kênh RGB) → loại trừ khỏi banding check.
 
 ## 9. Open decisions (cần anh chốt — lựa chọn lớn)
 

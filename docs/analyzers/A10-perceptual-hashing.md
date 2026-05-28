@@ -62,7 +62,7 @@ b. **Pair comparison** — so từng cặp trong tập; phân loại theo ngư�
 |---|---|---|---|---|
 | Perceptual hash | **`imagehash`** (`phash`, `dhash`, `ahash`, `whash`) | nhẹ, thuần Python, 4 loại hash sẵn | không tự scale-invariant | ✅ **primary** |
 | Hash nhanh/robust | **`imagehash.phash`** (DCT-based) | ổn với resize/nén nhẹ, ít FP | nhạy rotate 90° | ✅ **mặc định** |
-| Diff-hash (gradient) | **`imagehash.dhash`** | nhanh, phân biệt cấu trúc cạnh tốt | kém màu | ✅ cross-check khi phash FP cao |
+| Diff-hash (gradient) | **`imagehash.dhash`** | nhanh, phân biệt cấu trúc cạnh tốt | kém màu | ✅ đối chiếu chéo khi phash FP cao |
 | Structural similarity | **`skimage.metrics.ssim`** (OpenCV) | metric liên tục 0–1, hiểu vùng | chậm hơn hash, yêu cầu cùng size | tùy chọn cho near-dup tinh tế |
 | Feature matching | **OpenCV ORB** + BFMatcher | tốt với icon/logo chi tiết | phức tạp hơn, nhiễu với flat icon | tùy chọn nếu hash không đủ |
 | Crop từ bbox | **Pillow** (`Image.crop`) | đơn giản | — | ✅ |
@@ -88,8 +88,8 @@ b. **Pair comparison** — so từng cặp trong tập; phân loại theo ngư�
   A10 **không tự loại** — chỉ hạ confidence khi role+vị trí gợi ý "chủ ý" (vd: icon tab bar).
 - **Ảnh rất nhỏ / icon 16×16:** hash kém ổn định → gắn `confidence` thấp + cờ `small_crop`.
 - **Ảnh bị nén mạnh / JPEG artifact:** phash vẫn ổn với nén nhẹ; nén nặng hạ confidence.
-- **Crop rỗng (bbox lỗi):** skip + log warning, không crash pipeline.
-- **n²  lớn (màn list dài):** giới hạn max_elements (đề xuất 200); nếu vượt → sample ngẫu nhiên + đánh dấu `sampled`.
+- **Crop rỗng (bbox lỗi):** bỏ qua + ghi log cảnh báo, không crash pipeline.
+- **n²  lớn (màn list dài):** giới hạn max_elements (đề xuất 200); nếu vượt → lấy mẫu ngẫu nhiên + đánh dấu `sampled`.
 - **Mode A vs B:** hash luôn từ pixel (`source=vision`) — không phân biệt mode. Mode A có thêm `element.id` chính xác, Mode B id từ A3 (suy đoán).
 
 ## 7. Tiêu chí phục vụ
@@ -99,7 +99,7 @@ b. **Pair comparison** — so từng cặp trong tập; phân loại theo ngư�
 | **STATE-08** Pull-refresh nhân đôi item | hash list item → duplicate cặp kề → nghi nhân đôi |
 | **LAY-14** Phần tử chồng vị trí | phối hợp với Rule geometry (IoU) để xác nhận thêm "trùng nội dung" |
 | **IMG-10** Lộn ảnh brand/phiên bản | hash so reference brand (Mode A, nếu có ref sẵn) — yếu ở zero-ref |
-| **CONS** (Phase 2) | A10 cấp hash cache → A14 reuse để so xuyên màn |
+| **CONS** (Phase 2) | A10 cấp hash cache → A14 tái dùng để so xuyên màn |
 
 ## 8. Open decisions (cần anh chốt — lựa chọn lớn)
 - [ ] **Loại hash mặc định: pHash hay dHash?** Đề xuất `phash` vì ổn hơn với nén nhẹ/resize;
@@ -117,7 +117,7 @@ b. **Pair comparison** — so từng cặp trong tập; phân loại theo ngư�
 - test: crop gốc vs crop resize 50% → Hamming ≤ T_dup (phash ổn với resize).
 - test: 2 crop khác rõ → Hamming > T_near, verdict=`different`.
 - test: crop quá nhỏ (< 8px) → skip + cờ `small_crop`, không crash.
-- test: crop rỗng / không tồn tại → skip + log warning.
+- test: crop rỗng / không tồn tại → bỏ qua + ghi log cảnh báo.
 - test: n element lớn (>200) → giới hạn + cờ `sampled`.
 - test: tất cả hash `source=vision` bất kể mode.
 - test: candidate_issue emit đúng cặp duplicate với severity + confidence.

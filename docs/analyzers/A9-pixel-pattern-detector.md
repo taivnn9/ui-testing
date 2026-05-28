@@ -61,13 +61,13 @@ Cũng thêm `candidate_issues[]` liên kết tới `STATE-*` / `IMG-01` tương 
 
 ## 3. Bảy bài toán con
 
-a. **Skeleton detect** — nhóm rect xám lặp lại.
-b. **Spinner detect** — vùng tròn/cung tròn.
-c. **Overlay detect** — lớp mờ phủ rộng.
-d. **Keyboard detect** — lưới phím nửa dưới.
-e. **Splash detect** — toàn màn logo/loading.
-f. **Broken-image detect** — icon placeholder ảnh vỡ.
-g. **Blank detect** — vùng entropy thấp.
+a. **Phát hiện skeleton** — nhóm rect xám lặp lại.
+b. **Phát hiện spinner** — vùng tròn/cung tròn.
+c. **Phát hiện overlay** — lớp mờ phủ rộng.
+d. **Phát hiện bàn phím** — lưới phím nửa dưới.
+e. **Phát hiện splash** — toàn màn logo/loading.
+f. **Phát hiện ảnh vỡ** — icon placeholder ảnh vỡ.
+g. **Phát hiện màn trống** — vùng entropy thấp.
 
 ## 4. Kỹ thuật / lib (Python) — list + đề xuất
 
@@ -76,10 +76,10 @@ g. **Blank detect** — vùng entropy thấp.
 | Đọc ảnh, crop, ops cơ bản | **OpenCV + numpy + Pillow** | chuẩn, nhanh | — | ✅ core |
 | Tìm vùng hình chữ nhật bo góc | **OpenCV** `findContours` + `approxPolyDP` + check `arc_length` vs `perimeter` (roundness metric) | không train | nhiễu với design phức | ✅ skeleton/broken-image |
 | Phân cụm vùng đều nhau | **scipy `linkage` / sklearn `DBSCAN`** theo màu + vị trí + kích thước | detect nhóm skeleton | cần chọn epsilon | ✅ skeleton clustering |
-| Detect hình tròn / cung | **OpenCV `HoughCircles`** | detect spinner, progress | hay false positive | ✅ spinner — kết hợp với symmetry check |
+| Phát hiện hình tròn / cung tròn | **OpenCV `HoughCircles`** | phát hiện spinner, progress | hay false positive | ✅ spinner — kết hợp với symmetry check |
 | Đo entropy vùng | **numpy entropy** từ histogram (`-sum(p*log(p))`) | blank / overlay detect | — | ✅ blank + overlay |
 | Variance luminance | **numpy var** trên L-channel (PIL → grayscale) | đơn giản, nhanh | — | ✅ |
-| Detect keyboard layout | Heuristic: vùng dưới màn có nhiều `rect` nhỏ đều nhau (lưới phím) + màu hệ thống (trắng/xám) | phù hợp keyboard iOS/Android | không bắt custom keyboard lạ | ✅ |
+| Phát hiện bố cục bàn phím | Heuristic: vùng dưới màn có nhiều `rect` nhỏ đều nhau (lưới phím) + màu hệ thống (trắng/xám) | phù hợp keyboard iOS/Android | không bắt custom keyboard lạ | ✅ |
 | Broken image icon | Template-based hoặc **ORB/SIFT feature match** với vài icon broken tiêu chuẩn | detect icon hệ thống | cần template nhỏ; không bắt custom | ✅ kết hợp với heuristic shape |
 | Shimmer/gradient lặp | **scipy `fft`** theo trục x — skeleton shimmer có tần số đều → peak trong FFT | phát hiện animation frame | chỉ tốt khi shimmer rõ | ⚠ tùy chọn |
 

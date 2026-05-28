@@ -79,7 +79,7 @@ tester chạy (trích `getBoundingClientRect` + `getComputedStyle` cho mọi nod
   `StaticText`→`text`, `Switch`→`toggle`, `ScrollView/Other`→`container`.
 
 ## 6. Thuật toán
-1. **Detect format**: web-capture JSON / android-xml / ios-xml (theo dấu hiệu key/attr).
+1. **Nhận dạng format**: web-capture JSON / android-xml / ios-xml (theo dấu hiệu key/attr).
 2. **Parse**: `lxml` (XML) hoặc `pydantic` (JSON).
 3. **Traverse** cây → mỗi node → 1 element: gán `id` (`e0,e1...`), map `role`, copy
    `bbox/text/style/attrs`, set `parent/children`, `z` (zIndex web / index|thứ tự mobile),

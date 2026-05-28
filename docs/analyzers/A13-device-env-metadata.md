@@ -48,7 +48,7 @@ Hai nguồn, **ưu tiên theo thứ tự:**
 ## 3. Ba bài toán con
 a. **Parse tester meta** — nếu có, validate + điền schema.
 b. **Tra bảng device profile** — dùng `viewport{w,h,dpr}` + `platform` làm key.
-c. **Suy từ pixel** — fallback khi bảng không khớp: dò dải status bar, home indicator,
+c. **Suy từ pixel** — phương án dự phòng khi bảng không khớp: dò dải status bar, home indicator,
    notch/cutout bằng OpenCV + OCR.
 
 ## 4. Kỹ thuật / lib (Python)
@@ -56,12 +56,12 @@ c. **Suy từ pixel** — fallback khi bảng không khớp: dò dải status ba
 | Việc | Lib/tool (Python) | Ưu | Nhược | Khuyến nghị |
 |---|---|---|---|---|
 | Parse / validate tester meta | **`pydantic` v2** | model hoá, validate sẵn | — | ✅ |
-| Bảng device profile tĩnh | **dict Python / JSON tĩnh** | deterministic, không phụ thuộc ngoài | cần maintain | ✅ **primary fallback** |
+| Bảng device profile tĩnh | **dict Python / JSON tĩnh** | deterministic, không phụ thuộc ngoài | cần bảo trì | ✅ **dự phòng chính** |
 | Dò dải status bar (giờ/pin/sóng) | **OpenCV** + **A5 OCR** (đọc giờ trong dải trên cùng) | dò được dù không có meta | FP khi app dùng full-screen/immersive | ✅ |
 | Nhận diện notch / Dynamic Island | **OpenCV** (dò vùng đen đặc trưng hình giọt nước / viên thuốc ở đỉnh giữa) | tự động | khó phân biệt notch vs status-bar custom, FP với splash screen | ✅ có điều kiện |
 | Dò home indicator (iOS) | **OpenCV** (dò thanh mỏng căn giữa ở đáy, ≈134×5 px trên @3x) | tự động | FP nếu app có thanh tương tự | tùy chọn |
 | Lấy orientation | **numpy / Pillow** so `w` vs `h` | đơn giản | — | ✅ |
-| Đọc giờ status bar (cross-check) | **A5 OCR** (crop dải trên cùng → đọc thời gian HH:MM) | xác nhận status bar tồn tại | OCR chậm nếu gọi riêng → reuse A5 | ✅ reuse A5 |
+| Đọc giờ status bar (đối chiếu chéo) | **A5 OCR** (crop dải trên cùng → đọc thời gian HH:MM) | xác nhận status bar tồn tại | OCR chậm nếu gọi riêng → tái dùng A5 | ✅ tái dùng A5 |
 
 > **Bảng device profile** cần phủ ít nhất các model phổ biến nhất (đề xuất top-20 theo
 > thị phần VN/SEA: iPhone 14/15/16 series, Samsung Galaxy S/A series, Pixel series).
@@ -77,16 +77,16 @@ c. **Suy từ pixel** — fallback khi bảng không khớp: dò dải status ba
    - Khớp chính xác → điền safe_area/notch_type; `meta_source=device_profile`, `confidence=0.9`.
    - Khớp gần (±10px) → điền nhưng `confidence=0.75`.
    - Không khớp → sang bước 4.
-4. **Suy từ pixel (fallback):**
+4. **Suy từ pixel (dự phòng):**
    a. **Status bar:** crop dải trên 5–8% chiều cao → OCR tìm "HH:MM" pattern; nếu thấy → đó là status bar, đo chiều cao.
    b. **Notch/Dynamic Island:** crop vùng giữa đỉnh ~8% → dò vùng tối đặc trưng (threshold đen/xám đậm, tỉ lệ aspect gần Dynamic Island / notch điển hình).
    c. **Home indicator (iOS):** crop đáy ~3% → dò line ngang mỏng căn giữa sáng hơn nền.
    d. Gộp kết quả → ước lượng `safe_area`; `meta_source=pixel_inferred`, `confidence=0.55`.
-5. **Không suy được:** trả giá trị zero/unknown + cờ; Rule ENV-01/02/03 sẽ skip / confidence thấp.
+5. **Không suy được:** trả giá trị zero/unknown + cờ; Rule ENV-01/02/03 sẽ bỏ qua / confidence thấp.
 6. **Emit** vào `screen{}` — chạy **trước** mọi analyzer khác (A0 Normalize gọi A13 đầu tiên).
 
 ## 6. Bảng device profile — phủ tối thiểu Phase 1
-| Device group | Platform | Viewport (pt/dp) | DPR | Safe top | Safe bot | Notch type |
+| Nhóm thiết bị | Nền tảng | Viewport (pt/dp) | DPR | Safe trên | Safe dưới | Kiểu notch |
 |---|---|---|---|---|---|---|
 | iPhone SE 3rd | ios | 375×667 | 2 | 20 | 0 | none |
 | iPhone 12/13/14 | ios | 390×844 | 3 | 47 | 34 | notch |
@@ -94,18 +94,18 @@ c. **Suy từ pixel** — fallback khi bảng không khớp: dò dải status ba
 | iPhone 15 / 16 | ios | 393×852 | 3 | 59 | 34 | dynamic_island |
 | iPhone 15 Plus / 16 Plus | ios | 430×932 | 3 | 59 | 34 | dynamic_island |
 | Samsung Galaxy S (2022+) | android | 360×800 | 3 | 24 | 0 | punch_hole |
-| Samsung Galaxy A (mid-range) | android | 360×800 | 2.75 | 24 | 0 | punch_hole |
+| Samsung Galaxy A (tầm trung) | android | 360×800 | 2.75 | 24 | 0 | punch_hole |
 | Google Pixel 7/8 | android | 411×914 | 2.625 | 24 | 16 | punch_hole |
-| Generic Android (no navbar) | android | any | any | 24 | 0 | unknown |
-| Generic Android (3-button nav) | android | any | any | 24 | 48 | unknown |
-| Web (desktop) | web | any | 1–2 | 0 | 0 | none |
-| Web (mobile browser) | web | 375–430 | 2–3 | 0 | 50 | none |
+| Android chung (không thanh điều hướng) | android | bất kỳ | bất kỳ | 24 | 0 | unknown |
+| Android chung (thanh 3 nút) | android | bất kỳ | bất kỳ | 24 | 48 | unknown |
+| Web (máy tính bàn) | web | bất kỳ | 1–2 | 0 | 0 | none |
+| Web (trình duyệt di động) | web | 375–430 | 2–3 | 0 | 50 | none |
 
 > Bảng trên là **khởi điểm** — cần review và mở rộng trước khi golden-set test.
 > Anh cần thêm device nào thường gặp nhất trong dự án → bổ sung (mục 8).
 
 ## 7. Edge cases (BẮT BUỘC xử lý)
-- **Ảnh chụp immersive / fullscreen app:** status bar ẩn → OCR không tìm được giờ; fallback
+- **Ảnh chụp immersive / fullscreen app:** status bar ẩn → OCR không tìm được giờ; dự phòng
   bảng profile hoặc `confidence=0.4`.
 - **Screenshot tool crop mất vùng status bar:** chiều cao ảnh khác viewport thật → ghi cờ
   `viewport_mismatch`, ước lượng dè dặt.
@@ -134,12 +134,12 @@ c. **Suy từ pixel** — fallback khi bảng không khớp: dò dải status ba
   - *Bắt buộc meta:* chính xác nhất, không mơ hồ. Nhược: tester phải thêm bước (friction).
   - *Tự suy pixel (A13 tự lo):* tester gửi chỉ ảnh là đủ. Nhược: không chính xác với nhiều
     model phức tạp (Dynamic Island, foldable). Có thể báo sai ENV-01.
-  - → **Đề xuất:** ưu tiên meta (nếu có) → fallback profile → fallback pixel. Tester
+  - → **Đề xuất:** ưu tiên meta (nếu có) → dự phòng profile → dự phòng pixel. Tester
     được cung cấp **snippet capture mẫu** để gửi kèm (giống Web Capture Contract của A1).
     Anh xác nhận flow này?
 - [ ] **Bảng device profile phủ tới đâu?** Đề xuất top-20 model phổ biến VN/SEA (bảng mục 6
   là khởi điểm). Anh có danh sách device thực tế tester hay dùng không? Sẽ ưu tiên build bảng đó trước.
-- [ ] **Khi không suy được safe_area (confidence quá thấp):** (a) skip hoàn toàn Rule ENV-01/02/03
+- [ ] **Khi không suy được safe_area (confidence quá thấp):** (a) bỏ qua hoàn toàn Rule ENV-01/02/03
   (FN); hay (b) chạy với safe_area=0 nhưng đánh dấu `unreliable_metadata` trong output?
   Đề xuất (b) — tránh bỏ sót lỗi nặng, nhưng tester cần biết kết quả thiếu tin cậy.
 - [ ] **DPR khi tester không gửi:** tự suy từ `image.w / viewport.w` ratio có đủ chính xác
@@ -148,7 +148,7 @@ c. **Suy từ pixel** — fallback khi bảng không khớp: dò dải status ba
 ## 10. TDD outline (khi vào code)
 - test: tester meta đầy đủ → điền đúng safe_area, `meta_source=tester_meta`, `confidence=1.0`.
 - test: viewport (390, 844, dpr=3) + platform=ios → tra bảng → safe_area top=47, bot=34.
-- test: viewport không khớp bảng → fallback pixel inference + `meta_source=pixel_inferred`.
+- test: viewport không khớp bảng → suy từ pixel (dự phòng) + `meta_source=pixel_inferred`.
 - test: ảnh có dải giờ "9:41" trên cùng → OCR nhận diện được → ghi status_bar.h đúng.
 - test: landscape (w > h) → orientation=landscape.
 - test: web platform → safe_area top=0, bottom=0 (no notch).

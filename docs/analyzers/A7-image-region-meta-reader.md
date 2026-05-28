@@ -71,7 +71,7 @@ Nhận diện vùng **ảnh-photo** (lớn, nhiều màu) trên màn hình, đ�
 | **Tính méo tỉ lệ** | thuần Python (`abs(iw/ih - dw/dh) / (iw/ih)`) | deterministic, không lib | — | ✅ Rule R3 dùng ngưỡng `aspect_ratio_error` |
 | **Mode B — detect vùng ảnh-photo** | **OpenCV** `calcHist` trên vùng + `np.var(gray)` (variance cao → nhiều chi tiết → photo), kết hợp `color_count` từ A6 | không train | flat-color banner có thể nhầm | ✅ đặc trưng phụ |
 | **Đo độ nét / blur score** | **OpenCV** `Laplacian` variance (`cv2.Laplacian(gray, cv2.CV_64F).var()`) | nhanh, deterministic | nhạy cảm với nội dung ảnh mờ chủ ý | ✅ cả Mode A & B |
-| **Detect broken-image pattern** | **OpenCV** detect icon broken-image (vùng nhỏ top-left + border) + histogram entropy thấp | không train | nhiều dạng broken → miss một số | ✅ kết hợp A9 Pattern Detector |
+| **Phát hiện pattern ảnh vỡ** | **OpenCV** phát hiện icon broken-image (vùng nhỏ top-left + border) + histogram entropy thấp | không train | nhiều dạng broken → miss một số | ✅ kết hợp A9 Pattern Detector |
 | **Ước lượng aspect từ pixel (Mode B — hạn chế)** | chỉ có `displayed_aspect`; không thể biết `intrinsic_aspect` nếu không fetch URL | — | Mode B KHÔNG tính được tỉ lệ méo | ⚠ đánh dấu rõ `confidence thấp` |
 | **Fetch ảnh gốc để lấy intrinsic (tùy chọn)** | `httpx`/`requests` + `Pillow.open` (`image.size`) | biết được intrinsic → Mode B mạnh hơn | chậm (network), ảnh có thể auth-gated, không luôn dùng được | ⏭ tùy chọn Phase 2 — **anh quyết** (mục 8) |
 | **Crop vùng ảnh** | **Pillow** (`Image.crop`) | cấp crop cho A11, A8 | — | ✅ |
@@ -108,7 +108,7 @@ Nhận diện vùng **ảnh-photo** (lớn, nhiều màu) trên màn hình, đ�
 | `scale_mode` chính xác | ✅ `object-fit` từ A2 | ❌ `unknown` |
 
 > Rule Engine phải kiểm tra `image_meta.intrinsic_w` trước khi chạy rule IMG-09/IMG-02.
-> Nếu `intrinsic_w == null` → skip rule đó, không báo false positive.
+> Nếu `intrinsic_w == null` → bỏ qua rule đó, không báo false positive.
 
 ## 7. Tiêu chí phục vụ
 
