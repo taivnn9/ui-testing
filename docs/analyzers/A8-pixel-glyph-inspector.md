@@ -1,11 +1,10 @@
 # A8 — Pixel/Glyph Inspector (tofu □ / mờ / emoji-box / banding)
 
-> Bóc tách chi tiết. Phase 1, nhóm "đo diện mạo". **Mode B** chính + **Mode A bổ sung** (chốt
-> cờ nghi từ A5). Đây là **bộ CHỐT tofu/glyph** — A5 OCR chỉ NGHI, A8 dùng pixel để KHẲNG ĐỊNH.
+> Bóc tách chi tiết. Phase 1, nhóm "đo diện mạo". Phân tích pixel để **chốt tofu/glyph**.
+> A5 OCR chỉ NGHI, A8 dùng pixel để KHẲNG ĐỊNH.
 > Liên quan: [`A5-ocr-text-extractor.md`](A5-ocr-text-extractor.md) (cờ `has_replacement`) ·
 > [`A3-box-layout-detector.md`](A3-box-layout-detector.md) (cấp crop) ·
-> [`A4-pixel-color-sampler.md`](A4-pixel-color-sampler.md) · [`A1-tree-parser.md`](A1-tree-parser.md) ·
-> [`../development-plan.md`](../development-plan.md)
+> [`A4-pixel-color-sampler.md`](A4-pixel-color-sampler.md) · [`../development-plan.md`](../development-plan.md)
 
 ## 1. Trách nhiệm
 
@@ -36,11 +35,8 @@ text kiểu "undefined" (Rule R4).
 
 **Input:**
 - **Crop chữ** từ A5 (text segment crop) hoặc A3 (element crop có `role=text`).
-  Mode A: crop theo bbox của element từ A1.
-  Mode B: crop theo text-box từ A5.
-- `has_replacement` flag từ A5 (ưu tiên crop này — Mode B).
-- `dom_text` từ A1 (Mode A) — để biết script loại nào đáng render.
-- Meta: `dpr` (để tính px/pt), `font_family` nếu có (Mode A).
+- `has_replacement` flag từ A5 (ưu tiên crop này).
+- Meta: `dpr` (để tính px/pt); `lang_hint` từ A5 nếu có.
 
 **Output:** `glyph_issues[]` per crop:
 
@@ -55,7 +51,7 @@ text kiểu "undefined" (Rule R4).
     "box_uniformity": 0.97,     // 1.0 = ô đặc tuyệt đối (tofu điển hình)
     "edge_regularity": 0.32,    // cạnh đều (tofu) vs chi tiết nét
     "color_variance": 3.1,      // variance màu trong crop (thấp = đơn sắc = tofu/emoji-box)
-    "expected_script": "latin", // từ dom_text hoặc A5 lang_hint
+    "expected_script": "latin", // từ A5 lang_hint
     "bbox": {"x":0,"y":0,"w":0,"h":0}
   },
   "verdict": "confirmed",       // confirmed | likely | uncertain | rejected
@@ -126,58 +122,45 @@ Kết hợp: cạnh chữ (Canny) có `edge_irregularity` cao → răng cưa (ja
 7. **Gán `verdict`:** tổng hợp tín hiệu → `confirmed / likely / uncertain / rejected`; confidence tổng hợp.
 8. **Emit** `glyph_issues[]` + cập nhật `candidate_issues[]`.
 
-## 6. Ranh giới Mode A / Mode B
-
-| | Mode A (có cây) | Mode B (chỉ ảnh) |
-|---|---|---|
-| Mục đích chính | **Chốt cờ nghi** từ A5 (`has_replacement`) + xác nhận render thực | Phát hiện tofu **độc lập** (không có DOM để đối chiếu) |
-| Ưu điểm Mode A | Biết `dom_text` + `font_family` → biết script đáng render → loại false positive | — |
-| Ưu điểm Mode B | Chạy trên mọi text → không miss | Không có context → nhiều false positive hơn |
-| `source` | `"vision"` (pixel analysis) | `"vision"` |
-| Confidence | Cao hơn (có DOM làm reference) | Thấp hơn — ghi rõ |
-
-> ✅ **Luôn ghi `source="vision"`** vì A8 dùng pixel, kể cả Mode A.
-> Mode A chỉ làm tăng confidence của verdict, không thay đổi nguồn.
-
-## 7. Tiêu chí phục vụ
+## 6. Tiêu chí phục vụ
 
 | Mã | Tiêu chí | Vai trò A8 |
 |---|---|---|
 | **TYP-01** | Tofu / glyph thiếu (□ ▯) | ✅ **CHỐT** — A5 nghi, A8 khẳng định |
-| **TYP-02** | Font fallback sai | ⚠ tín hiệu phụ — nếu script sai với expected (dom_text Latin nhưng pixel ra CJK-box) |
+| **TYP-02** | Font fallback sai | ⚠ tín hiệu phụ — nếu script sai với expected (A5 lang_hint Latin nhưng pixel ra CJK-box) |
 | **TYP-09** | Chữ mờ / vỡ / răng cưa | ✅ Laplacian variance + edge irregularity |
 | **TYP-14** | Emoji/icon-font render sai | ✅ emoji-box detect (đơn sắc nơi đáng màu) |
 | **STY-10** | Banding/gradient lỗi | ⚠ tín hiệu phụ từ row/col mean analysis |
 
-## 8. Edge cases (BẮT BUỘC xử lý)
+## 7. Edge cases (BẮT BUỘC xử lý)
 
 - **Icon đặc (solid icon) nhầm tofu:** icon solid là hợp lệ — cũng là hình chữ nhật/tròn đặc.
-  → Kiểm tra `role` element: nếu `role=icon` + `source=dom` → loại khỏi tofu check; nếu `role=text` → tofu.
-  → Mode B không có role → dùng `has_replacement` từ A5 làm gate (chỉ check khi A5 đã nghi).
+  → Kiểm tra `role` element: nếu `role=icon` (từ A3/A6) → loại khỏi tofu check; nếu `role=text` → tofu.
+  → Dùng `has_replacement` từ A5 làm gate (chỉ check khi A5 đã nghi).
 - **Chữ nét mảnh (thin stroke):** Laplacian variance thấp dù nét đẹp — chữ light-weight hợp lệ.
-  → Kết hợp với `font_weight` (Mode A) hoặc chiều cao glyph: nếu box cao và uniformity thấp → không tofu.
+  → Kết hợp chiều cao glyph: nếu box cao và uniformity thấp → không tofu.
 - **Ảnh chất lượng thấp (JPEG artifact):** nhiễu ảnh nâng Laplacian giả → `lap_var` cao nhưng chữ vẫn mờ về ngữ nghĩa.
   → Pre-filter nhẹ (Gaussian blur σ=0.5) trước khi Laplacian → triệt artifact tần số cao.
 - **Chữ rất nhỏ (< 8px chiều cao):** component quá nhỏ → unreliable. Đặt `min_height_px = 8 * dpr`;
   nhỏ hơn → skip A8, set confidence thấp.
 - **Mixed script trên 1 dòng** (Latin + CJK): component checker chạy per-glyph → CJK box có thể
-  nhầm tofu. → Dùng `expected_script` từ A5 để loại false positive.
+  nhầm tofu. → Dùng `expected_script` từ A5 `lang_hint` để loại false positive.
 - **Anti-aliasing subpixel (LCD rendering):** pixel viền có màu RGB offset (fringe) → không phải banding.
   → Phát hiện mẫu fringe (màu viền lệch kênh RGB) → loại trừ khỏi banding check.
 
-## 9. Open decisions (cần anh chốt — lựa chọn lớn)
+## 8. Open decisions (cần anh chốt — lựa chọn lớn)
 
 - [ ] **Ngưỡng Laplacian variance** theo từng dpr — đề xuất 50/100/200 cho dpr 1/2/3 — **tune bằng
   golden set (GS)** trước khi lock.
 - [ ] **Ngưỡng `box_uniformity`** cho tofu detect: đề xuất `> 0.92` — cần test trên ảnh icon đặc
   hợp lệ vs tofu thật để chọn ngưỡng phân định.
-- [ ] **Mode B: có chạy A8 trên tất cả text-box hay chỉ khi A5 set `has_replacement=true`?**
+- [ ] **Có chạy A8 trên tất cả text-box hay chỉ khi A5 set `has_replacement=true`?**
   Đề xuất: **chạy tất cả** — tofu không nhất thiết A5 phải nhận ra (OCR fail silent). Trade-off:
   nhiều crop hơn → chậm hơn. Anh quyết.
 - [ ] **Banding detection:** cần A4 đánh dấu vùng "đáng gradient" trước hay A8 tự tìm? Đề xuất:
   A8 tự phân tích bất kỳ vùng nào có std row/col cao bất thường (không cần A4 gate).
 
-## 10. TDD outline
+## 9. TDD outline
 
 - test: ảnh chứa ô vuông đặc đồng nhất (U+25A1 rendered tofu) → `issue_type=tofu_box`, `verdict=confirmed`.
 - test: ảnh icon solid hình vuông (hợp lệ) với `role=icon` → không tạo issue.
@@ -187,7 +170,7 @@ Kết hợp: cạnh chữ (Canny) có `edge_irregularity` cao → răng cưa (ja
 - test: emoji thành ô vuông đơn sắc (A5 `has_replacement=true`) → `issue_type=emoji_square`.
 - test: outline box (`.notdef` rendering) → `issue_type=outline_box`.
 - test: JPEG artifact crop → không false positive blur (sau Gaussian pre-filter).
-- test: Mode A — dom_text = "abc" (latin), pixel = CJK box → tofu confirmed với confidence cao.
+- test: A5 `lang_hint = "latin"`, pixel = CJK box → tofu confirmed với confidence cao.
 - test: mọi glyph_issue đều có `evidence` đầy đủ (laplacian_var, box_uniformity, bbox).
 
-## Trạng thái: spec ✅ — chờ chốt mục 9 (ngưỡng Laplacian + scope chạy Mode B).
+## Trạng thái: spec ✅ — chờ chốt mục 8 (ngưỡng Laplacian + scope chạy).

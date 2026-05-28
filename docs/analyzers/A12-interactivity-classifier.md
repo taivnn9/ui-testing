@@ -1,13 +1,14 @@
-# A12 — Interactivity Classifier (đoán phần tử tương tác — Mode B)
+# A12 — Interactivity Classifier (đoán phần tử tương tác từ pixel)
 
-> Bóc tách chi tiết. Phase 1. **Mode B only. ⚠ Analyzer rủi ro cao — precision-first.**
+> Bóc tách chi tiết. Phase 1. **⚠ Analyzer rủi ro cao — precision-first.**
 > Tech: **Python + OpenCV + heuristic**.
-> **Mode A KHÔNG cần:** A1 đã có `interactive` ground-truth từ cây → A12 **không chạy** khi có DOM/XML đầy đủ.
-> Liên quan: [`A3-box-layout-detector.md`](A3-box-layout-detector.md) · [`A5-ocr-text-extractor.md`](A5-ocr-text-extractor.md) · [`A6`](#) Icon/Graphic Detector · [`A1-tree-parser.md`](A1-tree-parser.md) · [`../development-plan.md`](../development-plan.md)
+> Vì hệ thống chỉ nhận ảnh, **không có `clickable`/`enabled`/`role` ground-truth** từ DOM/XML.
+> A12 đoán tất cả từ pixel.
+> Liên quan: [`A3-box-layout-detector.md`](A3-box-layout-detector.md) · [`A5-ocr-text-extractor.md`](A5-ocr-text-extractor.md) · [`A6`](#) Icon/Graphic Detector · [`../development-plan.md`](../development-plan.md)
 
 ## 1. Trách nhiệm
-Ở **Mode B (chỉ ảnh)**, hệ thống **không có thuộc tính `clickable`/`enabled`/`role` ground-truth**
-từ cây. A12 đoán phần tử nào **tương tác được** (nút, link, input, toggle, tab item) để:
+Hệ thống **không có thuộc tính `clickable`/`enabled`/`role` ground-truth** từ cây. A12 đoán
+phần tử nào **tương tác được** (nút, link, input, toggle, tab item) để:
 - Cho **Rule CMP-01** (touch-target) biết áp check lên đâu — nếu không biết element tương tác,
   check này sẽ áp sai (FP cao) hoặc bỏ sót.
 - Cho **Rule CMP-16** (tap-gap) đo khoảng cách giữa các control tương tác.
@@ -95,18 +96,7 @@ Mỗi tín hiệu cộng điểm confidence; ngưỡng để gán `interactive=t
 5. **Ghi tín hiệu:** `interactive_signals[]` = danh sách tín hiệu đã fire (để debug/explain).
 6. **Emit** bổ sung vào `elements[]`; A0 Normalize dùng khi điền field `interactive`.
 
-## 6. Ranh giới Mode A / B
-| Field | Mode A | Mode B (A12) |
-|---|---|---|
-| `interactive` | **ground-truth từ cây** (A1: `clickable`/`enabled`/role) | **suy đoán** (A12) |
-| `interactive_confidence` | 1.0 | thường 0.5–0.85 |
-| `source` | `dom` / `xml` | `vision` |
-| A12 có chạy? | **KHÔNG — bỏ qua** | ✅ bắt buộc |
-
-> **Quy tắc routing:** A0 Normalize kiểm tra `mode`. Nếu `mode=A_tree` và element có
-> `interactive` từ cây → giữ nguyên, không gọi A12. Nếu `mode=B_vision` → A12 điền.
-
-## 7. Tiêu chí phục vụ
+## 6. Tiêu chí phục vụ
 | Tiêu chí | Vai trò A12 |
 |---|---|
 | **CMP-01** Touch target < 44pt/48dp | **điều kiện cần**: rule chỉ áp với element có `interactive=true` |
@@ -116,7 +106,7 @@ Mỗi tín hiệu cộng điểm confidence; ngưỡng để gán `interactive=t
 | **CMP-07** Input field / label | phân loại `interactive_type=input` để agent CMP kiểm tra |
 | **LAY-06** Z-order / occlusion | tăng severity khi phần tử bị che là `interactive=true` |
 
-## 8. Open decisions (cần anh chốt — lựa chọn lớn)
+## 7. Open decisions (cần anh chốt — lựa chọn lớn)
 - [ ] **Thuần heuristic hay thêm ML pretrained (CLIP zero-shot)?**
   - *Thuần heuristic:* dễ debug, nhanh, controllable, đề xuất Phase 1.
     Nhược: recall thấp với nút flat (không bo, không nền rõ — xu hướng modern design).
@@ -130,18 +120,15 @@ Mỗi tín hiệu cộng điểm confidence; ngưỡng để gán `interactive=t
   ưu tiên precision hay recall?
 - [ ] **Mở rộng từ điển action label:** bắt đầu với vi/en, thêm ngôn ngữ khác khi cần i18n.
   Anh có danh sách app/ngôn ngữ mục tiêu để ưu tiên?
-- [ ] **Mode mixed (có XML thiếu `clickable`):** XML Android đôi khi có `clickable=false`
-  nhưng element thật sự vẫn có handler cha. Có cần A12 bổ sung cho mixed-mode không?
 
-## 9. TDD outline (khi vào code)
+## 8. TDD outline (khi vào code)
 - test: crop nút bo góc + text "Đăng nhập" → `interactive=true`, `type=button`, conf ≥ 0.65.
 - test: crop text label dài → `interactive=false`.
 - test: crop icon tab bar (row 4 icon đều, gần đáy) → `interactive=true`, `type=tab`.
 - test: crop input field (box dài, border mỏng) → `interactive=true`, `type=input`.
 - test: crop ảnh product card không có dấu hiệu nút → `interactive=false` (tránh FP).
 - test: tất cả output có `source=vision` + `interactive_confidence < 1.0`.
-- test: Mode A (element có `interactive` từ cây) → A12 không chạy, field giữ nguyên.
 - test: element `ambiguous` → confidence < 0.6 + cờ đúng chỗ.
 - test: không crash khi crop rỗng / role không xác định.
 
-## Trạng thái: spec ✅ — ⚠ Analyzer rủi ro cao; chờ chốt mục 8 (heuristic-only vs +ML, ngưỡng precision).
+## Trạng thái: spec ✅ — ⚠ Analyzer rủi ro cao; chờ chốt mục 7 (heuristic-only vs +ML, ngưỡng precision).

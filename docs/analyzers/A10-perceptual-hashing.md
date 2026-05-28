@@ -1,8 +1,8 @@
 # A10 — Perceptual Hashing (phát hiện ảnh/phần tử trùng trong màn)
 
-> Bóc tách chi tiết. Phase 1 (in-screen only). **Mode A · B.** Tech: **Python + imagehash/OpenCV**.
+> Bóc tách chi tiết. Phase 1 (in-screen only). Tech: **Python + imagehash/OpenCV**.
 > Phase 1: **chỉ so trong cùng một màn**. Cross-screen (so nhiều màn) → **Phase 2** (cần nhóm ảnh, A14 Cross-screen Matcher).
-> Liên quan: [`A1-tree-parser.md`](A1-tree-parser.md) · [`A3-box-layout-detector.md`](A3-box-layout-detector.md) · [`A7`](#) Image Region Meta Reader · [`../development-plan.md`](../development-plan.md)
+> Liên quan: [`A3-box-layout-detector.md`](A3-box-layout-detector.md) · [`A7`](#) Image Region Meta Reader · [`../development-plan.md`](../development-plan.md)
 
 ## 1. Trách nhiệm
 Từ crop của **mọi element có role `image | icon | avatar`** trong cùng một màn,
@@ -20,7 +20,7 @@ tính **perceptual hash** → so từng cặp theo **Hamming distance** → phá
 > Cross-screen matching (CONS) → **Phase 2**, yêu cầu nhóm ảnh + A14.
 
 ## 2. Input / Output
-- **Input:** PNG full + `elements[]` đã có `bbox` + `crop` path (từ A1 Mode A hoặc A3 Mode B).
+- **Input:** PNG full + `elements[]` đã có `bbox` + `crop` path (từ A3 — vision-only).
   Nếu crop chưa có → A10 tự cắt từ bbox.
 - **Output:** `hash_results[]` + các `candidate_issues[]` kiểu `img_duplicate` / `img_near_dup`:
 ```jsonc
@@ -36,7 +36,7 @@ tính **perceptual hash** → so từng cặp theo **Hamming distance** → phá
       "similarity": 0.95,
       "verdict": "duplicate",    // "duplicate" | "near_dup" | "different"
       "confidence": 0.9,
-      "source": "vision"         // "vision" cả 2 mode (hash từ pixel)
+      "source": "vision"         // luôn "vision" — hash từ pixel
     }
   ]
 }
@@ -89,8 +89,8 @@ b. **Pair comparison** — so từng cặp trong tập; phân loại theo ngư�
 - **Ảnh rất nhỏ / icon 16×16:** hash kém ổn định → gắn `confidence` thấp + cờ `small_crop`.
 - **Ảnh bị nén mạnh / JPEG artifact:** phash vẫn ổn với nén nhẹ; nén nặng hạ confidence.
 - **Crop rỗng (bbox lỗi):** bỏ qua + ghi log cảnh báo, không crash pipeline.
-- **n²  lớn (màn list dài):** giới hạn max_elements (đề xuất 200); nếu vượt → lấy mẫu ngẫu nhiên + đánh dấu `sampled`.
-- **Mode A vs B:** hash luôn từ pixel (`source=vision`) — không phân biệt mode. Mode A có thêm `element.id` chính xác, Mode B id từ A3 (suy đoán).
+- **n² lớn (màn list dài):** giới hạn max_elements (đề xuất 200); nếu vượt → lấy mẫu ngẫu nhiên + đánh dấu `sampled`.
+- **Source luôn là vision:** hash từ pixel, element id từ A3 (suy đoán) — confidence thấp hơn nếu có DOM làm reference.
 
 ## 7. Tiêu chí phục vụ
 | Tiêu chí | Cách A10 đóng góp |
@@ -98,7 +98,7 @@ b. **Pair comparison** — so từng cặp trong tập; phân loại theo ngư�
 | **IMG-12** Ảnh trùng lặp ngoài ý muốn | candidate chính; V xác nhận chủ ý vs lỗi |
 | **STATE-08** Pull-refresh nhân đôi item | hash list item → duplicate cặp kề → nghi nhân đôi |
 | **LAY-14** Phần tử chồng vị trí | phối hợp với Rule geometry (IoU) để xác nhận thêm "trùng nội dung" |
-| **IMG-10** Lộn ảnh brand/phiên bản | hash so reference brand (Mode A, nếu có ref sẵn) — yếu ở zero-ref |
+| **IMG-10** Lộn ảnh brand/phiên bản | hash so reference brand — yếu ở zero-ref |
 | **CONS** (Phase 2) | A10 cấp hash cache → A14 tái dùng để so xuyên màn |
 
 ## 8. Open decisions (cần anh chốt — lựa chọn lớn)
@@ -119,7 +119,7 @@ b. **Pair comparison** — so từng cặp trong tập; phân loại theo ngư�
 - test: crop quá nhỏ (< 8px) → skip + cờ `small_crop`, không crash.
 - test: crop rỗng / không tồn tại → bỏ qua + ghi log cảnh báo.
 - test: n element lớn (>200) → giới hạn + cờ `sampled`.
-- test: tất cả hash `source=vision` bất kể mode.
+- test: tất cả hash `source=vision`.
 - test: candidate_issue emit đúng cặp duplicate với severity + confidence.
 
 ## Trạng thái: spec ✅ — chờ chốt mục 8 (loại hash + ngưỡng Hamming + xử lý trùng chủ ý).

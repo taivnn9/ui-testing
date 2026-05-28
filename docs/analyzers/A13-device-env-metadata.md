@@ -1,6 +1,6 @@
 # A13 — Device/Env Metadata Provider (safe_area / dpr / bars / orientation)
 
-> Bóc tách chi tiết. Phase 1. **Không phụ thuộc Mode — chạy trước mọi analyzer khác.**
+> Bóc tách chi tiết. Phase 1. **Chạy trước mọi analyzer khác.**
 > Tech: **Python + OpenCV + bảng device profile tĩnh**.
 > Cấp **metadata nền** cho `screen{}` trong schema; không phát hiện lỗi trực tiếp — nhưng thiếu
 > dữ liệu này thì **ENV-01/02/03** (safe-area, bar đè) KHÔNG thể check được.
@@ -17,9 +17,9 @@ Hai nguồn, **ưu tiên theo thứ tự:**
    + `dpr` (nếu biết) để tra bảng → ước lượng safe_area; dùng OpenCV + OCR để nhận dạng
    vùng status bar / home indicator từ ảnh. `source=inferred`, `confidence` thấp hơn.
 
-> ⚠ **Giới hạn Mode B:** nhiều thiết bị có cùng viewport nhưng safe_area khác nhau (vd iPhone 14
-> vs 14 Pro Dynamic Island). Khi không có meta → A13 **đánh dấu `confidence<1`** và ưu tiên
-> tra bảng device phổ biến; nếu không khớp bảng → trả `safe_area` ước lượng + cờ
+> ⚠ **Giới hạn khi không có meta:** nhiều thiết bị có cùng viewport nhưng safe_area khác nhau
+> (vd iPhone 14 vs 14 Pro Dynamic Island). Khi không có meta → A13 **đánh dấu `confidence<1`**
+> và ưu tiên tra bảng device phổ biến; nếu không khớp bảng → trả `safe_area` ước lượng + cờ
 > `inferred_from_pixel`. Rule ENV-01/02/03 chỉ fire khi `confidence` đủ ngưỡng.
 
 ## 2. Input / Output
@@ -134,8 +134,7 @@ c. **Suy từ pixel** — phương án dự phòng khi bảng không khớp: dò
   - *Bắt buộc meta:* chính xác nhất, không mơ hồ. Nhược: tester phải thêm bước (friction).
   - *Tự suy pixel (A13 tự lo):* tester gửi chỉ ảnh là đủ. Nhược: không chính xác với nhiều
     model phức tạp (Dynamic Island, foldable). Có thể báo sai ENV-01.
-  - → **Đề xuất:** ưu tiên meta (nếu có) → dự phòng profile → dự phòng pixel. Tester
-    được cung cấp **snippet capture mẫu** để gửi kèm (giống Web Capture Contract của A1).
+  - → **Đề xuất:** ưu tiên meta (nếu có) → dự phòng profile → dự phòng pixel.
     Anh xác nhận flow này?
 - [ ] **Bảng device profile phủ tới đâu?** Đề xuất top-20 model phổ biến VN/SEA (bảng mục 6
   là khởi điểm). Anh có danh sách device thực tế tester hay dùng không? Sẽ ưu tiên build bảng đó trước.

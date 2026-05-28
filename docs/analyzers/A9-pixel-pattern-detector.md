@@ -1,7 +1,7 @@
 # A9 — Pixel Pattern Detector (skeleton/spinner/overlay/keyboard/blank/broken)
 
-> Bóc tách chi tiết. Phase 1, nhóm "đo diện mạo". **Mode B** chính (pixel là nguồn duy nhất).
-> Phát hiện **trạng thái đặc biệt của màn/vùng từ mẫu pixel** — không cần DOM, không cần cây.
+> Bóc tách chi tiết. Phase 1, nhóm "đo diện mạo". Pixel là nguồn duy nhất.
+> Phát hiện **trạng thái đặc biệt của màn/vùng từ mẫu pixel** — không cần DOM.
 > Liên quan: [`A3-box-layout-detector.md`](A3-box-layout-detector.md) (cấp vùng candidate) ·
 > [`A5-ocr-text-extractor.md`](A5-ocr-text-extractor.md) (xác nhận/loại text thật vs placeholder) ·
 > [`A4-pixel-color-sampler.md`](A4-pixel-color-sampler.md) (màu/contrast vùng) ·
@@ -33,8 +33,7 @@ contrast của chữ (A4). A9 chuyên về **macro-pattern của vùng**.
 
 **Input:**
 - PNG full màn + meta `viewport{w,h,dpr}`, `theme`.
-- `elements[]` từ A1/A3 (tùy chọn — dùng để loại false positive; A9 hoạt động độc lập nếu cần).
-- `screen.mode` (A / B) để biết mức độ tin cậy cần ghi.
+- `elements[]` từ A3 (tùy chọn — dùng để loại false positive; A9 hoạt động độc lập nếu cần).
 
 **Output:** `pattern_detections[]`:
 
@@ -134,17 +133,7 @@ g. **Phát hiện màn trống** — vùng entropy thấp.
 9. **Tổng hợp:** dedup vùng chồng lấn (merge bbox IoU > 0.5) → emit `pattern_detections[]`.
 10. **Đánh dấu `temporal=true`** cho skeleton/spinner/overlay (cần ≥2 frame để kết luận "kẹt").
 
-## 6. Ranh giới Mode A / Mode B
-
-| | Mode A (có cây) | Mode B (chỉ ảnh) |
-|---|---|---|
-| A9 có chạy không? | ✅ **Có** — DOM không báo skeleton/overlay rõ | ✅ **Có** — nguồn chính |
-| Loại false positive | Dùng `elements[]` từ A1: nếu DOM có nội dung thật → giảm confidence skeleton | Không có DOM → nhiều false positive hơn |
-| Broken-image | Mode A: `image_meta.naturalWidth=0` xác nhận → A9 bổ sung visual evidence | Mode B: A9 là nguồn duy nhất |
-| `source` | `"vision"` | `"vision"` |
-| Blank screen | DOM có `elements` nhưng pixel trống → mâu thuẫn → **high confidence blank** | Chỉ dựa pixel |
-
-## 7. Tiêu chí phục vụ
+## 6. Tiêu chí phục vụ
 
 | Mã | Tiêu chí | Vai trò A9 |
 |---|---|---|
@@ -160,7 +149,7 @@ g. **Phát hiện màn trống** — vùng entropy thấp.
 | **IMG-08** | Icon placeholder chưa load | ✅ hộp/dấu ? detect |
 | **ENV-** | Bàn phím che input | ✅ keyboard detect nửa dưới màn |
 
-## 8. Edge cases (BẮT BUỘC xử lý)
+## 7. Edge cases (BẮT BUỘC xử lý)
 
 - **Skeleton CỐ Ý vs KẸT:** A9 chỉ báo "có skeleton" — KHÔNG phán "kẹt". Đánh dấu
   `temporal=true` + `note="skeleton present — 'stuck' requires >=2 frames"`. Người dùng / agent
@@ -178,9 +167,9 @@ g. **Phát hiện màn trống** — vùng entropy thấp.
   → Blank detect chỉ kích hoạt khi TẤT CẢ vùng ảnh entropy thấp; nếu có elements khác (text, nút) xung quanh → không blank.
 - **Shimmer chỉ có ở 1 frame:** skeleton shimmer animation dừng ở frame tối → trông như skeleton mờ.
   Dừng ở frame sáng → trông bình thường. → Confidence skeleton được điều chỉnh theo brightness của vùng.
-- **Broken image phụ thuộc browser/OS:** mỗi platform có icon broken khác nhau. Cần **template set** cho: Chrome, Firefox, Safari, Android WebView, Android native, iOS. → Mục open decision (mục 9).
+- **Broken image phụ thuộc browser/OS:** mỗi platform có icon broken khác nhau. Cần **template set** cho: Chrome, Firefox, Safari, Android WebView, Android native, iOS. → Mục open decision (mục 8).
 
-## 9. Open decisions (cần anh chốt — lựa chọn lớn)
+## 8. Open decisions (cần anh chốt — lựa chọn lớn)
 
 - [ ] **Template set broken-image icon:** cần anh xác nhận cần hỗ trợ platform nào (Chrome/Firefox/Android/iOS native) để chuẩn bị đúng template. Đề xuất: bắt đầu với Chrome + Android + iOS (3 bộ), mở rộng sau.
 - [ ] **Ngưỡng entropy blank:** đề xuất `< 1.5 bit` — **tune bằng golden set (GS)** (ảnh nền trắng hợp lệ vs màn thật blank).
@@ -188,7 +177,7 @@ g. **Phát hiện màn trống** — vùng entropy thấp.
 - [ ] **A9 có gate sau A3 không?** Đề xuất: A9 **độc lập** (không cần A3) để detect ngay cả khi A3 fail. Nhưng nếu có A3 → dùng để lọc false positive. Anh muốn A9 required-after-A3 hay song song?
 - [ ] **Temporal context:** Phase 1 chỉ 1 ảnh → A9 báo "pattern present". Phase 2 nhận ≥2 frame → A9 nâng cấp verdict "stuck/kẹt". Confirm thiết kế này.
 
-## 10. TDD outline
+## 9. TDD outline
 
 - test: ảnh có 4 skeleton block (rect xám đều) → `pattern_type=skeleton`, `confidence > 0.7`.
 - test: ảnh list cards thật (có text bên trong) → KHÔNG là skeleton (loại false positive).
@@ -203,4 +192,4 @@ g. **Phát hiện màn trống** — vùng entropy thấp.
 - test: ảnh nền trắng product hợp lệ + có text/button → KHÔNG phải blank.
 - test: mọi detection có `evidence` đầy đủ (method, bbox, confidence).
 
-## Trạng thái: spec ✅ — chờ chốt mục 9 (template set platform + ngưỡng tune GS + scope A3 gate).
+## Trạng thái: spec ✅ — chờ chốt mục 8 (template set platform + ngưỡng tune GS + scope A3 gate).

@@ -1,11 +1,11 @@
 # A3 — Box/Layout Detector (ảnh → elements/bbox/hierarchy)
 
-> Bóc tách chi tiết. Phase 1, nhóm "dựng cấu trúc". **Mode B (không cây).** Tech: **Python + CV**.
-> Đây là **xương sống của Mode B** — quyết định Mode B có chạy được nhóm LAY hay không.
-> Liên quan: [`A1-tree-parser.md`](A1-tree-parser.md) · [`A5`](#) OCR · [`A6`](#) Icon · [`../development-plan.md`](../development-plan.md)
+> Bóc tách chi tiết. Phase 1, nhóm "dựng cấu trúc". Tech: **Python + CV**.
+> Đây là **xương sống của hệ thống** — quyết định có chạy được nhóm LAY hay không.
+> Liên quan: [`A5`](#) OCR · [`A6`](#) Icon · [`../development-plan.md`](../development-plan.md)
 
 ## 1. Trách nhiệm
-Khi **không có cây**, từ screenshot dựng `elements[]`: **bbox + role thô + containment
+Từ screenshot dựng `elements[]`: **bbox + role thô + containment
 (parent/child) + visible** — làm nền cho rule layout + crop cho analyzer pixel. **Fuse** với
 text-box (A5 OCR) và icon (A6). **KHÔNG** đọc text/màu (analyzer khác). `z`-order & `interactive`
 là **suy đoán** → confidence thấp.
@@ -52,7 +52,7 @@ hợp tinh thần zero-reference.
    alignment/proximity (clustering) → suy list/row/col.
 7. **Emit** `elements[]` + `confidence` theo độ chắc của từng bước.
 
-## 6. Hạn chế Mode B (BẮT BUỘC đánh dấu confidence thấp)
+## 6. Hạn chế vision-only (BẮT BUỘC đánh dấu confidence thấp)
 - `parent/child` = suy từ hình học, KHÔNG phải DOM thật.
 - `z`-order/occlusion = đoán (vùng bị cắt ⇒ có thể bị che).
 - `role` thô, dễ nhầm button/card/text-label.
@@ -62,7 +62,7 @@ hợp tinh thần zero-reference.
 
 ## 7. Tiêu chí phục vụ
 Cấp `bbox`/containment cho gần như mọi **LAY-*** (overlap/align/overflow/occlusion/scroll),
-nền cho **CMP** (cùng A12/A6) và **crop theo element** cho A4/A8. → Là **điều kiện để Mode B
+nền cho **CMP** (cùng A12/A6) và **crop theo element** cho A4/A8. → Là **điều kiện để hệ thống
 chạy được nhóm LAY** (nhóm "vàng").
 
 ## 8. Open decisions (cần anh chốt — lựa chọn lớn)

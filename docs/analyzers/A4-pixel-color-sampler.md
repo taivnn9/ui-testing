@@ -1,30 +1,18 @@
 # A4 — Pixel Color Sampler (contrast/dark/opacity từ pixel thực)
 
-> Bóc tách chi tiết. Phase 1, nhóm "đo diện mạo". **Mode A·B** — chạy ở CẢ hai mode.
-> Đây là **analyzer màu/contrast chủ lực khi nền KHÔNG đặc** (ảnh/gradient) và là **nguồn
-> duy nhất** cho style màu ở Mode B/XML (không có computed-style).
-> Liên quan: [`A2-style-reader.md`](A2-style-reader.md) (nền đặc Mode A) ·
-> [`A3-box-layout-detector.md`](A3-box-layout-detector.md) (cấp crop element) ·
-> [`A1-tree-parser.md`](A1-tree-parser.md) (cấp bbox Mode A) ·
+> Bóc tách chi tiết. Phase 1, nhóm "đo diện mạo".
+> Đây là **analyzer màu/contrast chủ lực** — nguồn duy nhất cho màu/contrast vì hệ thống
+> chỉ nhận ảnh, không có computed-style.
+> Liên quan: [`A3-box-layout-detector.md`](A3-box-layout-detector.md) (cấp crop element) ·
 > [`A8-pixel-glyph-inspector.md`](A8-pixel-glyph-inspector.md) · [`../development-plan.md`](../development-plan.md)
 
 ## 1. Trách nhiệm
 
-Đo **màu/contrast/opacity THỰC TẾ từ pixel ảnh**, thay thế hoặc bổ sung cho A2 trong các
-trường hợp mà computed-style KHÔNG đủ hoặc KHÔNG có:
-
-| Trường hợp | Tại sao A2 không đủ |
-|---|---|
-| Nền là `background-image` / gradient | A2 trả `bg_is_solid=false` → contrast NULL |
-| Mode B (chỉ ảnh) | Không có computed-style → mọi màu phải đo từ pixel |
-| XML Android/iOS | Không có style → A2 trả rỗng |
-| `opacity < 1` hoặc `rgba()` trên nền phức tạp | blend thực tế khác công thức lý thuyết |
-
-**KHÔNG** thay thế A2 khi nền đặc & computed-style có sẵn (để rule R2 tính tất định hơn).
-A4 và A2 **bổ sung nhau** — A0 Normalize chọn nguồn có confidence cao hơn.
+Đo **màu/contrast/opacity THỰC TẾ từ pixel ảnh** — nguồn duy nhất cho thông tin màu vì
+không có computed-style:
 
 Cụ thể A4 làm:
-- Lấy **crop element** (từ A1/A3) → tách vùng **foreground** (chữ/icon) vs **background**.
+- Lấy **crop element** (từ A3) → tách vùng **foreground** (chữ/icon) vs **background**.
 - Trích **màu trội** mỗi vùng → tính **WCAG contrast_ratio** từ pixel.
 - Phát hiện **dark-mode render** đúng/sai (cả màn tối hay chỉ một vùng không đổi).
 - Đo **opacity hiệu dụng** từ alpha-channel / blend với lớp dưới.
@@ -36,18 +24,17 @@ Cụ thể A4 làm:
 
 **Input:**
 - PNG full màn + meta `viewport{w,h,dpr}`, `theme` (`light|dark`).
-- `elements[]` từ A1/A3 (có `bbox`, `role`, `text` nếu biết) — để crop từng element.
+- `elements[]` từ A3 (có `bbox`, `role`, `text` nếu biết) — để crop từng element.
 - *Tùy chọn:* `bg_layer_crop` (crop lớp nền phía dưới nếu element trong suốt — A0 cấp).
 
-**Output:** bổ sung vào `elements[]` các field `style.*` sau (gán `source="vision"`,
-`confidence < 1` trừ trường hợp có DOM-style xác nhận):
+**Output:** bổ sung vào `elements[]` các field `style.*` sau (gán `source="vision"`):
 
 ```jsonc
 "style": {
   "color_px":       [17, 24, 39],       // RGB màu trội foreground (từ pixel)
   "bg_color_px":    [255, 255, 255],    // RGB màu trội background (từ pixel)
   "contrast_ratio_px": 12.4,            // WCAG contrast tính từ pixel (null nếu không tách được)
-  "color_px_source": "vision",          // "vision" | "dom_confirmed"
+  "color_px_source": "vision",
   "bg_is_solid_px": true,               // background đặc hay ảnh/gradient?
   "dominant_colors": [[17,24,39,0.65],[200,210,220,0.35]], // [(RGB, weight)]
   "opacity_px": 0.9,                    // ước lượng opacity hiệu dụng từ pixel
@@ -109,43 +96,30 @@ d. **Suy diễn dark-mode, opacity, disabled** — từ phân tích màu toàn v
 6. **Tính contrast_ratio_px** (WCAG): relative luminance → ratio; ghi `null` nếu không tách được.
 7. **Dark mode check:** nếu `screen.theme=dark`, kiểm tra `bg_color_px` vùng tối vs màu sáng cứng-coded → cờ nghi STY-03.
 8. **Opacity px:** nếu ảnh có alpha channel (RGBA) → mean alpha vùng element → `opacity_px`; else ước lượng từ blend.
-9. **Disabled so sánh:** nếu element có `attrs.disabled=true` (Mode A) hoặc agent đoán disabled → so màu với sibling nearest enabled → `disabled_color_similar`.
+9. **Disabled so sánh:** nếu agent đoán element là disabled (từ A12) → so màu với sibling nearest enabled → `disabled_color_similar`.
 10. **Emit** kết quả vào `elements[].style.*` + `candidate_issues[]` nếu vượt ngưỡng.
 
-## 6. Ranh giới Mode A / Mode B
-
-| | Mode A (có cây) | Mode B (chỉ ảnh) |
-|---|---|---|
-| A4 có chạy không? | ✅ **Có** — bù cho nền ảnh/gradient mà A2 trả null | ✅ **Có** — nguồn duy nhất cho màu |
-| Đầu vào bbox | Từ A1 (ground truth) | Từ A3 (suy ra, có thể lệch) |
-| `style.color_px_source` | `"dom_confirmed"` nếu A2 xác nhận trùng; `"vision"` nếu khác | `"vision"` |
-| Độ tin cậy | Cao hơn — bbox chính xác | Thấp hơn — bbox có thể lệch → màu đo sai vùng |
-| Trường hợp chạy A4 bắt buộc | `bg_is_solid=false` (A2 trả null); XML input | Luôn luôn |
-
-> ⚠ **Ghi `source="vision"` cho mọi field A4 điền ở Mode B.** A0 sẽ ưu tiên `source=dom` nếu
-> có A2 xác nhận; dùng A4 làm **tầng dự phòng / bổ sung**.
-
-## 7. Tiêu chí phục vụ
+## 6. Tiêu chí phục vụ
 
 | Mã | Tiêu chí | Vai trò A4 |
 |---|---|---|
-| **STY-01** | Contrast chữ/nền < WCAG 4.5:1 | ✅ **chính** khi nền ảnh/gradient (A2 trả null) + toàn bộ Mode B |
+| **STY-01** | Contrast chữ/nền < WCAG 4.5:1 | ✅ **chính** — nguồn duy nhất cho màu |
 | **STY-02** | Chữ tàng hình (trắng/trắng) | ✅ contrast_ratio_px ~ 1.0 → candidate STY-02 |
 | **STY-03** | Dark-mode không đổi màu | ✅ `dark_mode_ok` + phát hiện vùng màu cứng sáng trong theme tối |
 | **STY-04** | Icon/viền tàng hình trong theme | ✅ tính contrast đồ hoạ (ngưỡng 3:1) |
 | **STY-05** | Opacity sai | ✅ `opacity_px` — ước lượng từ pixel |
 | **STY-07** | Disabled không phân biệt enabled | ✅ `disabled_color_similar` — so màu sibling |
-| **STY-13** | Tương phản icon/đồ hoạ < 3:1 | ✅ contrast từ dominant_colors của icon |
+| **STY-13** | Tương phản icon/đồ hoạ chức năng < 3:1 | ✅ contrast từ dominant_colors của icon |
 | **STY-10** | Gradient/banding lỗi render | ⚠ tín hiệu phụ từ variance bg |
 
-## 8. Edge cases (BẮT BUỘC xử lý)
+## 7. Edge cases (BẮT BUỘC xử lý)
 
 - **Text antialiasing:** pixel viền chữ pha màu giữa fg và bg → lấy nguyên sẽ sai cluster.
   → Bỏ pixel "pha" (màu trung gian trong khoảng 20–80% giữa 2 cluster) trước khi tính màu trội.
 - **Nền nhiều màu (ảnh nền phức tạp):** bg_color_px là trung vị → contrast "trung bình", có thể
   miss vùng text contrast thấp trên 1 nền. → Tính contrast **worst-case**: lấy bg màu gần fg nhất
   (nhỏ nhất trong dominant_colors vùng bg) → báo conservative.
-- **Element crop lệch (Mode B):** bbox A3 sai → crop nhầm nền/phần tử khác → màu vô nghĩa.
+- **Element crop lệch:** bbox A3 sai → crop nhầm nền/phần tử khác → màu vô nghĩa.
   → Thêm `crop_confidence` (= confidence của bbox từ A3); nếu < ngưỡng thì `contrast_ratio_px=null`.
 - **Transparent/RGBA ảnh:** ảnh UI xuất PNG có alpha → channel A thể hiện opacity thực.
   → Trộn (blend) với nền trắng/đen theo quy ước trước khi đo màu.
@@ -155,7 +129,7 @@ d. **Suy diễn dark-mode, opacity, disabled** — từ phân tích màu toàn v
 - **Element quá nhỏ (< 4×4 px):** không đủ pixel để phân cụm → `contrast_ratio_px=null`,
   confidence thấp.
 
-## 9. Open decisions (cần anh chốt — lựa chọn lớn)
+## 8. Open decisions (cần anh chốt — lựa chọn lớn)
 
 - [ ] **Thuật toán tách fg/bg:** đề xuất **K-means k=2 + dự phòng Canny** (trình bày ở mục 4.1).
   Chốt vì ảnh hưởng toàn bộ precision — nên test trên golden set trước khi lock.
@@ -163,12 +137,10 @@ d. **Suy diễn dark-mode, opacity, disabled** — từ phân tích màu toàn v
   ban đầu: `std(L) > 15` (trên thang 0–255) → không đặc.
 - [ ] **Ngưỡng contrast candidate:** đề xuất `< 4.5` text thường, `< 3.0` chữ lớn/đồ hoạ — theo
   WCAG 2.1. Chốt cùng **bảng ngưỡng F0.4**.
-- [ ] **Khi nào A4 bắt buộc chạy ở Mode A?** Đề xuất: luôn chạy cho element có `bg_is_solid=false`
-  (A2 cờ rồi); tùy chọn chạy cho element XML (không có style). Anh muốn chạy tất cả hay chọn lọc?
 - [ ] **Lab vs RGB cho K-means:** Lab chuẩn hơn perceptual nhưng cần `scikit-image` hoặc tự code
   chuyển đổi. RGB + numpy đủ đơn giản. Đề xuất: **Lab** để tách màu chính xác hơn — anh quyết.
 
-## 10. TDD outline
+## 9. TDD outline
 
 - test: crop text trắng nền đen → `contrast_ratio_px` = 21.0 (±0.5).
 - test: text xám nhạt nền trắng (WCAG fail) → candidate STY-01 được tạo.
@@ -177,8 +149,8 @@ d. **Suy diễn dark-mode, opacity, disabled** — từ phân tích màu toàn v
 - test: nền gradient → `bg_is_solid_px=false`, `contrast_ratio_px=null`.
 - test: element quá nhỏ (< 4px) → `contrast_ratio_px=null`, không crash.
 - test: `dark_mode_ok` = false khi màn dark nhưng element có bg sáng hardcode.
-- test: Mode B (source=vision) → tất cả field ghi `color_px_source="vision"`.
+- test: tất cả field ghi `color_px_source="vision"`.
 - test: `disabled_color_similar=true` khi 2 element (disabled/enabled) màu gần nhau (ΔE < 5).
 - test: antialiasing không làm lệch màu trội quá 10 ΔE so với màu thực.
 
-## Trạng thái: spec ✅ — chờ chốt mục 9 (thuật toán fg/bg, ngưỡng) + F0.4 (đơn vị/ngưỡng contrast).
+## Trạng thái: spec ✅ — chờ chốt mục 8 (thuật toán fg/bg, ngưỡng) + F0.4 (đơn vị/ngưỡng contrast).

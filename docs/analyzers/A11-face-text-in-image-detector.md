@@ -1,7 +1,6 @@
 # A11 — Face / Text-in-image Detector (trong vùng ảnh: khuôn mặt + text embedded)
 
-> Bóc tách chi tiết. Phase 1, nhóm "đo diện mạo". **Mode B (vision-only — thực tế cả 2 mode dùng
-> được, nhưng chỉ phát huy ở Mode B).** Tech: **Python + pretrained model nhẹ**.
+> Bóc tách chi tiết. Phase 1, nhóm "đo diện mạo". Tech: **Python + pretrained model nhẹ**.
 > ⚠ **Ưu tiên thấp** — có thể để sau golden set nếu cần tiết kiệm effort Phase 1.
 > Liên quan: [`A5-ocr-text-extractor.md`](A5-ocr-text-extractor.md) · [`A7-image-region-meta-reader.md`](A7-image-region-meta-reader.md) · [`A6-icon-graphic-detector.md`](A6-icon-graphic-detector.md) · [`../development-plan.md`](../development-plan.md)
 
@@ -94,17 +93,12 @@ b. **Text-in-image overlap** → IoU giữa text_segment bbox (A5) và image ele
 4. Emit `faces_detected[]` per image element.
 5. Nếu `is_cropped = true` → emit `candidate_issue IMG-04`.
 
-## 6. Ranh giới Mode A vs Mode B
+## 6. Phạm vi và confidence
 
-| | Mode A (có DOM) | Mode B (chỉ ảnh) |
-|---|---|---|
-| **Vùng ảnh input** | A7 cấp bbox chính xác từ DOM | A7 cấp bbox từ CV (A3) — kém chính xác hơn |
-| **Text-in-image check** | ✅ Giống nhau — thuần IoU, không phụ thuộc mode | ✅ |
-| **Face detection** | ✅ Crop chính xác từ DOM bbox → detect tốt hơn | ✅ Crop từ A3 bbox — đủ dùng |
-| **Confidence** | Cao hơn (crop chính xác) | Thấp hơn (crop có thể sai ranh giới) |
-
-> A11 chủ yếu phát huy ở **Mode B** (khi không có DOM để nói "ảnh có gì bên trong").
-> Ở Mode A, DOM không nói về nội dung ảnh → A11 vẫn cần.
+Vì hệ thống chỉ nhận ảnh, crop vùng ảnh đến từ A7 (bbox từ A3 — có thể sai ranh giới).
+- **Text-in-image check:** thuần IoU, không phụ thuộc độ chính xác bbox → vẫn đáng tin.
+- **Face detection:** crop từ A3 bbox có thể sai ranh giới → confidence thấp hơn khi `source=vision` từ A7; đánh dấu `"bbox_uncertain": true`.
+- Tất cả output: `source=vision`, `confidence` phản ánh độ chắc của bbox đầu vào.
 
 ## 7. Tiêu chí phục vụ
 
@@ -131,7 +125,7 @@ b. **Text-in-image overlap** → IoU giữa text_segment bbox (A5) và image ele
 - **Nhiều mặt trong 1 ảnh:** emit tất cả `faces_detected[]`; check từng cái có bị cắt không.
 - **Text logo nằm đúng rìa ảnh:** IoU check đủ bắt — đây là case quan trọng (logo bị cắt = có thể IMG-04).
 - **Vùng ảnh rất nhỏ (< 32×32):** bỏ qua face detection (không đủ pixel); vẫn chạy text-in-image check.
-- **Crop vùng ảnh sai (A7 Mode B nhầm boundary):** A11 face detect trên crop sai → confidence thấp → đánh dấu `"bbox_uncertain": true` khi `source=vision` từ A7.
+- **Crop vùng ảnh sai (A7 nhầm boundary):** A11 face detect trên crop sai → confidence thấp → đánh dấu `"bbox_uncertain": true` khi `source=vision`.
 - **A5 text segment bbox và A7 image bbox chồng nhau một phần (IoU ≈ 0.3):** không đủ để kết luận "text trong ảnh" → giữ ngưỡng `0.5`; đánh dấu `"ambiguous"`.
 
 ## 10. TDD outline (khi vào code)

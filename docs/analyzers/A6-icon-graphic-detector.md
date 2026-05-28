@@ -1,9 +1,9 @@
 # A6 — Icon/Graphic Detector (icon · đồ hoạ nhỏ → phát hiện, phân loại, khoanh vùng)
 
-> Bóc tách chi tiết. Phase 1, nhóm "dựng cấu trúc". **Mode A · B.** Tech: **Python + CV**.
+> Bóc tách chi tiết. Phase 1, nhóm "dựng cấu trúc". Tech: **Python + CV**.
 > Phân biệt icon/đồ hoạ nhỏ (non-text, ít màu) khỏi ảnh-photo (nhiều màu) và text (A5).
 > Là **feed** cho A3 Box Detector (A3 gọi A6 để classify vùng icon) + cấp crop cho A8 (emoji/glyph).
-> Liên quan: [`A1-tree-parser.md`](A1-tree-parser.md) · [`A3-box-layout-detector.md`](A3-box-layout-detector.md) · [`A5-ocr-text-extractor.md`](A5-ocr-text-extractor.md) · [`A7-image-region-meta-reader.md`](A7-image-region-meta-reader.md) · [`A8`](#) · [`../development-plan.md`](../development-plan.md)
+> Liên quan: [`A3-box-layout-detector.md`](A3-box-layout-detector.md) · [`A5-ocr-text-extractor.md`](A5-ocr-text-extractor.md) · [`A7-image-region-meta-reader.md`](A7-image-region-meta-reader.md) · [`A8`](#) · [`../development-plan.md`](../development-plan.md)
 
 ## 1. Trách nhiệm
 
@@ -11,8 +11,7 @@ Tìm và khoanh vùng tất cả **icon / đồ hoạ nhỏ non-text** trên mà
 - **Phân loại**: icon-glyph / icon-vector / logo nhỏ / badge / decorative-graphic; phân biệt rõ với:
   - **Ảnh-photo** (`image` role → A7): vùng lớn, nhiều màu, gradient phức tạp.
   - **Text glyph** (→ A5/A8): ký tự đơn lẻ nhìn giống icon (vd: ❌ ✓ →).
-- **Mode A (có cây):** trích từ DOM/XML do A1 cấp (`<svg>`, icon-font class, `<img>` kích thước nhỏ). Kết quả độ tin cậy cao — ground truth.
-- **Mode B (chỉ ảnh):** phát hiện bằng CV từ pixel — **độ tin cậy thấp hơn**, cần đánh dấu `source=vision`.
+- **Phát hiện từ pixel:** phát hiện bằng CV từ pixel — **độ tin cậy thấp hơn cây**, cần đánh dấu `source=vision`.
 - **Cấp output** cho A3 (fuse vào `elements[]` với `role=icon`), cho A8 (crop icon để kiểm tra render/emoji-box), và cho Rule Engine (IMG-07 lệch tâm, IMG-08 placeholder, STY-13 contrast đồ hoạ).
 
 **KHÔNG** đọc text, KHÔNG tính màu/contrast (A4/A8), KHÔNG quyết lỗi — chỉ phát hiện & phân loại vùng icon.
@@ -21,15 +20,14 @@ Tìm và khoanh vùng tất cả **icon / đồ hoạ nhỏ non-text** trên mà
 
 - **Input:**
   - PNG (full hoặc crop region từ A3).
-  - *Mode A:* `elements[]` từ A1 (có `role`, `bbox`, `attrs.src/class`, tag).
-  - *Mode B:* `elements[]` thô từ A3 (non-text regions) + meta `viewport{w,h,dpr}`.
+  - `elements[]` thô từ A3 (non-text regions) + meta `viewport{w,h,dpr}`.
 - **Output:** danh sách `icon_regions[]` bổ sung vào `elements[]` (hoặc annotate vào element đã có):
 ```jsonc
 {
   "id": "e42",
   "role": "icon",
-  "subtype": "svg_inline | icon_font | img_small | bitmap_icon | decorative",
-  "source": "dom | vision",
+  "subtype": "img_small | bitmap_icon | decorative",
+  "source": "vision",
   "confidence": 0.85,
   "bbox": { "x": 0, "y": 0, "w": 24, "h": 24 },
   "bbox_norm": {},
@@ -41,22 +39,18 @@ Tìm và khoanh vùng tất cả **icon / đồ hoạ nhỏ non-text** trên mà
 }
 ```
 
-## 3. Bốn bài toán con
+## 3. Hai bài toán con chính
 
-a. **Mode A — trích từ cây:** duyệt `elements[]` A1, lọc icon theo tag/role/size.
-b. **Mode B — phát hiện từ pixel:** tìm region nhỏ, ít màu, edge density cao.
-c. **Phân loại subtype:** svg / icon-font / img nhỏ / bitmap / decorative.
-d. **Template matching** icon phổ biến (tùy chọn): tăng recall cho phát hiện placeholder (IMG-08).
+a. **Phát hiện từ pixel:** tìm region nhỏ, ít màu, edge density cao.
+b. **Template matching** icon phổ biến (tùy chọn): tăng recall cho phát hiện placeholder (IMG-08).
 
 ## 4. Kỹ thuật / lib (Python) — list + đề xuất
 
 | Hướng | Lib/tool (Python) | Ưu | Nhược | Khuyến nghị |
 |---|---|---|---|---|
-| **Mode A — parse SVG inline** | `lxml` / `xml.etree` (A1 đã dùng) + regex class icon-font (`fa-*`, `material-icons`, `bi-*`) | chính xác, không cần CV | chỉ Mode A | ✅ **bắt buộc Mode A** |
-| **Mode A — img nhỏ** | filter `elements[]` A1: `role=image` + `bbox.w ≤ 64px && h ≤ 64px` (ngưỡng tune) | đơn giản, deterministic | ngưỡng cứng dễ miss | ✅ heuristic đơn giản |
-| **Mode B — contour + lọc size** | **OpenCV** `findContours` → lọc area nhỏ (e.g. 16×16–80×80px), aspect ≈ 1:1, edge density | không train, nhanh | miss icon nằm trong container flat | ✅ **core Mode B** |
-| **Mode B — đếm màu** | **numpy** `np.unique` trên crop resize nhỏ (vd 32×32) → count màu khác biệt | đặc trưng mạnh (icon ≤ ~5 màu, photo >> 20) | ảnh bitonal cũng ít màu → cần kết hợp edge | ✅ đặc trưng phụ |
-| **Mode B — edge density** | **OpenCV** Canny → tỉ lệ edge-pixel / tổng-pixel vùng | icon vector → edge density cao + đều; ảnh → thấp/loang | phụ thuộc ngưỡng Canny | ✅ đặc trưng phụ |
+| **Phát hiện — contour + lọc size** | **OpenCV** `findContours` → lọc area nhỏ (e.g. 16×16–80×80px), aspect ≈ 1:1, edge density | không train, nhanh | miss icon nằm trong container flat | ✅ **core** |
+| **Đếm màu** | **numpy** `np.unique` trên crop resize nhỏ (vd 32×32) → count màu khác biệt | đặc trưng mạnh (icon ≤ ~5 màu, photo >> 20) | ảnh bitonal cũng ít màu → cần kết hợp edge | ✅ đặc trưng phụ |
+| **Edge density** | **OpenCV** Canny → tỉ lệ edge-pixel / tổng-pixel vùng | icon vector → edge density cao + đều; ảnh → thấp/loang | phụ thuộc ngưỡng Canny | ✅ đặc trưng phụ |
 | **Template matching icon phổ biến** | **OpenCV** `matchTemplate` với bộ template (arrow, hamburger, X, search, ☰, ✕...) | recall tốt cho icon hay gặp, deterministic | chỉ match được icon biết trước; scale/rotation sensitive | ✅ tùy chọn — bật cho `template_match` field |
 | **ML pretrained (open-vocab)** | **OmniParser** (icon segment) / **GroundingDINO** (`icon`, `button icon`, `logo`) | recall cao, nhận icon bất kỳ | ⚠ động tới nguyên tắc "no-YOLO" — xem mục 8 | tùy chọn — **anh quyết** (mục 8) |
 | **Icon classification pretrained** | **CLIP** (zero-shot: `"arrow icon"` vs `"photo"`) | zero-shot, không label | inference chậm hơn CV thuần | tùy chọn nhẹ hơn OmniParser |
@@ -68,12 +62,6 @@ d. **Template matching** icon phổ biến (tùy chọn): tăng recall cho phát
 
 ## 5. Pipeline A6 (đề xuất)
 
-### Mode A (có cây — nhanh, chính xác):
-1. Duyệt `elements[]` A1; lọc: `tag=svg` / `tag=img` với `w≤64 && h≤64` / class khớp regex icon-font (`fa-*|material-icons|bi-*|icon-*|ico-*`) / `role=img` + `aria-label` ngắn.
-2. Gán `role=icon`, `subtype` theo nguồn (`svg_inline | icon_font | img_small`).
-3. Crop vùng → emit. `source=dom`, `confidence=0.95`.
-
-### Mode B (chỉ ảnh — CV pipeline):
 1. Nhận non-text regions từ A3 (hoặc quét toàn ảnh nếu A3 chưa xong).
 2. **Lọc theo size:** bbox trong range icon (16–80px cạnh ngắn; aspect 0.5–2.0). Loại bỏ text-box (từ A5).
 3. **Đặc trưng mỗi vùng:**
@@ -119,7 +107,7 @@ d. **Template matching** icon phổ biến (tùy chọn): tăng recall cho phát
 
 ## 9. Edge cases (BẮT BUỘC xử lý)
 
-- **Icon-font render thành glyph Unicode:** A5 OCR có thể đọc ký tự → A6 nhận cờ `text_region` từ A5 và **không re-classify thành icon**. Phân biệt bằng font-family (Mode A) hoặc bằng kích thước + isolation (Mode B).
+- **Icon-font render thành glyph Unicode:** A5 OCR có thể đọc ký tự → A6 nhận cờ `text_region` từ A5 và **không re-classify thành icon**. Phân biệt bằng kích thước + isolation.
 - **SVG inline nhiều màu (illustration):** kích thước lớn → không phải icon → A7. Dùng `color_count` + `bbox area` để lọc.
 - **Icon badge (số nổi trên icon):** A6 nên giữ cả icon chính + badge là 2 element riêng (containment qua A3).
 - **Icon placeholder (ô vuông xám, dấu ?):** đây là lỗi IMG-08 — A6 vẫn phải phát hiện như icon region, gắn thêm cờ `possible_placeholder=true` để Rule R3 xử lý.
@@ -128,15 +116,13 @@ d. **Template matching** icon phổ biến (tùy chọn): tăng recall cho phát
 
 ## 10. TDD outline (khi vào code)
 
-- test Mode A: element `<img w=24 h=24>` → classify `role=icon`, `subtype=img_small`, `source=dom`.
-- test Mode A: element có class `fa-arrow-right` → classify `role=icon`, `subtype=icon_font`.
-- test Mode B: crop icon 24×24 ít màu (3 màu) + edge cao → candidate icon, confidence ≥ 0.7.
-- test Mode B: crop ảnh photo 100×100 nhiều màu → **không** classify icon (`color_count > 20`).
-- test Mode B: crop text glyph từ A5 → không double-classify thành icon.
+- test: crop icon 24×24 ít màu (3 màu) + edge cao → candidate icon, confidence ≥ 0.7.
+- test: crop ảnh photo 100×100 nhiều màu → **không** classify icon (`color_count > 20`).
+- test: crop text glyph từ A5 → không double-classify thành icon.
 - test template match: ảnh mũi tên phải → `template_match = "arrow_right"`.
 - test icon placeholder (ô vuông xám) → `possible_placeholder=true`.
 - test ranh giới A6/A7: vùng 200×200px nhiều màu → đẩy sang A7, không giữ lại A6.
-- test tất cả output `source=vision` ở Mode B, `confidence < 1`.
+- test tất cả output `source=vision`, `confidence < 1`.
 - test không crash khi không tìm thấy icon nào → trả `[]`.
 
 ## Trạng thái: spec ✅ — chờ chốt mục 8 (CV thuần vs +ML pretrained, bộ template, ngưỡng size).
