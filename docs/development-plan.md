@@ -34,22 +34,22 @@
 > ~~**A2 — Style Reader**~~ (đã bỏ — không còn DOM/XML input)
 
 **Nhóm "dựng cấu trúc" (vision-only, tự dựng từ ảnh):**
-- [~] **A3 — Box/Layout Detector** `[vision]` — **spec ✅** [`analyzers/A3-box-layout-detector.md`](analyzers/A3-box-layout-detector.md). Hybrid OpenCV+OCR (UIED-style); chờ chốt CV-thuần vs +ML-detector (OmniParser/GroundingDINO).
-- [~] **A5 — OCR / Text Extractor** (text + box) `[vision]` — **spec ✅** [`analyzers/A5-ocr-text-extractor.md`](analyzers/A5-ocr-text-extractor.md). PaddleOCR primary + Tesseract fallback. Chờ chốt engine + bộ ngôn ngữ.
-- [~] **A12 — Interactivity Classifier** (đoán phần tử nào tương tác) `[vision]` — ⚠ khó — **spec ✅** [`analyzers/A12-interactivity-classifier.md`](analyzers/A12-interactivity-classifier.md). Heuristic đa tín hiệu, precision-first; chờ chốt heuristic-only vs +ML.
-- [~] **A6 — Icon/Graphic Detector** `[vision]` — **spec ✅** [`analyzers/A6-icon-graphic-detector.md`](analyzers/A6-icon-graphic-detector.md). CV (color_count + edge_density). Chờ chốt CV-thuần vs +ML.
-- [~] **A7 — Image Region + Meta Reader** (intrinsic vs displayed) `[vision]` — ⚠ yếu khi thiếu intrinsic — **spec ✅** [`analyzers/A7-image-region-meta-reader.md`](analyzers/A7-image-region-meta-reader.md). Chỉ blur_score từ pixel; intrinsic width/height không có (ước lượng nếu cần).
+- [x] **A3 — Box/Layout Detector** `[vision]` — code ✅ `src/ui_defect/analyzers/a3_box_layout.py`. OpenCV CV core; ML add-on dành Phase 2 sau golden set.
+- [x] **A5 — OCR / Text Extractor** (text + box) `[vision]` — code ✅ `src/ui_defect/analyzers/a5_ocr.py`. PaddleOCR primary + Tesseract fallback.
+- [ ] **A12 — Interactivity Classifier** (đoán phần tử nào tương tác) `[vision]` — ⚠ khó — **spec ✅** [`analyzers/A12-interactivity-classifier.md`](analyzers/A12-interactivity-classifier.md). Chưa code.
+- [x] **A6 — Icon/Graphic Detector** `[vision]` — code ✅ `src/ui_defect/analyzers/a6_icon_detector.py`. CV: color_count + edge_density + template matching.
+- [ ] **A7 — Image Region + Meta Reader** (intrinsic vs displayed) `[vision]` — ⚠ yếu khi thiếu intrinsic — **spec ✅** [`analyzers/A7-image-region-meta-reader.md`](analyzers/A7-image-region-meta-reader.md). Chưa code.
 
 **Nhóm "đo diện mạo":**
-- [~] **A4 — Pixel Color Sampler** (contrast/dark/opacity từ pixel thực) `[vision]` — **spec ✅** [`analyzers/A4-pixel-color-sampler.md`](analyzers/A4-pixel-color-sampler.md). K-means k=2 (Lab) tách fg/bg + WCAG tự code; nguồn duy nhất cho contrast.
-- [~] **A8 — Pixel/Glyph Inspector** (tofu □ / mờ / emoji-box / banding) `[vision]` — **spec ✅** [`analyzers/A8-pixel-glyph-inspector.md`](analyzers/A8-pixel-glyph-inspector.md). CV tất định (Laplacian + connected-comp); **CHỐT cờ `has_replacement` mà A5 chỉ NGHI**.
-- [~] **A9 — Pixel Pattern Detector** (skeleton/spinner/overlay/keyboard/splash/broken/blank) `[vision]` — **spec ✅** [`analyzers/A9-pixel-pattern-detector.md`](analyzers/A9-pixel-pattern-detector.md). 7 sub-detector CV; 1-frame (cờ `temporal` → "kẹt" chờ Phase 2 đa-frame).
-- [~] **A10 — Perceptual Hashing** (ảnh/item trùng — trong-màn ở Phase 1) `[vision]` — **spec ✅** [`analyzers/A10-perceptual-hashing.md`](analyzers/A10-perceptual-hashing.md). `imagehash.phash` + Hamming; in-screen (cross-screen→Phase 2). Chờ chốt ngưỡng + xử lý trùng-chủ-ý.
-- [~] **A11 — Face/Text-in-image Detector** (cho IMG-04 crop) `[vision]` — ưu tiên thấp — **spec ✅** [`analyzers/A11-face-text-in-image-detector.md`](analyzers/A11-face-text-in-image-detector.md). MediaPipe face (pretrained) + text-in-image qua IoU(A5,A7). Có thể để Phase 2.
-- [~] **A13 — Device/Env Metadata provider** (safe_area/dpr/bar/orientation) `[vision]` — **spec ✅** [`analyzers/A13-device-env-metadata.md`](analyzers/A13-device-env-metadata.md). Chạy đầu pipeline; 3 tầng nguồn: tester-meta → device-profile → pixel-infer. Chờ chốt bắt buộc meta? + phạm vi bảng device.
+- [x] **A4 — Pixel Color Sampler** (contrast/dark/opacity từ pixel thực) `[vision]` — code ✅ `src/ui_defect/analyzers/a4_pixel_color.py`. K-means k=2 Lab + WCAG tự code.
+- [x] **A8 — Pixel/Glyph Inspector** (tofu □ / mờ / emoji-box / banding) `[vision]` — code ✅ `src/ui_defect/analyzers/a8_glyph_inspector.py`. Laplacian + connected-comp.
+- [x] **A9 — Pixel Pattern Detector** (skeleton/spinner/overlay/keyboard/splash/broken/blank) `[vision]` — code ✅ `src/ui_defect/analyzers/a9_pixel_pattern.py`. 7 sub-detector CV.
+- [x] **A10 — Perceptual Hashing** (ảnh/item trùng — trong-màn ở Phase 1) `[vision]` — code ✅ `src/ui_defect/analyzers/a10_perceptual_hash.py`. `imagehash.phash` + Hamming.
+- [ ] **A11 — Face/Text-in-image Detector** → **Phase 2** (ưu tiên thấp).
+- [x] **A13 — Device/Env Metadata provider** (safe_area/dpr/bar/orientation) `[vision]` — code ✅ `src/ui_defect/analyzers/a13_device_meta.py`. 3 tầng: tester-meta → device-profile → pixel-infer.
 
 **Gộp:**
-- [ ] **A0 — Normalize + Relation pre-computer** (gộp output analyzer → schema chung, tiền tính `relations`: overlap/gap/align; gán `source` theo field)
+- [x] **A0 — Normalize + Relation pre-computer** — code ✅ `src/ui_defect/analyzers/a0_normalize.py`. Deduplicate + fill bbox_norm + tiền tính relations.
 - ⏭ **A14 — Cross-screen Matcher** (CONS) → **Phase 2** (cần nhóm ảnh)
 
 ## Phase 2 — Rule Engine (code tất định → `candidate_issues`)
@@ -95,11 +95,17 @@
 - **Precision-first**: false-positive là thứ giết hệ thống.
 
 ## Quyết định đang chờ
-- [ ] **F0.1 tech stack** (đang hỏi).
+- [x] **F0.1 tech stack** — Python + FastAPI + OpenCV + PaddleOCR + scikit-learn + VLM API.
+- [ ] **A12 Interactivity Classifier** — heuristic-only vs +ML (chưa code).
+- [ ] **A7 Image Region Meta Reader** — chưa code.
 - [ ] Granularity agent ~6–7 nhóm (đề xuất ở Phase 3, chốt khi tới).
-- [ ] Deploy: 1 service monolith hay analyzer tách microservice gọi từ n8n? *(Phase 1 đề xuất monolith)*
+- [ ] Deploy: 1 service monolith hay analyzer tách microservice gọi từ n8n? *(đề xuất monolith)*
 
-## Tiến độ tổng
+## Tiến độ tổng — cập nhật 2026-05-29
 - [x] Bước 1 — catalog 121 tiêu chí.
 - [x] Bước 2 — kiến trúc + mapping + phasing.
-- [~] **Bóc tách analyzer** (đang ở đây) — bắt đầu sau khi chốt F0.1.
+- [x] **Phase 0** — schema, thresholds, scaffold xong.
+- [x] **Phase 1 (phần lớn)** — A0/A3/A4/A5/A6/A8/A9/A10/A13 code xong; A7/A12 còn lại.
+- [ ] **Phase 2** — Rule Engine (chưa bắt đầu).
+- [ ] **Phase 3** — Judgment Agents VLM (chưa bắt đầu).
+- [ ] **Phase 4–6** — Verify, API, Golden Set (chưa bắt đầu).
