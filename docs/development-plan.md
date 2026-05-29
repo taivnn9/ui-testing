@@ -53,11 +53,12 @@
 - ⏭ **A14 — Cross-screen Matcher** (CONS) → **Phase 2** (cần nhóm ảnh)
 
 ## Phase 2 — Rule Engine (code tất định → `candidate_issues`)
-- [ ] **R1** Geometry: IoU/overlap · parent-overflow · viewport/off-screen · grid-8pt/gap · alignment · near-dup-pos · scroll-overflow · touch-target · tap-gap · safe-area · icon-centering · badge-geom
-- [ ] **R2** Color: WCAG contrast (4.5/3 text, 3:1 graphic) · invisible-text · opacity
-- [ ] **R3** Image: distortion-ratio · broken-image · upscale · hash-dup
-- [ ] **R4** Text: token/placeholder regex · i18n-key · mojibake/entity · escape-literal · lorem/debug dict · epoch/format · all-caps · stack-trace
-- [ ] **R5** Gắn `severity nền + range` (5 mức) cho mỗi rule + bộ **modifier** ngữ cảnh
+> **Spec ✅** toàn bộ R1–R5 tại `docs/rules/`. Chờ implement.
+- [~] **R1** Geometry — **spec ✅** [`rules/R1-geometry.md`](rules/R1-geometry.md): 15 rules (LAY, CMP, ENV)
+- [~] **R2** Color — **spec ✅** [`rules/R2-color.md`](rules/R2-color.md): 6 rules (STY)
+- [~] **R3** Image — **spec ✅** [`rules/R3-image.md`](rules/R3-image.md): 6 rules (IMG), phụ thuộc A7
+- [~] **R4** Text — **spec ✅** [`rules/R4-text.md`](rules/R4-text.md): 10 rules (CNT/TYP/STATE), regex thuần
+- [~] **R5** Severity+Modifier — **spec ✅** [`rules/R5-severity.md`](rules/R5-severity.md): bảng baseline + modifier ngữ cảnh + auto-confirm logic
 
 ## Phase 3 — Judgment Agents (VLM, ~6–7 nhóm → `docs/agents/<id>.md`)
 > Nhận: ảnh + schema + candidate_issues liên quan. Set-of-Marks · structured output · few-shot · decompose theo nhóm.
