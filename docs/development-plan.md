@@ -106,8 +106,11 @@
 - [x] Bước 1 — catalog 121 tiêu chí.
 - [x] Bước 2 — kiến trúc + mapping + phasing.
 - [x] **Phase 0** — schema, thresholds, scaffold xong.
-- [x] **Phase 1 (phần lớn)** — A0/A3/A4/A5/A6/A8/A9/A10/A13 code xong; A7/A12 còn lại.
-- [~] **Phase 2** — Rule Engine spec ✅ (R1–R5); chờ implement.
-- [~] **Phase 3** — Judgment Agents spec ✅ (G0–G6 + V1 + S1); chờ implement.
-- [ ] **Phase 5** — API contract (chưa bắt đầu).
+- [x] **Phase 1** — tất cả analyzers code xong (A0/A3–A13).
+- [x] **Phase 2** — Rule Engine code xong (R1–R4 + patterns + severity).
+- [x] **Phase 3** — Agents code xong (G0 SoM+wrapper, G1–G6 runner, V1 critic, S1 summary).
+- [x] **Phase 4** — Verify + Summary code xong (critic.py + summary.py).
+- [x] **Phase 5** — FastAPI endpoint code xong (api/main.py + pipeline.py).
 - [ ] **Phase 6** — Golden Set + đo P/R (chưa bắt đầu).
+- [ ] **Testing** — chạy pytest, fix issues thực tế.
+- [ ] **Integration test** — gọi thật với ảnh mẫu.

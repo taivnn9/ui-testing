@@ -48,3 +48,6 @@ GRID_TOLERANCE_PX: int = 2  # ± device px sau khi chuẩn hóa dpr
 # Khoảng cách / chồng lấp
 GAP_MIN_PX: int = 4       # gap < 4 device px → ứng viên chồng lấp (TUNE)
 OVERLAP_IOU_MIN: float = 0.05  # iou > 0.05 → đánh dấu chồng lấp (TUNE)
+
+# Overflow container (TUNE)
+OVERFLOW_THRESHOLD: float = 4.0  # element vượt ra ngoài parent > 4px → fire R1-LAY03

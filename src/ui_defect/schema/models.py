@@ -81,6 +81,10 @@ class ImageMeta(BaseModel):
     displayed_w: Optional[int] = None
     displayed_h: Optional[int] = None
     scale_mode: Optional[Literal["fill", "fit", "stretch", "tile", "none"]] = None
+    blur_score: Optional[float] = None
+    is_broken: bool = False
+    is_partial_load: bool = False
+    intrinsic_unavailable: bool = False
 
 
 class TouchTarget(BaseModel):
