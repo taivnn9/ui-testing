@@ -76,9 +76,9 @@
 - [~] **S1** Summary — **spec ✅** [`agents/S1-summary.md`](agents/S1-summary.md): severity finalization, sort priority, API response format, issue ID
 
 ## Phase 5 — API contract & service
-- [ ] **API1** Request/response schema (input: ảnh PNG; output: issues[])
-- [ ] **API2** Endpoint + orchestrate pipeline vision-only
-- [ ] **API3** Tài liệu API cho tester
+- [~] **API1/2/3** — **spec ✅** [`docs/api-contract.md`](api-contract.md): POST /analyze multipart,
+  request params (platform/viewport/locale/theme/safe_area), response schema đầy đủ,
+  error codes, pipeline orchestration code, SLO targets (< 12s E2E)
 
 ## Phase 6 — Golden Set & đo lường (META — sống còn)
 - [ ] **GS1** Mutation-testing UI harness (inject lỗi: đổi font/bóp ảnh/nhồi text/đổi màu → positive đã biết)
