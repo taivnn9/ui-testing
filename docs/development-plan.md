@@ -61,19 +61,19 @@
 - [~] **R5** Severity+Modifier — **spec ✅** [`rules/R5-severity.md`](rules/R5-severity.md): bảng baseline + modifier ngữ cảnh + auto-confirm logic
 
 ## Phase 3 — Judgment Agents (VLM, ~6–7 nhóm → `docs/agents/<id>.md`)
-> Nhận: ảnh + schema + candidate_issues liên quan. Set-of-Marks · structured output · few-shot · decompose theo nhóm.
-- [ ] **G1** Text/Content agent (CNT + TYP nội dung)
-- [ ] **G2** Typography-Render agent (TYP pixel)
-- [ ] **G3** Color/Style agent (STY phán đoán)
-- [ ] **G4** Layout agent (LAY xác nhận)
-- [ ] **G5** Image agent (IMG)
-- [ ] **G6** Component+State agent (CMP + STATE)
+> **Spec ✅** toàn bộ G0–G6 + V1 + S1 tại `docs/agents/`. Chờ implement.
+- [~] **G0** Prompt framework — **spec ✅** [`agents/G0-prompt-framework.md`](agents/G0-prompt-framework.md): SoM renderer, output schema JSON tool_use, call wrapper, prompt caching
+- [~] **G1** Text/Content — **spec ✅** [`agents/G1-text-content.md`](agents/G1-text-content.md): CNT-01–14, TYP-03/06–11; few-shot 2 examples
+- [~] **G2** Typography/Render — **spec ✅** [`agents/G2-typography-render.md`](agents/G2-typography-render.md): TYP-01/02/04/05/09/12–14; xác nhận A8
+- [~] **G3** Color/Style — **spec ✅** [`agents/G3-color-style.md`](agents/G3-color-style.md): STY-01–13; xác nhận A4+R2
+- [~] **G4** Layout — **spec ✅** [`agents/G4-layout.md`](agents/G4-layout.md): LAY-01–15, ENV-04–09; xác nhận R1
+- [~] **G5** Image — **spec ✅** [`agents/G5-image.md`](agents/G5-image.md): IMG-01–15; xác nhận A6/A7/A10+R3
+- [~] **G6** Component+State — **spec ✅** [`agents/G6-component-state.md`](agents/G6-component-state.md): CMP-01–17, STATE-01–11, ENV-01–03; xác nhận A9
 - ⏭ **G7** Consistency agent (CONS, đa ảnh) → **Phase 2**
-- [ ] **G0** Prompt framework chung: schema tool-use, Set-of-Marks renderer (vẽ ID lên ảnh), few-shot calibrate severity
 
 ## Phase 4 — Verify + Summary
-- [ ] **V1** Critic/self-critique pass (lọc confidence thấp, giảm false-positive)
-- [ ] **S1** Summary agent: dedupe (1 lỗi nhiều nguồn) + gộp + chốt severity cuối trong range + sắp xếp
+- [~] **V1** Critic — **spec ✅** [`agents/V1-critic.md`](agents/V1-critic.md): cross-validate findings, dedup code, false positive filter
+- [~] **S1** Summary — **spec ✅** [`agents/S1-summary.md`](agents/S1-summary.md): severity finalization, sort priority, API response format, issue ID
 
 ## Phase 5 — API contract & service
 - [ ] **API1** Request/response schema (input: ảnh PNG; output: issues[])
@@ -107,6 +107,7 @@
 - [x] Bước 2 — kiến trúc + mapping + phasing.
 - [x] **Phase 0** — schema, thresholds, scaffold xong.
 - [x] **Phase 1 (phần lớn)** — A0/A3/A4/A5/A6/A8/A9/A10/A13 code xong; A7/A12 còn lại.
-- [ ] **Phase 2** — Rule Engine (chưa bắt đầu).
-- [ ] **Phase 3** — Judgment Agents VLM (chưa bắt đầu).
-- [ ] **Phase 4–6** — Verify, API, Golden Set (chưa bắt đầu).
+- [~] **Phase 2** — Rule Engine spec ✅ (R1–R5); chờ implement.
+- [~] **Phase 3** — Judgment Agents spec ✅ (G0–G6 + V1 + S1); chờ implement.
+- [ ] **Phase 5** — API contract (chưa bắt đầu).
+- [ ] **Phase 6** — Golden Set + đo P/R (chưa bắt đầu).
