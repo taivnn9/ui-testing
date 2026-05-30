@@ -153,7 +153,44 @@ REPORT_TOOL = {
 }
 
 
-# ── Claude API call wrapper ───────────────────────────────────────────────────
+# ── JSON schema nhúng vào system prompt (thay tool_use) ──────────────────────
+
+_OUTPUT_SCHEMA_INSTRUCTION = """
+Respond ONLY with valid JSON matching this exact schema (no markdown, no explanation outside JSON):
+
+{
+  "findings": [
+    {
+      "issue_type": "STY-01",          // catalog code
+      "element_id": "e7",              // ID from marked image, or null
+      "severity": "high",              // critical|high|medium|low|trivial
+      "confidence": 0.9,               // 0.0–1.0
+      "verdict": "confirmed",          // confirmed|new_finding|rejected|uncertain
+      "original_candidate_rule": "R2-STY01",  // rule that flagged this, or null
+      "evidence": {
+        "element_ids": ["e7"],
+        "measured_value": "contrast=2.8",
+        "expected_value": ">=4.5",
+        "description": "short description"
+      },
+      "reasoning": "why this is a real defect",
+      "severity_justification": "why this severity level"
+    }
+  ],
+  "self_critique": [
+    {
+      "issue_index": 0,
+      "concern": "might be intentional design",
+      "decision": "keep",             // keep|downgrade|remove
+      "new_confidence": 0.75
+    }
+  ],
+  "summary": "one sentence summary"
+}
+"""
+
+
+# ── llama.cpp call wrapper ─────────────────────────────────────────────────────
 
 def call_agent(
     marked_image: Image.Image,
@@ -163,40 +200,27 @@ def call_agent(
     max_tokens: int = 1500,
 ) -> dict[str, Any]:
     """
-    Gọi Claude API với vision + tool_use.
-    Trả dict findings từ tool_use input.
-    Raises: ImportError nếu anthropic không cài; RuntimeError nếu API lỗi.
+    Gọi llama.cpp /v1/chat/completions với vision + JSON output.
+    Trả dict findings đã parse.
     """
-    import anthropic  # type: ignore[import]
+    from .llm_client import call_llm
 
-    _model = model or os.environ.get("VLM_MODEL", "claude-sonnet-4-6")
-    img_b64 = image_to_base64(marked_image)
+    full_system = system_prompt + "\n\n" + _OUTPUT_SCHEMA_INSTRUCTION
 
-    client = anthropic.Anthropic()
-
-    response = client.messages.create(
-        model=_model,
-        max_tokens=max_tokens,
-        system=system_prompt,
-        tools=[REPORT_TOOL],
-        tool_choice={"type": "any"},
-        messages=[{
-            "role": "user",
-            "content": [
-                {
-                    "type": "image",
-                    "source": {"type": "base64", "media_type": "image/png", "data": img_b64},
-                },
-                {"type": "text", "text": user_text},
-            ],
-        }],
-    )
-
-    for block in response.content:
-        if block.type == "tool_use":
-            return block.input  # type: ignore[return-value]
-
-    return {"findings": [], "self_critique": [], "summary": "no tool_use in response"}
+    try:
+        return call_llm(
+            system_prompt=full_system,
+            user_text=user_text,
+            image=marked_image,
+            max_tokens=max_tokens,
+            model=model,
+        )
+    except Exception as exc:
+        return {
+            "findings": [],
+            "self_critique": [],
+            "summary": f"llm_error: {exc}",
+        }
 
 
 # ── Context trimming helpers ──────────────────────────────────────────────────

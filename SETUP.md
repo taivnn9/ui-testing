@@ -3,7 +3,7 @@
 ## Yêu cầu
 - Python 3.11+
 - RAM ≥ 4GB (8GB nếu dùng PaddleOCR)
-- ANTHROPIC_API_KEY (nếu muốn dùng VLM agents)
+- llama.cpp server đang chạy với model vision (Gemma 4 hoặc tương đương)
 
 ---
 
@@ -32,21 +32,18 @@ sudo apt install tesseract-ocr tesseract-ocr-vie tesseract-ocr-eng
 # macOS
 brew install tesseract
 
-# Sau đó cài Python wrapper
+# Python wrapper
 pip install pytesseract
 ```
 
 ### Option B — PaddleOCR (chính xác hơn, nặng hơn ~1GB)
 
 ```bash
-# CPU only
-pip install paddlepaddle paddleocr
-
-# GPU (CUDA 11.x)
-pip install paddlepaddle-gpu paddleocr
+pip install paddlepaddle paddleocr          # CPU
+# hoặc: pip install paddlepaddle-gpu paddleocr  # GPU CUDA
 ```
 
-> Nếu không cài OCR nào → A5 trả `[]` → text rules (R4) và G1/G2 agents không chạy.
+> Nếu không cài OCR nào → text rules (R4) và G1/G2 agents sẽ không detect text.
 > Layout, color, image rules vẫn hoạt động bình thường.
 
 ---
@@ -55,7 +52,13 @@ pip install paddlepaddle-gpu paddleocr
 
 ```bash
 cp .env.example .env
-# Mở .env và điền ANTHROPIC_API_KEY
+```
+
+Mở `.env` và sửa:
+```bash
+LLM_BASE_URL=http://<địa_chỉ_llama_cpp_server>:8080
+LLM_MODEL=gemma-4        # tên model đang serve trên llama.cpp
+LLM_API_KEY=none         # điền nếu server yêu cầu auth
 ```
 
 ---
@@ -66,23 +69,23 @@ cp .env.example .env
 uvicorn src.ui_defect.api.main:app --reload --port 8000
 ```
 
-Mở trình duyệt: http://localhost:8000/docs (Swagger UI tự động)
+Swagger UI: http://localhost:8000/docs
 
 ---
 
 ## 5. Test nhanh
 
 ```bash
-# Chỉ cần ảnh — không cần field nào khác
+# Minimal — chỉ cần ảnh
 curl -X POST http://localhost:8000/analyze \
-  -F "screenshot=@/path/to/screen.png"
+  -F "screenshot=@screen.png"
 
-# Rule-only (không gọi Claude API — nhanh, miễn phí)
+# Rule-only — không gọi LLM (nhanh, dùng để debug)
 curl -X POST http://localhost:8000/analyze \
-  -F "screenshot=@/path/to/screen.png" \
+  -F "screenshot=@screen.png" \
   -F "run_vlm=false"
 
-# iOS với locale tiếng Việt
+# iOS, tiếng Việt, retina
 curl -X POST http://localhost:8000/analyze \
   -F "screenshot=@screen.png" \
   -F "platform=ios" \
@@ -106,5 +109,5 @@ pytest
 | Chế độ | Cần gì | Kết quả |
 |---|---|---|
 | **Rule-only** (`run_vlm=false`) | pip install + OpenCV | Layout, color, text regex rules |
-| **Rule + OCR** | + Tesseract | Thêm text detection, CNT/TYP rules |
-| **Full** (default) | + ANTHROPIC_API_KEY | Tất cả + VLM agents xác nhận |
+| **Rule + OCR** | + Tesseract hoặc PaddleOCR | Thêm text detection, CNT/TYP rules |
+| **Full** (default) | + llama.cpp server chạy model vision | Tất cả + VLM agents xác nhận |
