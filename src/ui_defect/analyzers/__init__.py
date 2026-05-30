@@ -8,7 +8,7 @@ from .a8_glyph_inspector import inspect_glyph, inspect_batch, glyph_issues_to_ca
 from .a9_pixel_pattern import detect_patterns, patterns_to_candidates
 from .a10_perceptual_hash import compute_hashes, find_duplicates, duplicates_to_candidates
 from .a12_interactivity import classify_interactivity
-from .a13_device_meta import resolve_metadata, MetaResult
+from .a13_device_meta import resolve_metadata, detect_platform, MetaResult
 from .a0_normalize import normalize, compute_relations
 
 __all__ = [
@@ -21,6 +21,6 @@ __all__ = [
     "detect_patterns", "patterns_to_candidates",
     "compute_hashes", "find_duplicates", "duplicates_to_candidates",
     "classify_interactivity",
-    "resolve_metadata", "MetaResult",
+    "resolve_metadata", "detect_platform", "MetaResult",
     "normalize", "compute_relations",
 ]

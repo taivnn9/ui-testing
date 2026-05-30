@@ -28,31 +28,22 @@ def health():
 
 @app.post("/analyze", response_model=AnalyzeResponse)
 async def analyze(
-    screenshot: UploadFile = File(..., description="Ảnh PNG/JPG màn hình"),
-    # Bắt buộc duy nhất — xác định ngưỡng touch target và quy tắc platform
-    platform: str = Form(..., description="android | ios | web"),
-    # Tự suy từ ảnh nếu không cấp
-    viewport_w: Optional[int] = Form(None, description="Device px — tự lấy từ img.width nếu bỏ trống"),
-    viewport_h: Optional[int] = Form(None, description="Device px — tự lấy từ img.height nếu bỏ trống"),
-    theme: Optional[str] = Form(None, description="light|dark — tự detect từ luminance ảnh nếu bỏ trống"),
-    # Override safe_area nếu muốn chính xác hơn A13 inference
-    safe_area_top: Optional[int] = Form(None),
+    screenshot: UploadFile = File(..., description="Ảnh PNG/JPG màn hình — trường duy nhất bắt buộc"),
+    # Tất cả optional — hệ thống tự detect từ ảnh nếu không cấp
+    platform: Optional[str] = Form(None, description="android|ios|web — tự detect nếu bỏ trống"),
+    viewport_w: Optional[int] = Form(None, description="Tự lấy img.width nếu bỏ trống"),
+    viewport_h: Optional[int] = Form(None, description="Tự lấy img.height nếu bỏ trống"),
+    theme: Optional[str] = Form(None, description="light|dark — tự detect từ luminance"),
+    dpr: float = Form(1.0),
+    locale: Optional[str] = Form(None, description="vd vi-VN — tự detect từ OCR text"),
+    safe_area_top: Optional[int] = Form(None, description="Override A13 nếu muốn chính xác"),
     safe_area_bottom: Optional[int] = Form(None),
-    # Ít ảnh hưởng hơn — dùng default nếu không biết
-    dpr: float = Form(1.0, description="Để 1.0 nếu ảnh đã ở device px; 2.0/3.0 nếu ảnh retina"),
-    locale: Optional[str] = Form(None, description="vd vi-VN — tự detect từ OCR nếu bỏ trống"),
     font_scale: float = Form(1.0),
     route: Optional[str] = Form(None),
-    # Filter output
     min_severity: str = Form("low"),
     min_confidence: float = Form(0.4),
-    run_vlm: bool = Form(True, description="False để chỉ chạy rule engine, bỏ qua VLM"),
+    run_vlm: bool = Form(True),
 ):
-    if platform not in ("android", "ios", "web"):
-        raise HTTPException(400, detail="platform phải là android, ios hoặc web")
-    if theme and theme not in ("light", "dark", "system"):
-        raise HTTPException(400, detail="theme phải là light, dark hoặc system")
-
     # Đọc ảnh
     raw = await screenshot.read()
     if len(raw) > _MAX_IMAGE_BYTES:
@@ -67,26 +58,27 @@ async def analyze(
     except (UnidentifiedImageError, Exception) as exc:
         raise HTTPException(400, detail=f"invalid_image: {exc}") from exc
 
-    # Auto-derive viewport từ ảnh nếu user không cấp
+    # Auto-detect platform
+    if platform is None:
+        from ..analyzers.a13_device_meta import detect_platform
+        _platform, _plat_conf = detect_platform(img)
+    else:
+        if platform not in ("android", "ios", "web"):
+            raise HTTPException(400, detail="platform phải là android, ios hoặc web")
+        _platform = platform
+
+    # Auto-derive từ ảnh
+    import numpy as np
     _vp_w = viewport_w or img.width
     _vp_h = viewport_h or img.height
-
-    # Auto-detect theme từ luminance nếu không cấp
-    if theme is None:
-        import numpy as np
-        arr = np.array(img.convert("L"))
-        _theme = "dark" if arr.mean() / 255.0 < 0.35 else "light"
-    else:
-        _theme = theme
-
-    # Auto-detect locale từ OCR nếu không cấp (dùng fallback en-US nếu detect thất bại)
+    _theme = theme or ("dark" if np.array(img.convert("L")).mean() / 255.0 < 0.35 else "light")
     _locale = locale or "en-US"
 
     # Chạy pipeline
     try:
         output = run_pipeline(
             img=img,
-            platform=platform,
+            platform=_platform,
             viewport_w=_vp_w,
             viewport_h=_vp_h,
             dpr=dpr,
@@ -112,7 +104,7 @@ async def analyze(
         screen_id=output.screen_id,
         analyzed_at=now,
         screen={
-            "platform": platform,
+            "platform": _platform,
             "viewport": {"w": _vp_w, "h": _vp_h, "dpr": dpr},
             "locale": _locale,
             "theme": _theme,

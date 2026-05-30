@@ -140,6 +140,77 @@ class MetaResult:
     nav_bar_h: int = 0
 
 
+def detect_platform(img: Image.Image) -> tuple[str, float]:
+    """
+    Đoán platform từ ảnh: "android" | "ios" | "web".
+    Trả (platform, confidence).
+
+    Heuristic theo thứ tự độ tin cậy:
+    1. Kích thước khớp bảng device profile → confidence cao
+    2. Aspect ratio + orientation → phân biệt web vs mobile
+    3. Bottom strip: iOS home indicator (thanh mảnh giữa) vs Android nav buttons
+    4. Top strip: status bar layout
+    """
+    import cv2
+    import numpy as np
+
+    w, h = img.width, img.height
+    aspect = h / w if w > 0 else 1.0
+
+    # 1. Tra bảng device profile theo kích thước
+    for platform in ("ios", "android"):
+        profile = _find_device_profile(platform, w, h, dpr=None)
+        if profile and abs(profile.pt_w - w) <= 10 and abs(profile.pt_h - h) <= 20:
+            return platform, 0.88
+
+    # 2. Aspect ratio: web/desktop thường rộng hoặc gần vuông
+    if aspect < 1.2:
+        return "web", 0.75
+    if aspect > 2.2:
+        # Rất cao → likely mobile
+        pass
+
+    # 3. Bottom strip: detect iOS home indicator (đường kẻ mảnh nằm giữa)
+    arr = np.array(img.convert("RGB"))
+    gray = cv2.cvtColor(arr, cv2.COLOR_RGB2GRAY)
+
+    bottom_strip_h = max(4, h // 20)
+    bottom = gray[h - bottom_strip_h:, :]
+
+    # iOS home indicator: dải nằm giữa, sẫm hơn nền, chiều rộng ~30% màn
+    mid_start = w // 3
+    mid_end = 2 * w // 3
+    mid_col_mean = bottom[:, mid_start:mid_end].mean()
+    side_col_mean = (bottom[:, :mid_start].mean() + bottom[:, mid_end:].mean()) / 2
+    ios_indicator_score = side_col_mean - mid_col_mean  # dương = giữa tối hơn
+
+    # Android nav bar: 3 vùng đối xứng (back/home/recent buttons)
+    third = w // 3
+    left_mean = bottom[:, :third].mean()
+    center_mean = bottom[:, third:2*third].mean()
+    right_mean = bottom[:, 2*third:].mean()
+    symmetry = 1.0 - abs(left_mean - right_mean) / (max(left_mean, right_mean, 1))
+    android_nav_score = symmetry * (1.0 - abs(center_mean - (left_mean + right_mean) / 2) / 255)
+
+    # 4. Top strip: status bar height heuristic
+    top_h = max(4, h // 18)
+    top_strip = gray[:top_h, :]
+    top_var = float(top_strip.std())
+    # iOS status bar: ít biến động, iOS thường có giờ ở giữa
+    # Android: notification icons trái → variance cao hơn
+
+    # Quyết định
+    if ios_indicator_score > 10:
+        return "ios", 0.72
+    if android_nav_score > 0.7 and top_var > 15:
+        return "android", 0.68
+
+    # Fallback theo aspect ratio
+    if aspect >= 1.8:
+        return "android", 0.55  # mobile, default android
+    return "web", 0.60
+
+
 def resolve_metadata(
     img: Image.Image,
     screen: Screen,
