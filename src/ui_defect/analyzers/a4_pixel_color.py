@@ -259,6 +259,7 @@ def enrich_elements(
                 bg_color=bg_str,
                 contrast_ratio=r.contrast_ratio_px,
                 opacity=r.opacity_px,
+                dark_mode_ok=r.dark_mode_ok,
                 sources=StyleSources(
                     color="pixel" if color_str else None,
                     bg_color="pixel" if bg_str else None,
@@ -273,4 +274,6 @@ def enrich_elements(
                 elem.style.bg_color = bg_str
             if r.contrast_ratio_px is not None and elem.style.contrast_ratio is None:
                 elem.style.contrast_ratio = r.contrast_ratio_px
+            if r.dark_mode_ok is not None and elem.style.dark_mode_ok is None:
+                elem.style.dark_mode_ok = r.dark_mode_ok
     return elements

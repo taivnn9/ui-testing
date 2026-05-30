@@ -70,6 +70,7 @@ class Style(BaseModel):
     contrast_ratio: Optional[float] = None
     opacity: float = 1.0
     border_radius: Optional[float] = None
+    dark_mode_ok: Optional[bool] = None   # False = hardcode màu sáng trong dark theme
     sources: Optional[StyleSources] = Field(None, alias="_sources")
 
     model_config = {"populate_by_name": True}

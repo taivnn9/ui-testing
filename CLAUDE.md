@@ -122,8 +122,10 @@ không đoán toạ độ) · few-shot có nhãn để calibrate severity · sel
 
 ## 7. Trạng thái & việc tiếp theo
 - [x] Chốt kiến trúc (API service, input ảnh duy nhất, vision-only, rule+VLM).
-- [ ] Vision adapter (OCR + CV element/icon detect + đo contrast/clip từ pixel) → schema chung.
-- [ ] Rule engine cho các check tất định + ngưỡng (touch ≥44pt iOS/48dp Android, contrast ≥4.5:1, gap grid 8pt...).
-- [ ] Prompt template + few-shot cho từng nhóm tiêu chí.
-- [ ] Golden set + script đo precision/recall (mutation testing UI).
-- [ ] API contract (request/response schema) cho tester.
+- [x] Vision adapter: A0/A3–A13 analyzers (`src/ui_defect/analyzers/`) — CV+OCR+pixel.
+- [x] Rule engine R1–R4 (`src/ui_defect/rules/`) — geometry, color, image, text.
+- [x] Prompt template + VLM agents G0–G6 (`src/ui_defect/agents/`) — Set-of-Marks, tool_use.
+- [x] API service (`src/ui_defect/api/`) — FastAPI, POST /analyze, zero-config (chỉ cần ảnh).
+- [ ] Golden set + script đo precision/recall (mutation testing UI) → `data/golden/`.
+- [ ] Cài deps + chạy pytest + integration test với ảnh thật.
+- [ ] Few-shot examples cho agents G1–G6 (cần ảnh mẫu có lỗi biết trước).

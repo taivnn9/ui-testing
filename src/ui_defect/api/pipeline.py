@@ -86,6 +86,9 @@ def run_pipeline(
     )
     analyzers_ran.append("A13")
 
+    # dpr sau khi A13 resolve (có thể khác với dpr user cấp)
+    _dpr = screen.viewport.dpr
+
     # ── A5 — OCR ─────────────────────────────────────────────────────────────
     text_segments = extract_text(img, screen.viewport, lang=locale[:2].lower())
     analyzers_ran.append("A5")
@@ -105,17 +108,17 @@ def run_pipeline(
     icon_ids = {r.id for r in icon_regions}
     elements = classify_interactivity(
         img, elements, text_segments=text_segments,
-        icon_region_ids=icon_ids, viewport_h=viewport_h,
+        icon_region_ids=icon_ids, viewport_h=screen.viewport.h,
     )
     analyzers_ran.append("A12")
 
     # ── A4 — Pixel Color Sampler ─────────────────────────────────────────────
-    color_results, color_issues = sample_colors(img, elements, theme=theme)
+    color_results, color_issues = sample_colors(img, elements, theme=screen.theme)
     elements = enrich_elements(elements, color_results)
     analyzers_ran.append("A4")
 
     # ── A7 — Image Meta Reader ────────────────────────────────────────────────
-    elements, img_issues = analyze_images(img, elements, dpr=dpr)
+    elements, img_issues = analyze_images(img, elements, dpr=_dpr)
     analyzers_ran.append("A7")
 
     # ── A8 — Glyph Inspector ─────────────────────────────────────────────────
@@ -126,7 +129,7 @@ def run_pipeline(
             crop = crop_bbox(img, seg.bbox)
             glyph_crops.append((
                 f"seg_{id(seg)}", crop, "text",
-                dpr, seg.has_replacement, seg.script,
+                _dpr, seg.has_replacement, seg.script,
             ))
     glyph_issues_raw = []
     if glyph_crops:
