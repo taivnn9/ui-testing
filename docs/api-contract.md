@@ -20,38 +20,44 @@ Content-Type: multipart/form-data
 
 ### 2.1 Form fields
 
-| Field | Type | Required | Mô tả |
-|---|---|---|---|
-| `screenshot` | `file` (PNG/JPG) | ✅ | Ảnh chụp màn hình |
-| `platform` | `string` | ✅ | `android` \| `ios` \| `web` |
-| `viewport_w` | `int` | ✅ | Chiều rộng viewport (device px) |
-| `viewport_h` | `int` | ✅ | Chiều cao viewport (device px) |
-| `dpr` | `float` | ❌ | Device pixel ratio (mặc định: 2.0) |
-| `locale` | `string` | ❌ | vd `vi-VN`, `en-US` (mặc định: `en-US`) |
-| `theme` | `string` | ❌ | `light` \| `dark` \| `system` (mặc định: `light`) |
-| `font_scale` | `float` | ❌ | Trợ năng font scale (mặc định: 1.0) |
-| `route` | `string` | ❌ | Tên màn / route để track (vd `checkout`) |
-| `safe_area_top` | `int` | ❌ | Device px — override A13 (khuyến khích cấp) |
-| `safe_area_bottom` | `int` | ❌ | Device px |
-| `analyzers` | `string` (JSON array) | ❌ | Subset analyzers muốn chạy (mặc định: tất cả) |
-| `agents` | `string` (JSON array) | ❌ | Subset agents muốn chạy (mặc định: tất cả) |
-| `min_severity` | `string` | ❌ | Chỉ trả issue từ mức này trở lên (mặc định: `low`) |
-| `min_confidence` | `float` | ❌ | Chỉ trả issue có confidence ≥ này (mặc định: 0.4) |
+| Field | Type | Required | Default | Mô tả |
+|---|---|---|---|---|
+| `screenshot` | `file` (PNG/JPG) | ✅ | — | Ảnh chụp màn hình — **trường duy nhất bắt buộc** |
+| `platform` | `string` | ❌ | `android` | `android` \| `ios` \| `web` |
+| `viewport_w` | `int` | ❌ | `img.width` | Tự lấy từ kích thước ảnh |
+| `viewport_h` | `int` | ❌ | `img.height` | Tự lấy từ kích thước ảnh |
+| `dpr` | `float` | ❌ | `1.0` | Để 1.0 nếu ảnh đã ở device px; 2.0/3.0 nếu retina |
+| `theme` | `string` | ❌ | auto | Tự detect từ mean luminance; override: `light`\|`dark` |
+| `locale` | `string` | ❌ | `en-US` | vd `vi-VN` — ảnh hưởng G1 text agent |
+| `font_scale` | `float` | ❌ | `1.0` | Trợ năng font scale |
+| `route` | `string` | ❌ | `null` | Tên màn / route để tracking |
+| `safe_area_top` | `int` | ❌ | A13 auto | Device px — override A13 device inference |
+| `safe_area_bottom` | `int` | ❌ | A13 auto | Device px |
+| `min_severity` | `string` | ❌ | `low` | Filter output: `critical`\|`high`\|`medium`\|`low`\|`trivial` |
+| `min_confidence` | `float` | ❌ | `0.4` | Filter output: chỉ trả issue ≥ ngưỡng này |
+| `run_vlm` | `bool` | ❌ | `true` | `false` = chỉ rule engine, bỏ qua VLM agents (nhanh hơn) |
 
 ### 2.2 Ví dụ curl
 
 ```bash
+# Tối giản — chỉ cần ảnh
+curl -X POST http://localhost:8000/analyze \
+  -F "screenshot=@screen.png"
+
+# Đầy đủ — cho iOS với safe_area cụ thể
 curl -X POST http://localhost:8000/analyze \
   -F "screenshot=@screen_checkout.png" \
   -F "platform=ios" \
-  -F "viewport_w=390" \
-  -F "viewport_h=844" \
   -F "dpr=3" \
   -F "locale=vi-VN" \
-  -F "theme=light" \
   -F "safe_area_top=59" \
   -F "safe_area_bottom=34" \
   -F "route=checkout"
+
+# Rule-only (không gọi VLM — nhanh, dùng để debug)
+curl -X POST http://localhost:8000/analyze \
+  -F "screenshot=@screen.png" \
+  -F "run_vlm=false"
 ```
 
 ---
@@ -71,14 +77,9 @@ curl -X POST http://localhost:8000/analyze \
   },
   "summary": {
     "total_issues": 5,
-    "by_severity": {
-      "critical": 0, "high": 2, "medium": 2, "low": 1, "trivial": 0
-    },
+    "by_severity": { "critical": 0, "high": 2, "medium": 2, "low": 1, "trivial": 0 },
     "top_categories": ["STY", "LAY", "CNT"],
-    "confidence_avg": 0.84,
-    "analyzers_ran": ["A3", "A4", "A5", "A6", "A8", "A9", "A10", "A13"],
-    "agents_ran": ["G1", "G3", "G4", "G6"],
-    "pipeline_duration_ms": 4200
+    "confidence_avg": 0.84
   },
   "issues": [
     {
@@ -89,44 +90,27 @@ curl -X POST http://localhost:8000/analyze \
       "confidence": 0.93,
       "tags": ["a11y"],
       "temporal": false,
-      "element": {
-        "id": "e7",
-        "role": "button",
-        "bbox": {"x": 16, "y": 780, "w": 358, "h": 48},
-        "text": "Thanh toán"
-      },
+      "element_id":   "e7",
+      "element_role": "button",
+      "element_bbox": {"x": 16, "y": 780, "w": 358, "h": 48},
+      "element_text": "Thanh toán",
       "evidence": {
         "measured_value": "contrast_ratio=2.8",
         "expected_value": ">= 4.5 (WCAG AA)",
-        "crop": "http://localhost:8000/crops/scr_a1b2c3d4/e7.png",
         "description": "Nút 'Thanh toán' có contrast 2.8:1 — thấp hơn WCAG AA 4.5:1"
       },
-      "description": "Nút CTA chính 'Thanh toán' có contrast màu chữ/nền 2.8:1, thấp hơn ngưỡng WCAG AA 4.5:1. User khó đọc trong điều kiện ánh sáng mạnh.",
+      "description": "Nút CTA chính 'Thanh toán' có contrast màu chữ/nền 2.8:1.",
       "sources": ["R2-STY01", "G3-confirmed"]
-    },
-    {
-      "id": "iss_9e4c7f2a",
-      "issue_type": "LAY-02",
-      "title": "Nội dung bị cắt khỏi viewport",
-      "severity": "high",
-      "confidence": 0.88,
-      "tags": [],
-      "temporal": false,
-      "element": {
-        "id": "e12",
-        "role": "button",
-        "bbox": {"x": 300, "y": 400, "w": 120, "h": 44},
-        "text": "Xem thêm"
-      },
-      "evidence": {
-        "measured_value": "bbox.x+w=420 > viewport.w=390",
-        "description": "Nút 'Xem thêm' bị cắt 30px ở mép phải viewport"
-      },
-      "description": "Nút 'Xem thêm' bị cắt 30px ở phía phải viewport — không nhìn thấy hoàn toàn.",
-      "sources": ["R1-LAY02", "G4-confirmed"]
     }
   ],
-  "marked_image_url": "http://localhost:8000/debug/scr_a1b2c3d4/marked.png"
+  "pipeline_meta": {
+    "analyzers_ran": ["A13","A5","A3","A6","A12","A4","A7","A8","A9","A10","A0"],
+    "rules_ran": ["R1","R2","R3","R4"],
+    "agents_ran": ["G1","G3","G4","G6"],
+    "total_candidates_pre_filter": 18,
+    "final_issues": 5,
+    "pipeline_duration_ms": 4200
+  }
 }
 ```
 
@@ -137,7 +121,7 @@ curl -X POST http://localhost:8000/analyze \
 | HTTP | Khi nào | Body |
 |---|---|---|
 | `400` | File không phải ảnh hợp lệ | `{"error": "invalid_image", "detail": "..."}` |
-| `400` | Thiếu field bắt buộc | `{"error": "missing_field", "detail": "platform required"}` |
+| `400` | Giá trị platform/theme sai | `{"detail": "platform phải là android, ios hoặc web"}` |
 | `413` | Ảnh quá lớn (> 10MB) | `{"error": "file_too_large"}` |
 | `422` | Giá trị field không hợp lệ | Pydantic validation error |
 | `500` | Pipeline lỗi nội bộ | `{"error": "pipeline_failed", "detail": "..."}` |
@@ -161,51 +145,11 @@ TTL: 1 giờ sau khi analyze.
 
 ---
 
-## 6. Pipeline orchestration (FastAPI endpoint)
+## 6. Pipeline orchestration
 
-```python
-@app.post("/analyze")
-async def analyze(
-    screenshot: UploadFile,
-    platform: str = Form(...),
-    viewport_w: int = Form(...),
-    viewport_h: int = Form(...),
-    dpr: float = Form(2.0),
-    locale: str = Form("en-US"),
-    theme: str = Form("light"),
-    # ... other params
-) -> AnalyzeResponse:
-    
-    # 1. Load ảnh
-    img = load_image(screenshot.file)
-    screen = build_screen(platform, viewport_w, viewport_h, dpr, locale, theme)
-    
-    # 2. A13 — Device metadata
-    meta = resolve_metadata(img, screen, tester_meta)
-    screen = apply_meta(screen, meta)
-    
-    # 3. Analyzers (parallel nếu có thể)
-    a5_result = extract_text(img, screen.viewport)
-    a3_result = detect_layout(img, screen.viewport, a5_result)
-    # ... A4, A6, A8, A9, A10
-    
-    # 4. A0 — Normalize
-    doc = normalize(screen, img_path, img.width, img.height, elements, issues)
-    
-    # 5. Rule Engine
-    doc = run_rule_engine(doc)  # R1–R5
-    
-    # 6. Judgment Agents (parallel)
-    findings = await run_agents_parallel(doc, img)  # G1–G6
-    
-    # 7. V1 Critic
-    findings = run_critic(findings, doc)
-    
-    # 8. S1 Summary
-    response = build_summary(findings, doc)
-    
-    return response
-```
+Xem `src/ui_defect/api/pipeline.py` — `run_pipeline()`.
+
+Thứ tự: A13 → A5 → A3 → A6 → A12 → A4 → A7 → A8 → A9 → A10 → A0 → R1–R4 → G1–G6 → V1 → S1.
 
 ---
 
@@ -237,4 +181,4 @@ DEBUG=false
 
 ---
 
-## Trạng thái: spec ✅ — chờ implement Phase 5 sau khi analyzer + rule + agent xong.
+## Trạng thái: ✅ implemented — `src/ui_defect/api/` (main.py + pipeline.py + schemas.py).

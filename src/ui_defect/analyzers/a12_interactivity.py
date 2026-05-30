@@ -392,6 +392,8 @@ def classify_interactivity(
         score = min(score, 0.95)
 
         elem.interactive = score >= cfg.interactive_threshold
+        elem.interactive_confidence = round(score, 2)
+        elem.interactive_signals = signals
         elem.source = "vision"
         if elem.confidence >= 1.0:
             elem.confidence = min(score, 0.9)

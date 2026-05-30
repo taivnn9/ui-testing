@@ -108,6 +108,8 @@ class Element(BaseModel):
     style: Optional[Style] = None
     image_meta: Optional[ImageMeta] = None
     interactive: bool = False
+    interactive_confidence: float = 0.0    # A12: độ chắc chắn phân loại interactive
+    interactive_signals: list[str] = Field(default_factory=list)  # A12: tín hiệu phát hiện
     touch_target: Optional[TouchTarget] = None
     visible: bool = True
     clipped: bool = False
