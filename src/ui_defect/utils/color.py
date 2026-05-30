@@ -62,6 +62,29 @@ def delta_e_cie76(lab1: np.ndarray, lab2: np.ndarray) -> float:
     return float(np.sqrt(np.sum((lab1 - lab2) ** 2)))
 
 
+def _kmeans_numpy(
+    data: np.ndarray,
+    k: int,
+    max_iter: int = 50,
+    seed: int = 42,
+) -> np.ndarray:
+    """K-means thuần numpy — fallback khi không có scikit-learn."""
+    rng = np.random.default_rng(seed)
+    centers = data[rng.choice(len(data), k, replace=False)]
+    labels = np.zeros(len(data), dtype=np.int32)
+    for _ in range(max_iter):
+        dists = np.linalg.norm(data[:, None] - centers[None], axis=2)
+        new_labels = np.argmin(dists, axis=1).astype(np.int32)
+        if np.array_equal(new_labels, labels):
+            break
+        labels = new_labels
+        for c in range(k):
+            mask = labels == c
+            if mask.any():
+                centers[c] = data[mask].mean(axis=0)
+    return labels
+
+
 def dominant_colors_kmeans(
     pixels: np.ndarray,
     k: int = 2,
@@ -69,11 +92,9 @@ def dominant_colors_kmeans(
 ) -> tuple[list[tuple[int, int, int]], list[float], np.ndarray]:
     """
     Tìm k màu trội từ mảng pixel RGB (N×3) bằng K-means trong không gian Lab.
+    Dùng scikit-learn nếu có; fallback numpy nếu không.
     Trả về: (colors[(R,G,B)], weights[0..1], labels[N]).
-    Downsample nếu N > max_pixels để tránh chậm.
     """
-    from sklearn.cluster import KMeans  # type: ignore[import]
-
     if len(pixels) == 0:
         return [], [], np.array([], dtype=np.int32)
 
@@ -84,19 +105,25 @@ def dominant_colors_kmeans(
         sample = pixels
 
     lab_sample = rgb_to_lab(sample)
-    km = KMeans(n_clusters=min(k, len(sample)), n_init=10, random_state=42)
-    km.fit(lab_sample)
-    # Tính nhãn cho toàn bộ pixels (không chỉ sample)
-    lab_all = rgb_to_lab(pixels)
-    # Dùng cluster centers từ sample, predict toàn bộ
-    from sklearn.metrics import pairwise_distances  # type: ignore[import]
-    dists = pairwise_distances(lab_all, km.cluster_centers_)
-    labels = np.argmin(dists, axis=1)
+    k_actual = min(k, len(sample))
 
-    colors = []
-    weights = []
+    try:
+        from sklearn.cluster import KMeans       # type: ignore[import]
+        from sklearn.metrics import pairwise_distances  # type: ignore[import]
+        km = KMeans(n_clusters=k_actual, n_init=10, random_state=42)
+        km.fit(lab_sample)
+        lab_all = rgb_to_lab(pixels)
+        dists = pairwise_distances(lab_all, km.cluster_centers_)
+        labels = np.argmin(dists, axis=1).astype(np.int32)
+    except ImportError:
+        # fallback: K-means thuần numpy (chậm hơn ~3×, đủ cho ảnh UI)
+        lab_all = rgb_to_lab(pixels)
+        labels = _kmeans_numpy(lab_all, k_actual)
+
+    colors: list[tuple[int, int, int]] = []
+    weights: list[float] = []
     total = len(pixels)
-    for c_idx in range(km.n_clusters):
+    for c_idx in range(k_actual):
         mask = labels == c_idx
         count = int(mask.sum())
         if count == 0:
