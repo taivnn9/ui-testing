@@ -30,7 +30,7 @@ def health():
 async def analyze(
     screenshot: UploadFile = File(..., description="Ảnh PNG/JPG màn hình — trường duy nhất bắt buộc"),
     # Tất cả optional — hệ thống tự detect từ ảnh nếu không cấp
-    platform: Optional[str] = Form(None, description="android|ios|web — tự detect nếu bỏ trống"),
+    platform: str = Form("android", description="android (default) | ios | web"),
     viewport_w: Optional[int] = Form(None, description="Tự lấy img.width nếu bỏ trống"),
     viewport_h: Optional[int] = Form(None, description="Tự lấy img.height nếu bỏ trống"),
     theme: Optional[str] = Form(None, description="light|dark — tự detect từ luminance"),
@@ -58,14 +58,9 @@ async def analyze(
     except (UnidentifiedImageError, Exception) as exc:
         raise HTTPException(400, detail=f"invalid_image: {exc}") from exc
 
-    # Auto-detect platform
-    if platform is None:
-        from ..analyzers.a13_device_meta import detect_platform
-        _platform, _plat_conf = detect_platform(img)
-    else:
-        if platform not in ("android", "ios", "web"):
-            raise HTTPException(400, detail="platform phải là android, ios hoặc web")
-        _platform = platform
+    if platform not in ("android", "ios", "web"):
+        raise HTTPException(400, detail="platform phải là android, ios hoặc web")
+    _platform = platform
 
     # Auto-derive từ ảnh
     import numpy as np
@@ -104,7 +99,7 @@ async def analyze(
         screen_id=output.screen_id,
         analyzed_at=now,
         screen={
-            "platform": _platform,
+            "platform": _platform,  # android mặc định
             "viewport": {"w": _vp_w, "h": _vp_h, "dpr": dpr},
             "locale": _locale,
             "theme": _theme,
