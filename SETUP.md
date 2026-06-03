@@ -78,6 +78,10 @@ LLM_API_KEY=none         # điền nếu server yêu cầu auth
 ```
 
 > Các tùy chọn khác (timeout, OCR remote, gỡ lỗi) xem comment trong `.env.example`.
+>
+> `.env` được **nạp tự động** khi chạy app. **Sửa `.env` xong phải khởi động lại server**
+> mới có hiệu lực. Báo `Không gọi được LLM tại http://localhost:8080...` dù đã đổi địa chỉ
+> = server chưa restart, hoặc đang chạy từ thư mục khác repo.
 
 ---
 
