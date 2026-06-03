@@ -1,23 +1,60 @@
 """FastAPI application — POST /analyze endpoint."""
 from __future__ import annotations
 
+import logging
 import os
+import traceback
 from datetime import UTC, datetime
 from pathlib import Path
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from PIL import Image, UnidentifiedImageError
 
 from .pipeline import run_pipeline
 from .schemas import AnalyzeResponse, IssueOut, SummaryOut
 
+# ── Logging ───────────────────────────────────────────────────────────────────
+logging.basicConfig(
+    level=os.environ.get("LOG_LEVEL", "INFO"),
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
+logger = logging.getLogger("ui_defect")
+
+# Verbose error detail trong HTTP response — BẬT ở giai đoạn dev (mặc định "1").
+# Đặt DEBUG_ERRORS=0 khi lên production để giấu traceback.
+DEBUG_ERRORS = os.environ.get("DEBUG_ERRORS", "1") not in ("0", "false", "False", "")
+
+
+def _error_detail(exc: Exception, stage: str) -> dict:
+    """Gói lỗi thành payload chi tiết để vừa log vừa trả cho client (khi DEBUG_ERRORS)."""
+    detail: dict = {
+        "error": f"{stage}_failed",
+        "stage": stage,
+        "type": type(exc).__name__,
+        "message": str(exc) or repr(exc),
+    }
+    cause = exc.__cause__ or exc.__context__
+    if cause is not None:
+        detail["cause"] = f"{type(cause).__name__}: {cause}"
+    if DEBUG_ERRORS:
+        detail["traceback"] = traceback.format_exc().splitlines()
+    return detail
+
+
 app = FastAPI(
     title="UI Defect Analyzer",
     description="Phát hiện lỗi UI tự động từ ảnh chụp màn hình.",
     version="0.1.0",
 )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    """Bắt mọi lỗi chưa được xử lý (ngoài các try cụ thể) → log full traceback + trả chi tiết."""
+    logger.exception("Unhandled error tại %s %s", request.method, request.url.path)
+    return JSONResponse(status_code=500, content={"detail": _error_detail(exc, "unhandled")})
 
 _WEB_DIR = Path(__file__).resolve().parent.parent / "web"
 
@@ -69,8 +106,12 @@ async def analyze(
         img.load()
         if img.mode not in ("RGB", "RGBA"):
             img = img.convert("RGB")
-    except (UnidentifiedImageError, Exception) as exc:
-        raise HTTPException(400, detail=f"invalid_image: {exc}") from exc
+    except UnidentifiedImageError as exc:
+        logger.warning("Ảnh không hợp lệ: %s", exc)
+        raise HTTPException(400, detail={"error": "invalid_image", "message": str(exc)}) from exc
+    except Exception as exc:
+        logger.exception("Lỗi khi đọc ảnh")
+        raise HTTPException(400, detail=_error_detail(exc, "image_decode")) from exc
 
     if platform not in ("android", "ios", "web"):
         raise HTTPException(400, detail="platform phải là android, ios hoặc web")
@@ -84,6 +125,10 @@ async def analyze(
     _locale = locale or "en-US"
 
     # Chạy pipeline
+    logger.info(
+        "Bắt đầu phân tích screen platform=%s vp=%dx%d run_vlm=%s",
+        _platform, _vp_w, _vp_h, run_vlm,
+    )
     try:
         output = run_pipeline(
             img=img,
@@ -101,7 +146,18 @@ async def analyze(
             run_agents=run_vlm,
         )
     except Exception as exc:
-        raise HTTPException(500, detail=f"pipeline_failed: {exc}") from exc
+        # Log full traceback ra console server (luôn luôn, dù DEBUG_ERRORS bật/tắt)
+        logger.exception("Pipeline thất bại (platform=%s, run_vlm=%s)", _platform, run_vlm)
+        raise HTTPException(500, detail=_error_detail(exc, "pipeline")) from exc
+
+    # Cảnh báo nếu agent VLM lỗi nhưng pipeline vẫn chạy (không 500) — để debug cấu hình LLM
+    agent_errors = output.pipeline_meta.get("agent_errors", [])
+    if agent_errors:
+        logger.warning(
+            "%d agent VLM lỗi: %s",
+            len(agent_errors),
+            "; ".join(f"{a['agent_id']}: {a['error']}" for a in agent_errors),
+        )
 
     # Filter theo min_severity
     _sev_order = ["trivial", "low", "medium", "high", "critical"]

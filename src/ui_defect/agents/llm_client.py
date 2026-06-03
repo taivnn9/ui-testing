@@ -87,22 +87,32 @@ def call_llm(
         "Authorization": f"Bearer {_API_KEY}",
     }
 
-    with httpx.Client(timeout=_TIMEOUT) as client:
-        resp = client.post(
-            f"{_BASE_URL}/v1/chat/completions",
-            json=payload,
-            headers=headers,
-        )
+    url = f"{_BASE_URL}/v1/chat/completions"
+    try:
+        with httpx.Client(timeout=_TIMEOUT) as client:
+            resp = client.post(url, json=payload, headers=headers)
+    except httpx.RequestError as exc:
+        # Lỗi mạng/timeout/DNS/connect refused — kèm URL + model để debug
+        raise RuntimeError(
+            f"Không gọi được LLM tại {url} (model={_model}, timeout={_TIMEOUT}s): "
+            f"{type(exc).__name__}: {exc}"
+        ) from exc
 
     if resp.status_code != 200:
         raise httpx.HTTPStatusError(
-            f"LLM server trả về {resp.status_code}: {resp.text[:300]}",
+            f"LLM server tại {url} trả về {resp.status_code}: {resp.text[:500]}",
             request=resp.request,
             response=resp,
         )
 
-    data = resp.json()
-    raw_text: str = data["choices"][0]["message"]["content"]
+    try:
+        data = resp.json()
+        raw_text: str = data["choices"][0]["message"]["content"]
+    except (KeyError, IndexError, ValueError, TypeError) as exc:
+        raise RuntimeError(
+            f"Response LLM từ {url} không đúng định dạng OpenAI chat: "
+            f"{type(exc).__name__}: {exc}. Body: {resp.text[:500]}"
+        ) from exc
 
     # Parse JSON từ response
     try:

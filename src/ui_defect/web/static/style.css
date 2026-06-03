@@ -87,8 +87,17 @@ header h1 { font-size: 18px; margin: 0; }
 .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
 .tag { font-size: 11px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; color: var(--muted); }
 
-.banner { padding: 12px 16px; border-radius: 8px; margin-bottom: 12px; font-size: 14px; }
+.banner { padding: 12px 16px; border-radius: 8px; margin: 0 20px 12px; font-size: 14px; }
 .banner.error { background: #fdecea; color: #b71c1c; border: 1px solid #f5c6cb; }
+.banner.warn { background: #fff7e6; color: #8a5a00; border: 1px solid #ffe0a3; }
+.banner pre {
+  margin: 8px 0 0; padding: 10px; background: rgba(0,0,0,.06); border-radius: 6px;
+  font-size: 12px; line-height: 1.45; white-space: pre-wrap; word-break: break-word;
+  max-height: 360px; overflow: auto;
+}
+.banner details { margin-top: 8px; }
+.banner summary { cursor: pointer; font-weight: 600; }
+.banner > div { margin-top: 4px; }
 .empty { text-align: center; color: var(--muted); padding: 40px 0; font-size: 16px; }
 .spinner {
   display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.4);

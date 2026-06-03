@@ -169,12 +169,18 @@ def run_pipeline(
 
     # ── Judgment Agents G1–G6 ─────────────────────────────────────────────────
     agents_ran: list[str] = []
+    agent_errors: list[dict] = []
     findings = []
     if run_agents:
         from ..agents.runner import run_all_agents
         from ..agents.critic import run_critic
         results = run_all_agents(doc, img, agent_ids=agent_ids, model=vlm_model)
         agents_ran = [r.agent_id for r in results if r.error is None]
+        # Gom lỗi per-agent (trước đây bị loại thầm lặng) để surface ra response + log
+        agent_errors = [
+            {"agent_id": r.agent_id, "error": r.error}
+            for r in results if r.error is not None
+        ]
         findings = run_critic(results, min_confidence=min_confidence)
 
     # ── S1 — Summary ──────────────────────────────────────────────────────────
@@ -188,6 +194,7 @@ def run_pipeline(
             "analyzers_ran": analyzers_ran,
             "rules_ran": rules_ran,
             "agents_ran": agents_ran,
+            "agent_errors": agent_errors,
             "total_candidates_pre_filter": len(doc.candidate_issues),
             "final_issues": len(findings) if run_agents else len(doc.candidate_issues),
             "mode": "vlm" if run_agents else "rule-only",

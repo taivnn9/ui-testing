@@ -216,10 +216,13 @@ def call_agent(
             model=model,
         )
     except Exception as exc:
+        # Degrade graceful (không kéo sập cả pipeline) NHƯNG surface lỗi qua key `_error`
+        # để runner đẩy lên agent_errors → người dùng thấy lý do (vd cấu hình LLM sai).
         return {
             "findings": [],
             "self_critique": [],
             "summary": f"llm_error: {exc}",
+            "_error": f"{type(exc).__name__}: {exc}",
         }
 
 

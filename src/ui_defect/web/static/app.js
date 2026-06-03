@@ -80,7 +80,7 @@ async function analyze() {
     const resp = await fetch("/analyze", { method: "POST", body: fd });
     if (!resp.ok) {
       const detail = await safeDetail(resp);
-      showBanner(errorMessage(resp.status, detail));
+      showError(resp.status, detail);
       return;
     }
     const data = await resp.json();
@@ -92,8 +92,13 @@ async function analyze() {
     renderSummary(data.summary);
     renderResults();
     renderOverlays();
+    // Cảnh báo nếu agent VLM lỗi nhưng pipeline vẫn chạy (HTTP 200)
+    const agentErrors = (data.pipeline_meta && data.pipeline_meta.agent_errors) || [];
+    if (agentErrors.length) showAgentErrors(agentErrors);
   } catch (e) {
-    showBanner("Không kết nối được server.");
+    showBannerHtml("warn",
+      `<strong>Không kết nối được server.</strong>` +
+      `<pre>${esc(String(e && e.message || e))}</pre>`);
   } finally {
     btn.disabled = false;
     btn.textContent = "Phân tích";
@@ -101,14 +106,46 @@ async function analyze() {
 }
 
 async function safeDetail(resp) {
-  try { return (await resp.json()).detail || ""; } catch { return ""; }
+  // detail có thể là object (chi tiết) hoặc string (lỗi đơn giản)
+  try { const j = await resp.json(); return j.detail !== undefined ? j.detail : j; }
+  catch { try { return await resp.text(); } catch { return ""; } }
 }
 
-function errorMessage(status, detail) {
-  if (status === 413) return "Ảnh quá lớn (vượt giới hạn).";
-  if (status === 400) return "File không phải ảnh hợp lệ.";
-  if (status === 500) return "Phân tích thất bại: " + detail;
-  return "Lỗi không xác định (" + status + ").";
+// Render lỗi chi tiết: chấp nhận detail là string hoặc object {error,stage,type,message,cause,traceback}
+function showError(status, detail) {
+  const head = {
+    400: "Ảnh không hợp lệ",
+    413: "Ảnh quá lớn (vượt giới hạn)",
+    422: "Tham số gửi lên không hợp lệ",
+    500: "Phân tích thất bại",
+  }[status] || ("Lỗi không xác định (" + status + ")");
+
+  if (detail && typeof detail === "object") {
+    const rows = [];
+    if (detail.stage) rows.push(`<div><b>stage:</b> ${esc(detail.stage)}</div>`);
+    if (detail.type) rows.push(`<div><b>type:</b> ${esc(detail.type)}</div>`);
+    if (detail.message) rows.push(`<div><b>message:</b> ${esc(detail.message)}</div>`);
+    if (detail.cause) rows.push(`<div><b>cause:</b> ${esc(detail.cause)}</div>`);
+    let tb = "";
+    if (detail.traceback) {
+      const lines = Array.isArray(detail.traceback) ? detail.traceback.join("\n") : String(detail.traceback);
+      tb = `<details open><summary>Traceback</summary><pre>${esc(lines)}</pre></details>`;
+    }
+    showBannerHtml("error",
+      `<strong>HTTP ${status} — ${esc(head)}</strong>${rows.join("")}${tb}`);
+  } else {
+    showBannerHtml("error",
+      `<strong>HTTP ${status} — ${esc(head)}</strong><pre>${esc(String(detail || ""))}</pre>`);
+  }
+}
+
+function showAgentErrors(agentErrors) {
+  const lines = agentErrors
+    .map((a) => `${esc(a.agent_id || "?")}: ${esc(a.error || "")}`).join("\n");
+  showBannerHtml("warn",
+    `<strong>⚠ ${agentErrors.length} agent VLM lỗi</strong> ` +
+    `(pipeline vẫn chạy bằng rule — kiểm tra cấu hình LLM_BASE_URL/LLM_MODEL):` +
+    `<pre>${lines}</pre>`);
 }
 
 function renderSummary(summary) {
@@ -226,6 +263,12 @@ function clearOverlays() {
 function showBanner(msg) {
   const b = $("#banner");
   b.textContent = msg; b.className = "banner error";
+}
+// kind: "error" | "warn" — content là HTML đã escape ở caller
+function showBannerHtml(kind, html) {
+  const b = $("#banner");
+  b.innerHTML = html;
+  b.className = "banner " + (kind === "warn" ? "warn" : "error");
 }
 function clearBanner() {
   const b = $("#banner");

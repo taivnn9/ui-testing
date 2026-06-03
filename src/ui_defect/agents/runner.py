@@ -64,11 +64,12 @@ def _elements_to_json(elements, max_items: int = 60) -> str:
     return json.dumps(items, ensure_ascii=False, indent=None)
 
 
-def _issues_to_json(issues, max_items: int = 30) -> str:
+def _issues_to_json(issues: list[dict], max_items: int = 30) -> str:
+    # issues là list[dict] (từ filter_issues) — đọc bằng key, KHÔNG phải attribute
     items = [
-        {"rule": i.rule, "element": i.element,
-         "severity": i.severity, "confidence": round(i.confidence, 2),
-         "detail": i.detail[:200] if i.detail else ""}
+        {"rule": i.get("rule"), "element": i.get("element"),
+         "severity": i.get("severity"), "confidence": round(i.get("confidence", 0.0), 2),
+         "detail": (i.get("detail") or "")[:200]}
         for i in issues[:max_items]
     ]
     return json.dumps(items, ensure_ascii=False)
@@ -107,6 +108,18 @@ def _parse_findings(raw: dict, agent_id: str) -> list[AgentFinding]:
     return findings
 
 
+def _fill(template: str, **kwargs: Any) -> str:
+    """
+    Thay placeholder {name} đã biết trong prompt — KHÔNG dùng str.format vì prompt
+    chứa dấu ngoặc literal (vd ví dụ '{{var}}', '${x}') sẽ làm format() ném KeyError.
+    Chỉ thay đúng các key được truyền, mọi dấu ngoặc khác giữ nguyên.
+    """
+    out = template
+    for key, val in kwargs.items():
+        out = out.replace("{" + key + "}", str(val))
+    return out
+
+
 def run_agent(
     agent_id: str,
     doc: CanonicalDoc,
@@ -131,16 +144,18 @@ def run_agent(
     # System prompt
     safe_area = screen.safe_area
     system_map = {
-        "G1": SYSTEM_G1.format(locale=screen.locale, platform=screen.platform),
+        "G1": _fill(SYSTEM_G1, locale=screen.locale, platform=screen.platform),
         "G2": SYSTEM_G2,
-        "G3": SYSTEM_G3.format(theme=screen.theme, platform=screen.platform),
-        "G4": SYSTEM_G4.format(
+        "G3": _fill(SYSTEM_G3, theme=screen.theme, platform=screen.platform),
+        "G4": _fill(
+            SYSTEM_G4,
             platform=screen.platform,
             vp_w=screen.viewport.w, vp_h=screen.viewport.h,
             safe_top=safe_area.top, safe_bottom=safe_area.bottom,
         ),
         "G5": SYSTEM_G5,
-        "G6": SYSTEM_G6.format(
+        "G6": _fill(
+            SYSTEM_G6,
             platform=screen.platform,
             notch_type=getattr(screen, "notch_type", "unknown"),
         ),
@@ -158,6 +173,9 @@ def run_agent(
 
     try:
         raw = call_agent(marked_image, system_prompt, user_prompt, model=model)
+        # call_agent degrade graceful khi LLM lỗi → gắn `_error`; surface nó lên đây.
+        if raw.get("_error"):
+            return AgentRunResult(agent_id=agent_id, error=raw["_error"])
         findings = _parse_findings(raw, agent_id)
         return AgentRunResult(
             agent_id=agent_id,
@@ -165,7 +183,7 @@ def run_agent(
             summary=raw.get("summary", ""),
         )
     except Exception as exc:
-        return AgentRunResult(agent_id=agent_id, error=str(exc))
+        return AgentRunResult(agent_id=agent_id, error=f"{type(exc).__name__}: {exc}")
 
 
 def run_all_agents(
