@@ -1,25 +1,20 @@
 """
-Agent runner: gọi G1–G6 (sequential hoặc async), tổng hợp findings.
+Reasoning runner (text-only): build prompt từ schema map + candidate + skill,
+gọi coding-agent CLI (Codex/Cline) qua backends → parse findings.
+
+KHÔNG gửi ảnh cho model (xem docs/F1.1). Ảnh chỉ dùng ở tầng CV để trích map.
 """
 from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
-from PIL import Image
-
 from ..schema.models import CanonicalDoc
-from .g0_framework import (
-    call_agent,
-    filter_elements,
-    filter_issues,
-    render_som,
-)
-from .prompts import (
-    SYSTEM_G1, SYSTEM_G2, SYSTEM_G3, SYSTEM_G4, SYSTEM_G5, SYSTEM_G6,
-    make_user_prompt,
-)
+from .backends import active_backend, run_backend
+
+_SKILLS_DIR = Path(__file__).resolve().parent / "skills"
 
 
 @dataclass
@@ -45,27 +40,91 @@ class AgentRunResult:
     error: str | None = None
 
 
-def _elements_to_json(elements, max_items: int = 60) -> str:
+# ── JSON Schema khóa output (truyền cho codex --output-schema) ─────────────────
+REASONING_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": ["findings", "summary"],
+    "properties": {
+        "summary": {"type": "string"},
+        "findings": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": [
+                    "issue_type", "element_id", "verdict", "severity",
+                    "confidence", "reasoning", "original_candidate_rule", "temporal",
+                ],
+                "properties": {
+                    "issue_type": {"type": "string"},
+                    "element_id": {"type": ["string", "null"]},
+                    "verdict": {
+                        "type": "string",
+                        "enum": ["confirmed", "rejected", "uncertain", "new_finding"],
+                    },
+                    "severity": {
+                        "type": "string",
+                        "enum": ["critical", "high", "medium", "low", "trivial"],
+                    },
+                    "confidence": {"type": "number"},
+                    "reasoning": {"type": "string"},
+                    "original_candidate_rule": {"type": ["string", "null"]},
+                    "temporal": {"type": "boolean"},
+                },
+            },
+        },
+    },
+}
+
+
+def _fill(template: str, **kwargs: Any) -> str:
+    """
+    Thay placeholder {name} đã biết trong text — KHÔNG dùng str.format vì text có thể chứa
+    dấu ngoặc literal (vd '{{var}}', '${x}') sẽ làm format() ném KeyError. Giữ mọi ngoặc khác.
+    """
+    out = template
+    for key, val in kwargs.items():
+        out = out.replace("{" + key + "}", str(val))
+    return out
+
+
+def _elements_to_json(elements, max_items: int = 80) -> str:
     items = []
     for e in elements[:max_items]:
         item: dict[str, Any] = {
             "id": e.id, "role": e.role,
             "bbox": {"x": round(e.bbox.x), "y": round(e.bbox.y),
                      "w": round(e.bbox.w), "h": round(e.bbox.h)},
-            "confidence": round(e.confidence, 2),
         }
         if e.text:
             item["text"] = e.text[:120]
-        if e.interactive:
+        if getattr(e, "text_truncated", False):
+            item["text_truncated"] = True
+        if getattr(e, "interactive", False):
             item["interactive"] = True
-        if e.style and e.style.contrast_ratio is not None:
-            item["contrast_ratio"] = e.style.contrast_ratio
+        tt = getattr(e, "touch_target", None)
+        if tt is not None:
+            item["touch_target"] = {"w": round(tt.w), "h": round(tt.h)}
+        style = getattr(e, "style", None)
+        if style is not None:
+            if style.contrast_ratio is not None:
+                item["contrast_ratio"] = round(style.contrast_ratio, 2)
+            if getattr(style, "font_family", None):
+                item["font_family"] = style.font_family
+        im = getattr(e, "image_meta", None)
+        if im is not None:
+            item["image_meta"] = {
+                "intrinsic_w": im.intrinsic_w, "intrinsic_h": im.intrinsic_h,
+                "displayed_w": im.displayed_w, "displayed_h": im.displayed_h,
+                "scale_mode": im.scale_mode,
+            }
         items.append(item)
-    return json.dumps(items, ensure_ascii=False, indent=None)
+    return json.dumps(items, ensure_ascii=False)
 
 
-def _issues_to_json(issues: list[dict], max_items: int = 30) -> str:
-    # issues là list[dict] (từ filter_issues) — đọc bằng key, KHÔNG phải attribute
+def _issues_to_json(issues: list[dict], max_items: int = 60) -> str:
+    # issues là list[dict] (từ rule engine) — đọc bằng key, KHÔNG phải attribute
     items = [
         {"rule": i.get("rule"), "element": i.get("element"),
          "severity": i.get("severity"), "confidence": round(i.get("confidence", 0.0), 2),
@@ -73,6 +132,55 @@ def _issues_to_json(issues: list[dict], max_items: int = 30) -> str:
         for i in issues[:max_items]
     ]
     return json.dumps(items, ensure_ascii=False)
+
+
+def _relations_to_json(relations, max_items: int = 60) -> str:
+    items = [
+        {"a": r.a, "rel": r.rel, "b": r.b,
+         "gap": round(getattr(r, "gap", 0) or 0), "iou": round(getattr(r, "iou", 0) or 0, 2)}
+        for r in (relations or [])[:max_items]
+    ]
+    return json.dumps(items, ensure_ascii=False)
+
+
+def load_skills() -> str:
+    """Đọc & nối tất cả file skill (*.md) theo thứ tự tên."""
+    if not _SKILLS_DIR.is_dir():
+        return ""
+    parts = []
+    for f in sorted(_SKILLS_DIR.glob("*.md")):
+        parts.append(f.read_text(encoding="utf-8").strip())
+    return "\n\n---\n\n".join(parts)
+
+
+def build_review_prompt(doc: CanonicalDoc) -> str:
+    """Build prompt text-only: skill (tiêu chí) + map (elements/relations) + candidate issues."""
+    s = doc.screen
+    raw_issues = [
+        {"rule": i.rule, "element": i.element, "severity": i.severity,
+         "confidence": i.confidence, "detail": i.detail}
+        for i in doc.candidate_issues
+    ]
+    context = {
+        "platform": s.platform, "locale": s.locale, "theme": s.theme,
+        "viewport": {"w": s.viewport.w, "h": s.viewport.h, "dpr": s.viewport.dpr},
+        "safe_area": {"top": s.safe_area.top, "bottom": s.safe_area.bottom},
+        "font_scale": s.font_scale,
+    }
+    return (
+        f"{load_skills()}\n\n"
+        "===== DỮ LIỆU MÀN HÌNH (text-only, trích từ ảnh bằng CV/OCR) =====\n\n"
+        f"screen = {json.dumps(context, ensure_ascii=False)}\n\n"
+        f"elements = {_elements_to_json(doc.elements)}\n\n"
+        f"relations = {_relations_to_json(doc.relations)}\n\n"
+        f"candidate_issues = {_issues_to_json(raw_issues)}\n\n"
+        "===== YÊU CẦU =====\n"
+        "1. Xét từng candidate_issue: confirmed | rejected | uncertain.\n"
+        "2. Phát hiện thêm lỗi text/ngữ nghĩa rule bỏ sót: verdict=\"new_finding\".\n"
+        "3. Gán severity cuối + reasoning ngắn, trỏ theo element_id (null nếu toàn màn hình).\n"
+        "4. Trạng thái loading/skeleton/spinner: temporal=true.\n"
+        "5. Trả về DUY NHẤT JSON đúng schema (findings + summary). Không bịa toạ độ/số liệu.\n"
+    )
 
 
 def _parse_findings(raw: dict, agent_id: str) -> list[AgentFinding]:
@@ -104,103 +212,26 @@ def _parse_findings(raw: dict, agent_id: str) -> list[AgentFinding]:
             evidence=f.get("evidence", {}),
             reasoning=f.get("reasoning", ""),
             severity_justification=f.get("severity_justification"),
+            temporal=bool(f.get("temporal", False)),
         ))
     return findings
 
 
-def _fill(template: str, **kwargs: Any) -> str:
+def run_review(doc: CanonicalDoc, *, model: str | None = None) -> list[AgentRunResult]:
     """
-    Thay placeholder {name} đã biết trong prompt — KHÔNG dùng str.format vì prompt
-    chứa dấu ngoặc literal (vd ví dụ '{{var}}', '${x}') sẽ làm format() ném KeyError.
-    Chỉ thay đúng các key được truyền, mọi dấu ngoặc khác giữ nguyên.
+    Chạy 1 lượt reasoning qua coding-agent CLI (backend). Trả list[AgentRunResult] (1 phần tử)
+    để tương thích critic/summary. Lỗi backend → result.error (degrade graceful, không raise).
     """
-    out = template
-    for key, val in kwargs.items():
-        out = out.replace("{" + key + "}", str(val))
-    return out
-
-
-def run_agent(
-    agent_id: str,
-    doc: CanonicalDoc,
-    marked_image: Image.Image,
-    model: str | None = None,
-) -> AgentRunResult:
-    """Gọi 1 agent. Trả AgentRunResult."""
-    screen = doc.screen
-
-    # Context trimming
-    elements = filter_elements(doc.elements, agent_id)
-    raw_issues = [
-        {"rule": i.rule, "element": i.element, "severity": i.severity,
-         "confidence": i.confidence, "detail": i.detail}
-        for i in doc.candidate_issues
-    ]
-    issues = filter_issues(raw_issues, agent_id)
-
-    elements_json = _elements_to_json(elements)
-    issues_json = _issues_to_json(issues)
-
-    # System prompt
-    safe_area = screen.safe_area
-    system_map = {
-        "G1": _fill(SYSTEM_G1, locale=screen.locale, platform=screen.platform),
-        "G2": SYSTEM_G2,
-        "G3": _fill(SYSTEM_G3, theme=screen.theme, platform=screen.platform),
-        "G4": _fill(
-            SYSTEM_G4,
-            platform=screen.platform,
-            vp_w=screen.viewport.w, vp_h=screen.viewport.h,
-            safe_top=safe_area.top, safe_bottom=safe_area.bottom,
-        ),
-        "G5": SYSTEM_G5,
-        "G6": _fill(
-            SYSTEM_G6,
-            platform=screen.platform,
-            notch_type=getattr(screen, "notch_type", "unknown"),
-        ),
-    }
-    system_prompt = system_map.get(agent_id, "You are a UI QA engineer.")
-
-    extra_map = {
-        "G1": f"Screen locale: {screen.locale}. Flag any text that appears to be in a different language.",
-        "G6": "For skeleton/spinner: confirm presence but mark temporal=true — cannot confirm 'stuck' from 1 frame.",
-    }
-    user_prompt = make_user_prompt(
-        elements_json, issues_json,
-        extra=extra_map.get(agent_id, ""),
-    )
-
+    backend = active_backend()
+    prompt = build_review_prompt(doc)
     try:
-        raw = call_agent(marked_image, system_prompt, user_prompt, model=model)
-        # call_agent degrade graceful khi LLM lỗi → gắn `_error`; surface nó lên đây.
-        if raw.get("_error"):
-            return AgentRunResult(agent_id=agent_id, error=raw["_error"])
-        findings = _parse_findings(raw, agent_id)
-        return AgentRunResult(
-            agent_id=agent_id,
-            findings=findings,
-            summary=raw.get("summary", ""),
-        )
+        raw = run_backend(prompt, REASONING_SCHEMA)
     except Exception as exc:
-        return AgentRunResult(agent_id=agent_id, error=f"{type(exc).__name__}: {exc}")
+        return [AgentRunResult(agent_id=backend, error=f"{type(exc).__name__}: {exc}")]
+    findings = _parse_findings(raw, backend)
+    return [AgentRunResult(agent_id=backend, findings=findings, summary=raw.get("summary", ""))]
 
 
-def run_all_agents(
-    doc: CanonicalDoc,
-    img: Image.Image,
-    agent_ids: list[str] | None = None,
-    model: str | None = None,
-) -> list[AgentRunResult]:
-    """
-    Chạy tất cả agent G1–G6 tuần tự.
-    (Parallel với asyncio/ThreadPoolExecutor — để caller tự quyết nếu muốn nhanh hơn.)
-    """
-    _ids = agent_ids or ["G1", "G2", "G3", "G4", "G5", "G6"]
-    marked = render_som(img, doc.elements)
-    results = []
-    for aid in _ids:
-        agent_elements = filter_elements(doc.elements, aid)
-        marked_for_agent = render_som(img, agent_elements)
-        results.append(run_agent(aid, doc, marked_for_agent, model=model))
-    return results
+# Alias tương thích (chữ ký cũ có img — bỏ qua, text-only)
+def run_all_agents(doc: CanonicalDoc, img=None, agent_ids=None, model: str | None = None):
+    return run_review(doc, model=model)

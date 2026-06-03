@@ -1,6 +1,6 @@
-"""ui_defect — nạp .env sớm để config (LLM_BASE_URL, OCR_BASE_URL, ...) được áp dụng tự động.
+"""ui_defect — nạp .env sớm để config (AGENT_BACKEND, CODEX_*, OCR_BASE_URL, ...) áp dụng tự động.
 
-Phải chạy TRƯỚC khi các submodule (vd agents.llm_client) đọc os.environ ở cấp module.
+Nạp ngay khi import package, trước khi bất kỳ submodule nào đọc os.environ.
 """
 from __future__ import annotations
 

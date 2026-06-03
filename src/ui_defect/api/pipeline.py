@@ -27,8 +27,6 @@ from ..analyzers.a10_perceptual_hash import (
 from ..analyzers.a12_interactivity import classify_interactivity
 from ..schema.models import CandidateIssue, SafeArea, Screen, Viewport
 from ..rules import run_rule_engine
-from ..agents.runner import run_all_agents
-from ..agents.critic import run_critic
 from ..agents.summary import AnalyzeOutput, build_summary
 
 
@@ -167,16 +165,19 @@ def run_pipeline(
     doc = run_rule_engine(doc)
     rules_ran = ["R1", "R2", "R3", "R4"]
 
-    # ── Judgment Agents G1–G6 ─────────────────────────────────────────────────
+    # ── Reasoning: coding-agent CLI headless (Codex/Cline), text-only — xem F1.1 ──
     agents_ran: list[str] = []
     agent_errors: list[dict] = []
     findings = []
+    _backend = "none"
     if run_agents:
-        from ..agents.runner import run_all_agents
+        from ..agents.backends import active_backend
         from ..agents.critic import run_critic
-        results = run_all_agents(doc, img, agent_ids=agent_ids, model=vlm_model)
+        from ..agents.runner import run_review
+        _backend = active_backend()
+        results = run_review(doc, model=vlm_model)
         agents_ran = [r.agent_id for r in results if r.error is None]
-        # Gom lỗi per-agent (trước đây bị loại thầm lặng) để surface ra response + log
+        # Gom lỗi (driver gói chi tiết) để surface ra response + log
         agent_errors = [
             {"agent_id": r.agent_id, "error": r.error}
             for r in results if r.error is not None
@@ -197,7 +198,7 @@ def run_pipeline(
             "agent_errors": agent_errors,
             "total_candidates_pre_filter": len(doc.candidate_issues),
             "final_issues": len(findings) if run_agents else len(doc.candidate_issues),
-            "mode": "vlm" if run_agents else "rule-only",
+            "mode": _backend if run_agents else "rule-only",
             "pipeline_duration_ms": round((t1 - t0) * 1000),
         },
     )

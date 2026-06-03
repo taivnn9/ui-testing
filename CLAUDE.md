@@ -28,19 +28,23 @@ object detection kiểu YOLO (tránh phải gán nhãn / train lại liên tục
 - **Input** (tester gửi lên): `screenshot (PNG)` — **duy nhất, không nhận DOM/XML/HTML**.
 - **Output**: danh sách lỗi có cấu trúc, mỗi lỗi kèm `severity`, `confidence`, `evidence` (element_id, bbox, crop).
 - Hỗ trợ **cả web + mobile** — phân biệt qua metadata (platform, dpr, safe_area).
-- **Runtime / orchestration**: tool nội bộ kiểu **n8n** (gọi qua API) và/hoặc **Cline (VSCode)**.
-  Model suy luận: **open model self-host gọi qua API** (và/hoặc hosted VLM).
+- **Runtime / orchestration**: tầng reasoning = **coding-agent CLI headless** —
+  **Codex** (`codex exec`, máy này) / **Cline** (máy công ty). Gọi trực tiếp từ folder project,
+  có quyền **đọc/ghi file** (`-s workspace-write`). **KHÔNG dùng VLM/hosted multimodal nữa**
+  (user không có model multimodal). Chi tiết: [`docs/F1.1-codex-cli-architecture.md`](docs/F1.1-codex-cli-architecture.md).
 
-### 2.1. MỘT CHẾ ĐỘ DUY NHẤT: vision-only
-Chỉ có một mode: **vision-only**. Toàn bộ element, style, geometry đều lấy từ ảnh thông qua
-**OCR + CV + VLM**. Không có DOM/XML adapter, không có Mode A/B.
+### 2.1. MỘT CHẾ ĐỘ DUY NHẤT: vision-only (CV trích map) + reasoning text-only
+Element/style/geometry lấy từ ảnh qua **OCR + CV** (ảnh CHỈ dùng ở tầng CV). Tầng lý luận
+(coding-agent CLI) **chỉ nhận dữ liệu ký tự** (JSON map + candidate + skill), **không nhận ảnh**.
+Không có DOM/XML adapter, không có Mode A/B.
 
 ## 3. Nguyên tắc thiết kế (QUAN TRỌNG — đừng làm sai)
-1. **Đa phương thức (multimodal)**: đưa cho model **CẢ ảnh + JSON map**, không chỉ JSON.
-   Hơn nửa tiêu chí (contrast, distortion, font tofu, ảnh vỡ, ngữ cảnh) không phán đoán
-   được từ toạ độ/text → bắt buộc cần pixel. JSON cho hình học chính xác; ảnh cho diện mạo.
-2. **Vision-only là nguồn duy nhất**: mọi element/geometry/style đều suy ra từ ảnh qua
-   OCR + CV + VLM. Không có DOM/XML; không giả định có hierarchy sẵn.
+1. **Model reasoning chỉ nhận TEXT** (đổi 2026-06-03, thay nguyên tắc multimodal cũ): không
+   gửi ảnh cho model. Các tiêu chí cần pixel (contrast, ảnh méo/vỡ, font tofu) được **CV tính
+   tất định** và đưa vào JSON dưới dạng số/flag (`contrast_ratio`, `image_meta`, `has_replacement`)
+   → agent lý luận trên số đó. JSON cho hình học chính xác; CV thay "mắt".
+2. **Vision-only là nguồn duy nhất** (cho việc trích map): element/geometry/style suy ra từ ảnh
+   qua OCR + CV. Không có DOM/XML; không giả định có hierarchy sẵn.
 3. **Tách tất định khỏi phán đoán**: cái gì TÍNH ĐƯỢC bằng code (overlap, touch-target nhỏ,
    contrast ratio, off-screen, vượt safe-area, tỉ lệ ảnh méo) → **rule engine** làm, KHÔNG
    hỏi LLM (LLM dở số học toạ độ, hay bịa). LLM chỉ lo: xác nhận candidate có "vô lý" thật
@@ -110,28 +114,32 @@ Tóm tắt nhanh:
 ## 6. Pipeline xử lý
 ```
 Input (ảnh PNG)
-  →  Vision Adapter: OCR + CV element detect + VLM → schema mục 5
+  →  Vision Adapter: OCR + CV element detect → schema mục 5   (ảnh CHỈ dùng ở đây)
   →  Rule Engine (tập con tính được từ box+pixel) → candidate_issues
-  →  VLM Reasoning (ảnh + JSON + candidates → confirm/reject + lỗi phán đoán + severity)
-  →  Verify/Critic pass (giảm false positive)
+  →  Reasoning: coding-agent CLI headless (Codex/Cline), TEXT-ONLY
+        prompt = skill (tiêu chí) + JSON map + candidate → confirm/reject + lỗi text + severity
+        khóa output bằng `codex exec --output-schema` (xem F1.1)
+  →  Verify/Critic pass (dedup + filter low-confidence)
   →  Aggregate + dedupe → trả về API
 ```
-**Prompt:** structured output bắt buộc (JSON schema nhúng prompt + `response_format=json_object`,
-llama.cpp — không tool_use) · decompose theo nhóm tiêu chí
-(không hỏi "tìm hết bug" 1 phát) · **Set-of-Marks** (vẽ ID lên ảnh để model trỏ theo ID,
-không đoán toạ độ) · few-shot có nhãn để calibrate severity · self-critique trước khi báo.
+**Prompt:** structured output khóa bằng `--output-schema` (Codex) · "skill" = file `agents/skills/*.md`
+theo nhóm tiêu chí · KHÔNG gửi ảnh (số pixel đã có trong JSON) · ưu tiên precision (confirm/reject
+candidate) · 1 lần `codex exec`/ảnh (rẻ). Backend chọn qua env `AGENT_BACKEND` (codex|none).
 
 ## 7. Trạng thái & việc tiếp theo
-- [x] Chốt kiến trúc (API service, input ảnh duy nhất, vision-only, rule+VLM).
+- [x] Chốt kiến trúc (API service, input ảnh duy nhất, vision-only, rule + coding-agent CLI).
 - [x] Vision adapter: A0, A3–A10, A12, A13 analyzers (`src/ui_defect/analyzers/`) — CV+OCR+pixel.
       (A1/A2 đã bỏ — DOM/XML; **A11** face/text-in-image: **hoãn Phase 2**, chỉ có spec.)
 - [x] Rule engine R1–R4 (`src/ui_defect/rules/`) — geometry, color, image, text.
-- [x] Prompt template + VLM agents G0–G6 (`src/ui_defect/agents/`) — Set-of-Marks, JSON output
-      qua llama.cpp OpenAI-compatible endpoint (không dùng tool_use).
+- [x] **Reasoning: Codex CLI headless** (`agents/codex_client.py` + `backends.py` + `runner.run_review`)
+      — text-only, skill files `agents/skills/*.md`, output khóa `--output-schema`. **Thay VLM** (F1.1).
+      (Code VLM cũ `g0_framework.py`/`llm_client.py`/`prompts.py` deprecated, giữ tham khảo.)
 - [x] API service (`src/ui_defect/api/`) — FastAPI, POST /analyze, zero-config (chỉ cần ảnh).
 - [x] Web UI (`src/ui_defect/web/`) — upload, phân tích, list lỗi + overlay Set-of-Marks
       (bbox màu theo severity, liên kết 2 chiều, filter). FastAPI serve `GET /` + `/static`. Spec: `docs/F2.0-web-ui.md`.
-- [x] Cài deps (`pip install -e ".[dev]"`) + pytest unit: **103/103 pass** (2026-06-03, +3 test web serving).
+- [x] Cài deps + pytest unit: **111/111 pass** (2026-06-03, +4 test codex reasoning).
+- [x] Pivot VLM→Codex CLI verify end-to-end: ảnh→CV→rule→`codex exec`→findings (mode=codex, lọc FP).
 - [ ] Golden set + script đo precision/recall (mutation testing UI) → `data/golden/`.
-- [ ] Integration test với ảnh thật (cần OCR backend + llama.cpp server).
-- [ ] Few-shot examples cho agents G1–G6 (cần ảnh mẫu có lỗi biết trước).
+- [ ] Integration test với ảnh thật (cần OCR backend; reasoning cần `codex login`).
+- [ ] Tinh chỉnh skill files `agents/skills/*.md` theo kết quả thực tế.
+- [ ] Cắm backend Cline (máy công ty) vào `agents/backends.py`.
