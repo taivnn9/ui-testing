@@ -129,7 +129,9 @@ không đoán toạ độ) · few-shot có nhãn để calibrate severity · sel
 - [x] Prompt template + VLM agents G0–G6 (`src/ui_defect/agents/`) — Set-of-Marks, JSON output
       qua llama.cpp OpenAI-compatible endpoint (không dùng tool_use).
 - [x] API service (`src/ui_defect/api/`) — FastAPI, POST /analyze, zero-config (chỉ cần ảnh).
-- [x] Cài deps (`pip install -e ".[dev]"`) + pytest unit: **93/93 pass** (2026-06-03).
+- [x] Web UI (`src/ui_defect/web/`) — upload, phân tích, list lỗi + overlay Set-of-Marks
+      (bbox màu theo severity, liên kết 2 chiều, filter). FastAPI serve `GET /` + `/static`. Spec: `docs/F2.0-web-ui.md`.
+- [x] Cài deps (`pip install -e ".[dev]"`) + pytest unit: **103/103 pass** (2026-06-03, +3 test web serving).
 - [ ] Golden set + script đo precision/recall (mutation testing UI) → `data/golden/`.
 - [ ] Integration test với ảnh thật (cần OCR backend + llama.cpp server).
 - [ ] Few-shot examples cho agents G1–G6 (cần ảnh mẫu có lỗi biết trước).
