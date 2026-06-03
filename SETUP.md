@@ -116,16 +116,9 @@ Mở `.env` và sửa:
 LLM_BASE_URL=http://<địa_chỉ_llama_cpp_server>:8080
 LLM_MODEL=gemma-4        # tên model đang serve trên llama.cpp
 LLM_API_KEY=none         # điền nếu server yêu cầu auth
-LLM_TIMEOUT_SEC=120      # timeout gọi LLM (tùy chọn)
-
-# OCR remote (tùy chọn — xem mục 2 Option 0)
-# OCR_BASE_URL=http://<máy-OCR>:8081
-
-# Gỡ lỗi (xem mục 7)
-DEBUG_ERRORS=1           # 1 = trả traceback chi tiết trong response (dev); 0 = giấu (prod)
-LOG_LEVEL=INFO           # DEBUG để log nhiều hơn
-MAX_IMAGE_SIZE_MB=10     # giới hạn kích thước ảnh upload
 ```
+
+> Các tùy chọn khác (timeout, OCR remote, gỡ lỗi) xem comment trong `.env.example`.
 
 ---
 
@@ -135,24 +128,9 @@ MAX_IMAGE_SIZE_MB=10     # giới hạn kích thước ảnh upload
 uvicorn src.ui_defect.api.main:app --reload --port 8000
 ```
 
-- **Giao diện web:** http://localhost:8000/  ← upload ảnh, ấn Phân tích, xem lỗi (mục 4.1)
+- **Giao diện web:** http://localhost:8000/ — upload ảnh, ấn Phân tích, xem lỗi trực quan.
+  Cách dùng: [docs/huong-dan-web-ui.md](docs/huong-dan-web-ui.md).
 - **Swagger UI (API docs):** http://localhost:8000/docs
-
-### 4.1 Giao diện web (Web UI)
-
-Mở **http://localhost:8000/** trên trình duyệt — không cần cài thêm gì (trang tĩnh do chính
-FastAPI phục vụ, không dùng Node/build).
-
-Luồng dùng:
-1. **Kéo-thả** (hoặc bấm chọn) ảnh PNG/JPG vào vùng upload → ảnh hiện preview.
-2. (Tùy chọn) Bấm **"Cài đặt nâng cao"** để chỉnh: `platform`, `min_severity`,
-   `min_confidence`, bật/tắt **"Chạy VLM"** (tắt = rule-only, nhanh, không cần llama.cpp).
-3. Bấm **"Phân tích"** → chờ kết quả.
-4. Kết quả: cột trái là ảnh với **khung lỗi đánh số, màu theo mức nghiêm trọng**
-   (đỏ=critical … xám=trivial); cột phải là **danh sách lỗi** (bấm 1 lỗi để xem chi tiết và
-   highlight khung tương ứng — liên kết 2 chiều). Bấm các **chip severity** để ẩn/hiện theo mức.
-
-> Tester chỉ cần ảnh; mọi metadata (theme/locale/viewport) hệ thống tự suy từ ảnh.
 
 ---
 
@@ -187,36 +165,12 @@ pytest
 
 ---
 
-## 7. Gỡ lỗi — xem lý do khi lỗi
+## 7. Gặp lỗi?
 
-Giai đoạn dev, đặt **`DEBUG_ERRORS=1`** (mặc định) để thấy chi tiết. Có 2 nơi xem:
+Đặt `DEBUG_ERRORS=1` (mặc định) để thấy chi tiết lỗi trong console server và response.
+Hướng dẫn đọc lỗi & phân biệt lỗi cấu hình vs lỗi code: [docs/go-loi.md](docs/go-loi.md).
 
-**A. Console server (uvicorn)** — luôn in **full traceback** khi pipeline lỗi (chỉ rõ
-file/dòng/hàm), kể cả khi `DEBUG_ERRORS=0`. Đây là nơi đầu tiên nên nhìn.
-
-**B. Response trả về:**
-
-- **Lỗi 500** → `detail` là object có `stage`, `type`, `message`, `cause`, và `traceback`
-  (khi `DEBUG_ERRORS=1`). Web UI hiển thị thẳng traceback trong banner đỏ.
-  ```jsonc
-  {"detail": {"error":"pipeline_failed","stage":"pipeline",
-              "type":"KeyError","message":"'x'","traceback":[ "...", "..." ]}}
-  ```
-
-- **Lỗi VLM/LLM KHÔNG làm hỏng phân tích** (degrade graceful → vẫn trả HTTP 200): xem
-  **`pipeline_meta.agent_errors`**. Web UI hiện **banner vàng cảnh báo**. Lỗi kết nối kèm
-  rõ **URL + model + timeout + nguyên nhân**, ví dụ:
-  ```
-  RuntimeError: Không gọi được LLM tại http://host:8080/v1/chat/completions
-  (model=gemma-4, timeout=120s): ConnectError: [Errno 111] Connection refused
-  ```
-  → Phân biệt nhanh: lỗi này = **cấu hình** (sai `LLM_BASE_URL`/server chưa chạy);
-  còn 500 với traceback = **lỗi code**.
-
-> Lên **production**: đặt `DEBUG_ERRORS=0` để response không lộ traceback (console vẫn log đầy đủ).
-
-Mẹo: muốn loại trừ LLM khi debug, gửi `run_vlm=false` (hoặc tắt "Chạy VLM" trên web) — chạy
-thuần rule, không gọi llama.cpp.
+Mẹo: thêm `-F "run_vlm=false"` (hoặc tắt *"Chạy VLM"* trên web) để chạy thuần rule, loại trừ LLM.
 
 ---
 
