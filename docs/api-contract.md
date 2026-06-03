@@ -174,9 +174,15 @@ LLM_BASE_URL=http://localhost:8080   # URL server llama.cpp
 LLM_MODEL=gemma-4                     # tên model đang serve
 LLM_API_KEY=none                      # api key nếu server yêu cầu, không thì "none"
 LLM_TIMEOUT_SEC=120
+# OCR remote (tùy chọn — paddle ở máy khác, xem ocr_service/):
+# OCR_BASE_URL=http://localhost:8081  # set → app không cần cài paddle local
+OCR_TIMEOUT_SEC=60
 MAX_IMAGE_SIZE_MB=10
 DEBUG=false
 ```
+
+> **Topology tách máy:** cả VLM (`LLM_BASE_URL`) lẫn OCR (`OCR_BASE_URL`) đều gọi qua HTTP
+> → có thể đặt llama.cpp và PaddleOCR ở (các) máy khác, máy app chỉ chạy CV + rule engine.
 
 ---
 

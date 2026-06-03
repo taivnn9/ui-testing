@@ -23,6 +23,20 @@ pip install -e .
 
 ## 2. Cài OCR backend (chọn 1)
 
+### Option 0 — OCR remote (paddle ở máy khác) — khuyến nghị nếu tách máy
+
+App **không cần cài paddle**. Chạy sidecar trên máy có paddle rồi trỏ env:
+
+```bash
+# Trên MÁY OCR (có paddle): xem ocr_service/README.md
+cd ocr_service && pip install -r requirements.txt
+uvicorn server:app --host 0.0.0.0 --port 8081
+
+# Trên MÁY APP: thêm vào .env
+OCR_BASE_URL=http://<máy-OCR>:8081
+```
+→ Bỏ qua Option A/B bên dưới. Không set `OCR_BASE_URL` thì app dùng OCR local:
+
 ### Option A — Tesseract (nhẹ hơn, khuyến nghị thử trước)
 
 ```bash

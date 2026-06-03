@@ -5,6 +5,9 @@ Spec: docs/analyzers/A5-ocr-text-extractor.md
 """
 from __future__ import annotations
 
+import base64
+import io
+import os
 import unicodedata
 from dataclasses import dataclass, field
 from typing import Optional
@@ -110,6 +113,56 @@ def _run_paddle(
             bbox=bbox,
             bbox_norm=normalize_bbox(bbox, img_w, img_h),
             confidence=float(conf),
+            level="line",
+            script=_detect_script(text_n),
+            has_replacement=_has_replacement(text_n),
+        ))
+    return segments
+
+
+# ── Remote OCR backend (sidecar HTTP) ────────────────────────────────────────
+
+def _run_ocr_remote(
+    img: Image.Image,
+    viewport: Viewport,
+    lang: str,
+    base_url: str,
+) -> list[TextSegment]:
+    """
+    Gọi OCR sidecar trên máy khác (xem `ocr_service/server.py`).
+    POST {image_base64, lang} → nhận {segments:[{text,bbox,confidence}]}.
+    Dùng khi env OCR_BASE_URL được set (paddle chạy remote, app không cần cài paddle).
+    Raise httpx.HTTPError nếu server lỗi.
+    """
+    import httpx
+
+    buf = io.BytesIO()
+    img.convert("RGB").save(buf, format="PNG")
+    img_b64 = base64.b64encode(buf.getvalue()).decode()
+    timeout = int(os.environ.get("OCR_TIMEOUT_SEC", "60"))
+
+    resp = httpx.post(
+        f"{base_url.rstrip('/')}/ocr",
+        json={"image": img_b64, "lang": lang},
+        timeout=timeout,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+
+    img_w, img_h = img.width, img.height
+    segments: list[TextSegment] = []
+    for s in data.get("segments", []):
+        b = s["bbox"]
+        bbox = BBox(x=float(b["x"]), y=float(b["y"]),
+                    w=float(b["w"]), h=float(b["h"]))
+        text_n = _normalize_text(s.get("text", ""))
+        if not text_n:
+            continue
+        segments.append(TextSegment(
+            text=text_n,
+            bbox=bbox,
+            bbox_norm=normalize_bbox(bbox, img_w, img_h),
+            confidence=float(s.get("confidence", 1.0)),
             level="line",
             script=_detect_script(text_n),
             has_replacement=_has_replacement(text_n),
@@ -237,9 +290,23 @@ def extract_text(
     lang: str = "en",
 ) -> list[TextSegment]:
     """
-    Trích text từ ảnh. Thử PaddleOCR trước; nếu không có thì Tesseract.
+    Trích text từ ảnh. Thứ tự backend:
+      1. Remote sidecar nếu env OCR_BASE_URL được set (paddle ở máy khác).
+      2. PaddleOCR local (nếu cài).
+      3. Tesseract local (nếu cài).
+    Tất cả best-effort: backend nào lỗi/thiếu thì thử cái sau, cuối cùng trả [].
     Trả về list TextSegment (level=line là chính, level=word có parent).
     """
+    base_url = os.environ.get("OCR_BASE_URL")
+    if base_url:
+        try:
+            segments = _run_ocr_remote(img, viewport, lang, base_url)
+            _fill_bbox_norm(segments, img.width, img.height)
+            return segments
+        except Exception:
+            # Remote lỗi → thử backend local (nếu máy app có cài)
+            pass
+
     try:
         segments = _run_paddle(img, viewport, lang=lang)
         engine = "paddle"

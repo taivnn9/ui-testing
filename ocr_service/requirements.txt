@@ -1,0 +1,8 @@
+# Deps cho OCR sidecar (chỉ cài trên máy chạy PaddleOCR)
+fastapi>=0.111
+uvicorn[standard]>=0.29
+pillow>=10.3
+numpy>=1.26
+paddlepaddle>=2.6
+paddleocr>=2.7
+# GPU: thay paddlepaddle bằng paddlepaddle-gpu (CUDA) nếu máy có GPU.
