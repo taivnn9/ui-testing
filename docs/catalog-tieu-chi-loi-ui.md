@@ -266,5 +266,5 @@ Tags: [i18n, ctx]
 - [x] Nhóm D/E/F (47 tiêu chí) — đã duyệt đợt 2.
 - [x] Nhóm G/H/I (33 tiêu chí) — đã duyệt đợt 3. **→ BƯỚC 1 XONG: 121 tiêu chí / 9 nhóm.**
 - [ ] Bổ sung modifier chi tiết cho từng tiêu chí.
-- [x] **Bước 2: dữ liệu · kỹ thuật · đạt/không đạt cho từng tiêu chí → [`F3.0-tieu-chi-danh-gia.md`](F3.0-tieu-chi-danh-gia.md).**
+- [x] **Bước 2: dữ liệu · kỹ thuật · đạt/không đạt cho từng tiêu chí → [`tieu-chi/`](tieu-chi/README.md)** (tổng hợp + 1 file/tiêu chí, sinh bởi `scripts/gen_criteria.py`).
 - [ ] Cập nhật CLAUDE.md + schema sang thang 5 mức severity.

@@ -8,7 +8,7 @@
 > khi ta đi qua. Trạng thái cập nhật tại đây.
 >
 > Nguồn gốc: [`catalog-tieu-chi-loi-ui.md`](catalog-tieu-chi-loi-ui.md) (121 tiêu chí) +
-> [`buoc-2-kien-truc-xu-ly.md`](buoc-2-kien-truc-xu-ly.md) (kiến trúc + mapping).
+> [`tieu-chi/`](tieu-chi/README.md) (đánh giá từng tiêu chí).
 > Phiên: 2026-05-22.
 
 **Goal:** API service nhận `screenshot (PNG)` → trả danh sách lỗi UI có
@@ -63,16 +63,12 @@
 - [~] **R4** Text — **spec ✅** [`rules/R4-text.md`](rules/R4-text.md): 10 rules (CNT/TYP/STATE), regex thuần
 - [~] **R5** Severity+Modifier — **spec ✅** [`rules/R5-severity.md`](rules/R5-severity.md): bảng baseline + modifier ngữ cảnh + auto-confirm logic
 
-## Phase 3 — Judgment Agents (VLM, ~6–7 nhóm → `docs/agents/<id>.md`)
-> **Spec ✅** toàn bộ G0–G6 + V1 + S1 tại `docs/agents/`. Chờ implement.
-- [~] **G0** Prompt framework — **spec ✅** [`agents/G0-prompt-framework.md`](agents/G0-prompt-framework.md): SoM renderer, output schema JSON object (llama.cpp `json_object`), call wrapper qua `llm_client`
-- [~] **G1** Text/Content — **spec ✅** [`agents/G1-text-content.md`](agents/G1-text-content.md): CNT-01–14, TYP-03/06–11; few-shot 2 examples
-- [~] **G2** Typography/Render — **spec ✅** [`agents/G2-typography-render.md`](agents/G2-typography-render.md): TYP-01/02/04/05/09/12–14; xác nhận A8
-- [~] **G3** Color/Style — **spec ✅** [`agents/G3-color-style.md`](agents/G3-color-style.md): STY-01–13; xác nhận A4+R2
-- [~] **G4** Layout — **spec ✅** [`agents/G4-layout.md`](agents/G4-layout.md): LAY-01–15, ENV-04–09; xác nhận R1
-- [~] **G5** Image — **spec ✅** [`agents/G5-image.md`](agents/G5-image.md): IMG-01–15; xác nhận A6/A7/A10+R3
-- [~] **G6** Component+State — **spec ✅** [`agents/G6-component-state.md`](agents/G6-component-state.md): CMP-01–17, STATE-01–11, ENV-01–03; xác nhận A9
-- ⏭ **G7** Consistency agent (CONS, đa ảnh) → **Phase 2**
+## Phase 3 — Reasoning: Coding-agent CLI (Codex) — *đã pivot khỏi VLM*
+> Tầng reasoning = **Codex CLI headless text-only** (xem [`F1.1`](F1.1-codex-cli-architecture.md)).
+> Spec VLM G0–G6 cũ **đã xóa**; tiêu chí nay sống ở `agents/skills/*.md` + [`tieu-chi/`](tieu-chi/README.md).
+- [x] `agents/codex_client.py` + `backends.py` + `runner.run_review` (1 call text-only, `--output-schema`).
+- [x] Skill files theo nhóm tiêu chí: `agents/skills/{10-text,20-typography,30-color-style,40-layout,50-images,60-components-states}.md`.
+- ⏭ **Consistency (CONS, đa ảnh)** → **Phase 2**.
 
 ## Phase 4 — Verify + Summary
 - [~] **V1** Critic — **spec ✅** [`agents/V1-critic.md`](agents/V1-critic.md): cross-validate findings, dedup code, false positive filter

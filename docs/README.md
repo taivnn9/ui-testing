@@ -11,7 +11,6 @@ Bản **quyết định kiến trúc gọn** dùng để tham chiếu nhanh: `..
 | File | Nội dung |
 |---|---|
 | [`phan-tich-ban-dau.md`](phan-tich-ban-dau.md) | Phân tích mở đầu: tiêu chí đủ chưa, lấy dữ liệu gì & thế nào, tổ chức dữ liệu, cách prompt/Skill/Rule/workflow cho Agent. |
-| [`trao-doi-va-kien-truc-chot.md`](trao-doi-va-kien-truc-chot.md) | 3 câu hỏi chốt + câu trả lời, kiến trúc API service, **2 chế độ vận hành** (có cây / chỉ ảnh), khác biệt so với ý tưởng gốc. |
 | [`../CLAUDE.md`](../CLAUDE.md) | Bản quyết định kiến trúc gọn (đọc tự động mỗi phiên): mục tiêu, schema chung, pipeline, bộ tiêu chí, checklist việc tiếp theo. |
 
 **Hướng dẫn người dùng:**
@@ -24,7 +23,7 @@ Bản **quyết định kiến trúc gọn** dùng để tham chiếu nhanh: `..
 | [`go-loi.md`](go-loi.md) | Đọc lỗi & phân biệt lỗi cấu hình vs lỗi code (DEBUG_ERRORS, agent_errors). |
 | [`F2.0-web-ui.md`](F2.0-web-ui.md) | Thiết kế & kiến trúc Web UI (spec). |
 | [`catalog-tieu-chi-loi-ui.md`](catalog-tieu-chi-loi-ui.md) | Liệt kê đầy đủ 121 tiêu chí lỗi UI (9 nhóm) + severity. |
-| [`F3.0-tieu-chi-danh-gia.md`](F3.0-tieu-chi-danh-gia.md) | **Từng tiêu chí: dữ liệu · kỹ thuật · đạt/không đạt · ai đánh giá.** |
+| [`tieu-chi/`](tieu-chi/README.md) | **Tổng hợp + 1 file/tiêu chí: dữ liệu · kỹ thuật · đạt/không đạt · ai đánh giá** (sinh bởi `scripts/gen_criteria.py`). |
 | [`F0.4-thresholds.md`](F0.4-thresholds.md) | Đơn vị & ngưỡng số chuẩn (touch target, contrast, blur, pHash...). |
 
 > Phiên 2026-05-21. Trao đổi bằng tiếng Việt.

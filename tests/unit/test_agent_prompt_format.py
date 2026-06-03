@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import json
 
-from ui_defect.agents.prompts import SYSTEM_G1, SYSTEM_G4
 from ui_defect.agents.runner import _fill, _issues_to_json
+
+# Fixture: text chứa placeholder hợp lệ + dấu ngoặc literal (giống prompt/skill cũ)
+_TPL = ("Screen locale: {locale} | Platform: {platform}. "
+        "Unrendered examples: {{var}}, ${x}, %s, %@ — phải giữ nguyên.")
 
 
 def test_fill_replaces_only_known_placeholders():
-    out = _fill(SYSTEM_G1, locale="vi-VN", platform="android")
+    out = _fill(_TPL, locale="vi-VN", platform="android")
     # placeholder đã biết được thay
     assert "{locale}" not in out
     assert "vi-VN" in out
@@ -19,9 +22,8 @@ def test_fill_replaces_only_known_placeholders():
 
 
 def test_fill_does_not_raise_on_unescaped_braces():
-    # str.format(SYSTEM_G1) sẽ ném KeyError: 'x' — _fill thì không
-    _fill(SYSTEM_G1, locale="en-US", platform="web")
-    _fill(SYSTEM_G4, platform="ios", vp_w=390, vp_h=844, safe_top=47, safe_bottom=34)
+    # str.format(_TPL) sẽ ném KeyError: 'x' — _fill thì không
+    _fill(_TPL, locale="en-US", platform="web")
 
 
 def test_fill_leaves_unrelated_braces_untouched():

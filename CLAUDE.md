@@ -133,7 +133,8 @@ candidate) · 1 lần `codex exec`/ảnh (rẻ). Backend chọn qua env `AGENT_B
 - [x] Rule engine R1–R4 (`src/ui_defect/rules/`) — geometry, color, image, text.
 - [x] **Reasoning: Codex CLI headless** (`agents/codex_client.py` + `backends.py` + `runner.run_review`)
       — text-only, skill files `agents/skills/*.md`, output khóa `--output-schema`. **Thay VLM** (F1.1).
-      (Code VLM cũ `g0_framework.py`/`llm_client.py`/`prompts.py` deprecated, giữ tham khảo.)
+      (Code VLM cũ `g0_framework.py`/`llm_client.py`/`prompts.py` + docs G0–G6/F1.0 **đã xóa**.)
+- [x] Tài liệu tiêu chí: tổng hợp + 1 file/tiêu chí ở `docs/tieu-chi/` (sinh bởi `scripts/gen_criteria.py`).
 - [x] API service (`src/ui_defect/api/`) — FastAPI, POST /analyze, zero-config (chỉ cần ảnh).
 - [x] Web UI (`src/ui_defect/web/`) — upload, phân tích, list lỗi + overlay Set-of-Marks
       (bbox màu theo severity, liên kết 2 chiều, filter). FastAPI serve `GET /` + `/static`. Spec: `docs/F2.0-web-ui.md`.
