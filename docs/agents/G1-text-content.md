@@ -1,5 +1,8 @@
 # G1 — Text/Content Agent
 
+> ⚠️ **Lỗi thời:** VLM agent đã thay bằng **Codex CLI text-only** (xem [`../F1.1`](../F1.1-codex-cli-architecture.md)).
+> Tiêu chí dưới đây vẫn dùng, nay ở `src/ui_defect/agents/skills/10-text-semantics.md`.
+
 > **Nhiệm vụ:** phát hiện và xác nhận lỗi **nội dung text** — những gì chữ *nói gì*
 > và text *trông thế nào ở mức bố cục*.
 >

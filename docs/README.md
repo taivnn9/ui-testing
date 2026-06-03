@@ -3,6 +3,11 @@
 Thư mục `docs/` lưu lại toàn bộ phân tích & trao đổi của dự án (theo thứ tự thời gian).
 Bản **quyết định kiến trúc gọn** dùng để tham chiếu nhanh: `../CLAUDE.md`.
 
+> ⚠️ **Lưu ý thuật ngữ (2026-06-03):** tầng reasoning đã đổi từ **VLM** sang
+> **coding-agent CLI headless (Codex), text-only** — xem [`F1.1-codex-cli-architecture.md`](F1.1-codex-cli-architecture.md).
+> Trong các tài liệu cũ (rules/analyzers/agents), chữ **"VLM"** = **tầng agent reasoning** hiện tại;
+> mọi đề cập "gửi ảnh cho model / llama.cpp / LLM_BASE_URL" đã **lỗi thời**.
+
 | File | Nội dung |
 |---|---|
 | [`phan-tich-ban-dau.md`](phan-tich-ban-dau.md) | Phân tích mở đầu: tiêu chí đủ chưa, lấy dữ liệu gì & thế nào, tổ chức dữ liệu, cách prompt/Skill/Rule/workflow cho Agent. |

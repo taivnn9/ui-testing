@@ -1,5 +1,8 @@
 # G5 — Image/Icon Agent
 
+> ⚠️ **Lỗi thời:** VLM agent đã thay bằng **Codex CLI text-only** (xem [`../F1.1`](../F1.1-codex-cli-architecture.md)).
+> Tiêu chí vẫn dùng, nay ở `src/ui_defect/agents/skills/50-images.md`.
+
 > **Nhiệm vụ:** xác nhận và phát hiện lỗi **ảnh, icon, media** — vỡ, méo,
 > mờ, sai ngữ nghĩa, placeholder.
 >

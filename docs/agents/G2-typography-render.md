@@ -1,5 +1,8 @@
 # G2 — Typography/Render Agent
 
+> ⚠️ **Lỗi thời:** VLM agent đã thay bằng **Codex CLI text-only** (xem [`../F1.1`](../F1.1-codex-cli-architecture.md)).
+> Tiêu chí vẫn dùng, nay ở `src/ui_defect/agents/skills/20-typography.md`.
+
 > **Nhiệm vụ:** xác nhận lỗi **render chữ ở mức pixel** — tofu, glyph thiếu, mờ,
 > font fallback, RTL hỏng. Nhận output từ A8 để confirm/reject.
 >

@@ -1,12 +1,16 @@
-# Phase 3 — Judgment Agents (VLM)
+# Phase 3 — Judgment Agents
 
-> **Mục đích:** nhận ảnh + schema + `candidate_issues[]` từ Rule Engine → VLM
-> **xác nhận/bác bỏ** candidate + **phát hiện thêm** lỗi cần thẩm mỹ/ngữ cảnh.
+> ⚠️ **LỖI THỜI (2026-06-03):** tầng VLM single-shot mô tả trong thư mục này **đã được thay**
+> bằng **coding-agent CLI headless (Codex)**, text-only. Xem [`../F1.1-codex-cli-architecture.md`](../F1.1-codex-cli-architecture.md).
+> Các file G0–G6/S1/V1 dưới đây giữ làm **tham khảo tiêu chí** — nội dung tiêu chí nay sống dưới
+> dạng `src/ui_defect/agents/skills/*.md` và được nhồi vào prompt Codex.
+
+> **Mục đích (vẫn đúng):** nhận schema + `candidate_issues[]` từ Rule Engine → agent
+> **xác nhận/bác bỏ** candidate + **phát hiện thêm** lỗi text/ngữ cảnh.
 >
-> Model: **VLM self-host qua llama.cpp** OpenAI-compatible endpoint (vd `gemma-4`,
-> cấu hình `LLM_MODEL`). Tất cả agent gọi qua `agents/llm_client.py` → `/v1/chat/completions`.
-> Structured output bằng **JSON schema nhúng trong system prompt** + `response_format=json_object`
-> (không dùng tool_use kiểu Anthropic — llama.cpp chưa hỗ trợ đồng nhất).
+> **Khác so với mô tả cũ:** model nhận **chỉ dữ liệu ký tự** (JSON map + candidate + skill),
+> **KHÔNG nhận ảnh**; gọi qua `agents/codex_client.py` (`codex exec`), khóa output bằng
+> `--output-schema`. (`agents/llm_client.py`, `g0_framework.py`, `prompts.py` deprecated.)
 
 ---
 

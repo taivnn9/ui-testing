@@ -1,5 +1,8 @@
 # Development Plan — UI Defect AI (Phase 1)
 
+> ⚠️ **Cập nhật 2026-06-03:** tầng reasoning đã đổi VLM → **Codex CLI text-only** ([`F1.1`](F1.1-codex-cli-architecture.md)).
+> Các task/mô tả nhắc VLM/llama.cpp ở dưới hiểu theo backend mới. Trạng thái mới nhất ở `../CLAUDE.md` §7.
+
 > **Mục đích:** tracker tổng để **không miss task**. Mỗi component lớn (đặc biệt 14 analyzer)
 > sẽ được **bóc tách chi tiết từng cái** vào `docs/analyzers/<id>.md` / `docs/agents/<id>.md`
 > khi ta đi qua. Trạng thái cập nhật tại đây.

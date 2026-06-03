@@ -1,5 +1,8 @@
 # V1 — Critic / Self-critique Pass
 
+> ℹ️ **Cập nhật 2026-06-03:** vẫn dùng (`agents/critic.py`: dedup + filter), nhận findings từ
+> **Codex CLI** thay vì VLM. Xem [`../F1.1`](../F1.1-codex-cli-architecture.md).
+
 > **Mục đích:** lọc false positive từ tất cả findings của G1–G6 trước khi Summary.
 > Đây là **pass cuối để bảo vệ precision** — hệ thống này sống chết ở false positive thấp.
 >

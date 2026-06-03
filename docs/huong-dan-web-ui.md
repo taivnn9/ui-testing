@@ -9,7 +9,8 @@ Sau khi chạy server (xem [SETUP.md](../SETUP.md)), mở **http://localhost:800
    - `platform` (android / ios / web)
    - `min_severity` — mức lỗi tối thiểu muốn hiện
    - `min_confidence` — ngưỡng tin cậy
-   - **"Chạy VLM"** — tắt = rule-only (nhanh, không cần llama.cpp); bật = có thêm VLM agents.
+   - **"Chạy agent reasoning (Codex)"** — tắt = rule-only (nhanh, không gọi Codex);
+     bật = Codex xác nhận/lọc candidate + bắt thêm lỗi text (cần `codex login`).
 3. **Phân tích**: bấm nút *"Phân tích"* và chờ kết quả.
 4. **Đọc kết quả**:
    - **Cột trái** — ảnh với **khung lỗi đánh số**, màu theo mức nghiêm trọng
@@ -22,7 +23,7 @@ Sau khi chạy server (xem [SETUP.md](../SETUP.md)), mở **http://localhost:800
 
 ## Khi có lỗi
 - Banner **đỏ** = lỗi xử lý (HTTP 4xx/5xx) — xem chi tiết & cách gỡ ở [go-loi.md](go-loi.md).
-- Banner **vàng** = VLM agent lỗi nhưng phân tích vẫn chạy bằng rule (thường do cấu hình
-  `LLM_BASE_URL` sai) — xem [go-loi.md](go-loi.md).
+- Banner **vàng** = agent Codex lỗi nhưng phân tích vẫn chạy bằng rule (thường do chưa
+  `codex login` / chưa cài Codex) — xem [go-loi.md](go-loi.md).
 
 > Thiết kế & kiến trúc chi tiết của Web UI: [F2.0-web-ui.md](F2.0-web-ui.md).

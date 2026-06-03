@@ -3,7 +3,8 @@
 ## Yêu cầu
 - Python 3.11+
 - RAM ≥ 4GB (8GB nếu dùng PaddleOCR)
-- llama.cpp server đang chạy với model vision (Gemma 4 hoặc tương đương)
+- **Codex CLI** đã đăng nhập (`codex login`) — dùng cho tầng reasoning (xem mục 3).
+  Không dùng thì vẫn chạy được ở chế độ rule-only (`run_vlm=false`).
 
 ---
 
@@ -66,22 +67,25 @@ pip install paddlepaddle paddleocr          # CPU
 
 ## 3. Cấu hình môi trường
 
+Tầng reasoning dùng **Codex CLI headless** (`codex exec`) — chỉ cần đăng nhập Codex 1 lần:
+```bash
+codex login          # đăng nhập (ChatGPT hoặc API key)
+codex login status   # kiểm tra
+```
+
+(Tùy chọn) tạo `.env` để chỉnh backend/sandbox:
 ```bash
 cp .env.example .env
 ```
-
-Mở `.env` và sửa:
 ```bash
-LLM_BASE_URL=http://<địa_chỉ_llama_cpp_server>:8080
-LLM_MODEL=gemma-4        # tên model đang serve trên llama.cpp
-LLM_API_KEY=none         # điền nếu server yêu cầu auth
+AGENT_BACKEND=codex            # codex | none(=rule-only)
+CODEX_SANDBOX=workspace-write  # quyền đọc/ghi file trong project
+# CODEX_MODEL=                 # bỏ trống = mặc định của codex
 ```
 
 > Các tùy chọn khác (timeout, OCR remote, gỡ lỗi) xem comment trong `.env.example`.
 >
-> `.env` được **nạp tự động** khi chạy app. **Sửa `.env` xong phải khởi động lại server**
-> mới có hiệu lực. Báo `Không gọi được LLM tại http://localhost:8080...` dù đã đổi địa chỉ
-> = server chưa restart, hoặc đang chạy từ thư mục khác repo.
+> `.env` được **nạp tự động** khi chạy app. **Sửa `.env` xong phải khởi động lại server** mới có hiệu lực.
 
 ---
 
@@ -133,7 +137,7 @@ pytest
 Đặt `DEBUG_ERRORS=1` (mặc định) để thấy chi tiết lỗi trong console server và response.
 Hướng dẫn đọc lỗi & phân biệt lỗi cấu hình vs lỗi code: [docs/go-loi.md](docs/go-loi.md).
 
-Mẹo: thêm `-F "run_vlm=false"` (hoặc tắt *"Chạy VLM"* trên web) để chạy thuần rule, loại trừ LLM.
+Mẹo: thêm `-F "run_vlm=false"` (hoặc tắt *"Chạy agent reasoning"* trên web) để chạy thuần rule, không gọi Codex.
 
 ---
 
@@ -143,4 +147,4 @@ Mẹo: thêm `-F "run_vlm=false"` (hoặc tắt *"Chạy VLM"* trên web) để 
 |---|---|---|
 | **Rule-only** (`run_vlm=false`) | pip install + OpenCV | Layout, color, text regex rules |
 | **Rule + OCR** | + Tesseract hoặc PaddleOCR | Thêm text detection, CNT/TYP rules |
-| **Full** (default) | + llama.cpp server chạy model vision | Tất cả + VLM agents xác nhận |
+| **Full** (default) | + Codex CLI đã `codex login` | Tất cả + agent reasoning xác nhận/lọc (text-only) |

@@ -1,5 +1,8 @@
 # G3 — Color/Style Agent
 
+> ⚠️ **Lỗi thời:** VLM agent đã thay bằng **Codex CLI text-only** (xem [`../F1.1`](../F1.1-codex-cli-architecture.md)).
+> Tiêu chí vẫn dùng, nay ở `src/ui_defect/agents/skills/30-color-style.md`.
+
 > **Nhiệm vụ:** xác nhận và phát hiện lỗi **màu sắc, tương phản, visual style**.
 >
 > **Tiêu chí:** STY-01–13

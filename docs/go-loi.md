@@ -18,21 +18,23 @@ Cấu hình mức log qua `LOG_LEVEL` (`INFO` | `DEBUG` | `WARNING`).
             "type":"KeyError","message":"'x'","traceback":[ "...", "..." ]}}
 ```
 
-### Lỗi VLM/LLM KHÔNG làm hỏng phân tích
-Pipeline degrade graceful → vẫn trả **HTTP 200**, xem **`pipeline_meta.agent_errors`**.
-Web UI hiện **banner vàng**. Lỗi kết nối kèm rõ **URL + model + timeout + nguyên nhân**:
+### Lỗi tầng agent (Codex) KHÔNG làm hỏng phân tích
+Pipeline degrade graceful → vẫn trả **HTTP 200** (giữ kết quả rule), xem **`pipeline_meta.agent_errors`**.
+Web UI hiện **banner vàng**. Lỗi Codex kèm rõ nguyên nhân:
 ```
-RuntimeError: Không gọi được LLM tại http://host:8080/v1/chat/completions
-(model=gemma-4, timeout=120s): ConnectError: [Errno 111] Connection refused
+RuntimeError: Codex exec exit=1 (sandbox=workspace-write, model=default). stderr: ...
+RuntimeError: Không tìm thấy Codex CLI 'codex'. Cài Codex hoặc đặt env CODEX_BIN.
 ```
 
 ## Phân biệt nhanh: cấu hình hay code?
 | Triệu chứng | Nguyên nhân |
 |---|---|
-| `agent_errors` kèm `Connection refused` / timeout | **Cấu hình** — sai `LLM_BASE_URL` hoặc server LLM chưa chạy |
+| `agent_errors`: "Không tìm thấy Codex CLI" | **Cấu hình** — chưa cài Codex / sai `CODEX_BIN` |
+| `agent_errors`: Codex exit≠0 / timeout / auth | **Cấu hình** — chưa `codex login`, hết quota, hoặc sandbox |
 | HTTP 500 + `traceback` | **Lỗi code** |
 
 ## Mẹo
-- Loại trừ LLM khi debug: gửi `run_vlm=false` (hoặc tắt *"Chạy VLM"* trên web) → chạy thuần
-  rule, không gọi llama.cpp.
+- Loại trừ Codex khi debug: gửi `run_vlm=false` (hoặc tắt *"Chạy agent reasoning"* trên web) →
+  chạy thuần rule.
+- Kiểm tra Codex độc lập: `echo 'hi' | codex exec --ephemeral -s read-only -` và `codex login status`.
 - **Production**: đặt `DEBUG_ERRORS=0` để response không lộ traceback (console vẫn log đầy đủ).

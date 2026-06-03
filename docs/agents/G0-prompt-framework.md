@@ -1,5 +1,8 @@
 # G0 — Prompt Framework chung
 
+> ⚠️ **Lỗi thời:** tầng VLM (Set-of-Marks, ảnh+JSON) đã thay bằng **Codex CLI text-only** —
+> xem [`../F1.1-codex-cli-architecture.md`](../F1.1-codex-cli-architecture.md). Giữ làm tham khảo.
+
 > Đây là **nền tảng kỹ thuật** cho mọi agent G1–G6. Không phải agent riêng —
 > là bộ công cụ dùng chung: SoM renderer, output schema, few-shot format, call wrapper.
 

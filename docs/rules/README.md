@@ -1,7 +1,11 @@
 # Rule Engine — Tổng quan
 
+> ℹ️ **Thuật ngữ:** "VLM xác nhận" trong các file rule dưới đây nay = **tầng agent reasoning
+> (Codex CLI text-only)** xác nhận/bác bỏ candidate. Cơ chế đổi (xem [`../F1.1`](../F1.1-codex-cli-architecture.md)),
+> nhưng vai trò "rule sinh candidate → agent xác nhận" giữ nguyên.
+
 > **Mục đích:** chạy kiểm tra **tất định từ code** trên output của analyzers →
-> sinh `candidate_issues[]` trước khi VLM xác nhận/bác bỏ.
+> sinh `candidate_issues[]` trước khi agent xác nhận/bác bỏ.
 >
 > Nguyên tắc cốt lõi (từ CLAUDE.md §3): cái gì TÍNH ĐƯỢC bằng code từ bbox + pixel
 > → rule engine làm. LLM **không được** làm số học toạ độ.

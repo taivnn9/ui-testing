@@ -1,5 +1,8 @@
 # G6 — Component + State Agent
 
+> ⚠️ **Lỗi thời:** VLM agent đã thay bằng **Codex CLI text-only** (xem [`../F1.1`](../F1.1-codex-cli-architecture.md)).
+> Tiêu chí vẫn dùng, nay ở `src/ui_defect/agents/skills/60-components-states.md`.
+
 > **Nhiệm vụ:** xác nhận lỗi **UI component cụ thể** và **trạng thái màn hình**
 > (loading, empty, error state) + safe-area platform.
 >

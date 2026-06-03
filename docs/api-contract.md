@@ -35,7 +35,7 @@ Content-Type: multipart/form-data
 | `safe_area_bottom` | `int` | ❌ | A13 auto | Device px |
 | `min_severity` | `string` | ❌ | `low` | Filter output: `critical`\|`high`\|`medium`\|`low`\|`trivial` |
 | `min_confidence` | `float` | ❌ | `0.4` | Filter output: chỉ trả issue ≥ ngưỡng này |
-| `run_vlm` | `bool` | ❌ | `true` | `false` = chỉ rule engine, bỏ qua VLM agents (nhanh hơn) |
+| `run_vlm` | `bool` | ❌ | `true` | `false` = chỉ rule engine, bỏ qua tầng agent reasoning (Codex) (nhanh hơn). *Tên giữ cho tương thích; nay điều khiển Codex CLI, không phải VLM.* |
 
 ### 2.2 Ví dụ curl
 
@@ -54,7 +54,7 @@ curl -X POST http://localhost:8000/analyze \
   -F "safe_area_bottom=34" \
   -F "route=checkout"
 
-# Rule-only (không gọi VLM — nhanh, dùng để debug)
+# Rule-only (không gọi agent Codex — nhanh, dùng để debug)
 curl -X POST http://localhost:8000/analyze \
   -F "screenshot=@screen.png" \
   -F "run_vlm=false"
@@ -124,8 +124,10 @@ curl -X POST http://localhost:8000/analyze \
 | `400` | Giá trị platform/theme sai | `{"detail": "platform phải là android, ios hoặc web"}` |
 | `413` | Ảnh quá lớn (> 10MB) | `{"error": "file_too_large"}` |
 | `422` | Giá trị field không hợp lệ | Pydantic validation error |
-| `500` | Pipeline lỗi nội bộ | `{"error": "pipeline_failed", "detail": "..."}` |
-| `503` | VLM API không khả dụng | `{"error": "vlm_unavailable"}` |
+| `500` | Pipeline lỗi nội bộ | `{"detail": {"error":"pipeline_failed","stage","type","message","traceback"}}` (khi `DEBUG_ERRORS=1`) |
+
+> Lỗi tầng agent (Codex) **không** trả mã lỗi: pipeline degrade graceful → **HTTP 200**, lý do
+> nằm ở `pipeline_meta.agent_errors`. Xem [go-loi.md](go-loi.md).
 
 ---
 
@@ -136,12 +138,11 @@ curl -X POST http://localhost:8000/analyze \
 {"status": "ok", "version": "0.1.0"}
 ```
 
-### GET /crops/{screen_id}/{element_id}.png
-Trả crop ảnh của element (PNG). Dùng để tester verify evidence.
-TTL: 1 giờ sau khi analyze.
+### GET / và /static/*
+Giao diện web (upload → phân tích → visualize lỗi). Xem [huong-dan-web-ui.md](huong-dan-web-ui.md).
 
-### GET /debug/{screen_id}/marked.png
-Ảnh SoM đầy đủ (tất cả element có label). Chỉ enable khi `DEBUG=true`.
+> Ghi chú: Set-of-Marks (vẽ ID lên ảnh cho VLM) đã **bỏ** — tầng reasoning là Codex CLI text-only,
+> không nhận ảnh (xem [F1.1](F1.1-codex-cli-architecture.md)).
 
 ---
 
@@ -149,7 +150,8 @@ TTL: 1 giờ sau khi analyze.
 
 Xem `src/ui_defect/api/pipeline.py` — `run_pipeline()`.
 
-Thứ tự: A13 → A5 → A3 → A6 → A12 → A4 → A7 → A8 → A9 → A10 → A0 → R1–R4 → G1–G6 → V1 → S1.
+Thứ tự: A13 → A5 → A3 → A6 → A12 → A4 → A7 → A8 → A9 → A10 → A0 → R1–R4 → **Codex reasoning
+(text-only, 1 call)** → V1 (critic) → S1 (summary).
 
 ---
 
@@ -159,30 +161,30 @@ Thứ tự: A13 → A5 → A3 → A6 → A12 → A4 → A7 → A8 → A9 → A10
 |---|---|---|
 | Analyzers (A3–A13) | < 2s | CPU-only, không GPU |
 | Rule Engine (R1–R5) | < 200ms | Pure Python, no ML |
-| VLM Agents (G1–G6 parallel) | < 8s | llama.cpp endpoint, 6 parallel calls |
+| Codex reasoning (1 call, text-only) | ~10–18s | `codex exec` headless; phụ thuộc model/quota |
 | V1 + S1 | < 1s | Mostly code |
-| **Total E2E** | **< 12s** | Cho ảnh 390×844 |
-| Concurrent requests | 5 | Giới hạn bởi throughput llama.cpp server |
+| **Total E2E** | **~12–20s** (có agent) / **< 3s** (rule-only) | Cho ảnh 390×844 |
+| Concurrent requests | tùy | Giới hạn bởi throughput/quota Codex |
 
 ---
 
 ## 8. Cấu hình môi trường
 
 ```bash
-# .env — VLM gọi qua llama.cpp OpenAI-compatible endpoint (xem .env.example)
-LLM_BASE_URL=http://localhost:8080   # URL server llama.cpp
-LLM_MODEL=gemma-4                     # tên model đang serve
-LLM_API_KEY=none                      # api key nếu server yêu cầu, không thì "none"
-LLM_TIMEOUT_SEC=120
+# .env — tầng reasoning dùng Codex CLI headless (xem .env.example, docs/F1.1)
+AGENT_BACKEND=codex             # codex | none(=rule-only)
+CODEX_SANDBOX=workspace-write   # quyền đọc/ghi file project
+CODEX_TIMEOUT_SEC=180
+# CODEX_MODEL=                  # bỏ trống = mặc định codex
 # OCR remote (tùy chọn — paddle ở máy khác, xem ocr_service/):
-# OCR_BASE_URL=http://localhost:8081  # set → app không cần cài paddle local
+# OCR_BASE_URL=http://localhost:8081
 OCR_TIMEOUT_SEC=60
 MAX_IMAGE_SIZE_MB=10
-DEBUG=false
+DEBUG_ERRORS=1                  # 1=dev (trả traceback), 0=prod
 ```
 
-> **Topology tách máy:** cả VLM (`LLM_BASE_URL`) lẫn OCR (`OCR_BASE_URL`) đều gọi qua HTTP
-> → có thể đặt llama.cpp và PaddleOCR ở (các) máy khác, máy app chỉ chạy CV + rule engine.
+> **Codex CLI** chạy local (đã `codex login`). OCR có thể tách máy qua `OCR_BASE_URL`.
+> Không còn phụ thuộc llama.cpp/VLM.
 
 ---
 

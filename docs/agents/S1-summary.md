@@ -1,5 +1,8 @@
 # S1 — Summary Agent
 
+> ℹ️ **Cập nhật 2026-06-03:** vẫn dùng (`agents/summary.py`), nhưng nhận findings từ **Codex CLI**
+> thay vì VLM. Xem [`../F1.1`](../F1.1-codex-cli-architecture.md).
+
 > **Mục đích:** tổng hợp findings sau V1 → output cuối API:
 > dedupe, chốt severity, sắp xếp ưu tiên, format response.
 >
