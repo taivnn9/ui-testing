@@ -3,6 +3,10 @@
 > Nối tiếp `phan-tich-ban-dau.md`. Ghi lại 3 câu hỏi chốt + câu trả lời của chủ dự án,
 > kiến trúc suy ra, và **2 chế độ vận hành**. Bản quyết định gọn nằm ở `../CLAUDE.md`.
 
+> ⚠️ **LỖI THỜI MỘT PHẦN (giữ làm lịch sử).** Phần **"2 chế độ vận hành" (Mode A có cây
+> DOM/XML / Mode B chỉ ảnh)** đã **bị huỷ**: chốt cuối là **MỘT CHẾ ĐỘ vision-only**,
+> input ảnh duy nhất (`../CLAUDE.md` §2.1). Bảng Mode A/B bên dưới chỉ để tham khảo lịch sử.
+
 ---
 
 ## 1. Ba câu hỏi chốt & câu trả lời

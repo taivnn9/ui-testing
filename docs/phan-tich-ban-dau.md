@@ -4,6 +4,10 @@
 > (2) lấy dữ liệu gì & lấy thế nào, (3) tổ chức dữ liệu thế nào, (4) làm sao Agent/Model
 > làm đúng (prompt/Skill/Rule/workflow). Quyết định chốt sau đó nằm trong `../CLAUDE.md`.
 
+> ⚠️ **Ghi chú lịch sử:** ví dụ trong file dùng **4 mức severity cũ**
+> (`blocker/major/minor/cosmetic`). Schema hiện hành đã đổi sang **5 mức**
+> `critical/high/medium/low/trivial` (xem `../CLAUDE.md` §5, `F0.2-canonical-schema.md`).
+
 ---
 
 ## 0. Vấn đề cốt lõi cần sửa ngay trong ý tưởng gốc

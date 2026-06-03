@@ -7,6 +7,12 @@
 > Tài liệu sống. Trạng thái: **đang thảo luận kiến trúc** (chưa chốt hết).
 > Phiên: 2026-05-22. Bằng tiếng Việt.
 
+> ⚠️ **LỖI THỜI MỘT PHẦN (giữ làm lịch sử).** Tài liệu này còn mô tả **Mode A/B** và
+> input **DOM/XML** (Tree Parser A1, Style Reader A2, `source=dom/xml`, routing có/không cây).
+> Kiến trúc **đã chốt lại** sau đó: **MỘT CHẾ ĐỘ vision-only**, input ảnh duy nhất
+> (xem `../CLAUDE.md` §2.1). Mọi đoạn nói Mode A / DOM / XML / A1 / A2 **không còn áp dụng** —
+> đọc để hiểu lý do thiết kế, không phải spec hiện hành.
+
 ---
 
 ## 1. Kiến trúc xử lý

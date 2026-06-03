@@ -116,16 +116,20 @@ Input (ảnh PNG)
   →  Verify/Critic pass (giảm false positive)
   →  Aggregate + dedupe → trả về API
 ```
-**Prompt:** structured output bắt buộc (JSON schema/tool-use) · decompose theo nhóm tiêu chí
+**Prompt:** structured output bắt buộc (JSON schema nhúng prompt + `response_format=json_object`,
+llama.cpp — không tool_use) · decompose theo nhóm tiêu chí
 (không hỏi "tìm hết bug" 1 phát) · **Set-of-Marks** (vẽ ID lên ảnh để model trỏ theo ID,
 không đoán toạ độ) · few-shot có nhãn để calibrate severity · self-critique trước khi báo.
 
 ## 7. Trạng thái & việc tiếp theo
 - [x] Chốt kiến trúc (API service, input ảnh duy nhất, vision-only, rule+VLM).
-- [x] Vision adapter: A0/A3–A13 analyzers (`src/ui_defect/analyzers/`) — CV+OCR+pixel.
+- [x] Vision adapter: A0, A3–A10, A12, A13 analyzers (`src/ui_defect/analyzers/`) — CV+OCR+pixel.
+      (A1/A2 đã bỏ — DOM/XML; **A11** face/text-in-image: **hoãn Phase 2**, chỉ có spec.)
 - [x] Rule engine R1–R4 (`src/ui_defect/rules/`) — geometry, color, image, text.
-- [x] Prompt template + VLM agents G0–G6 (`src/ui_defect/agents/`) — Set-of-Marks, tool_use.
+- [x] Prompt template + VLM agents G0–G6 (`src/ui_defect/agents/`) — Set-of-Marks, JSON output
+      qua llama.cpp OpenAI-compatible endpoint (không dùng tool_use).
 - [x] API service (`src/ui_defect/api/`) — FastAPI, POST /analyze, zero-config (chỉ cần ảnh).
+- [x] Cài deps (`pip install -e ".[dev]"`) + pytest unit: **93/93 pass** (2026-06-03).
 - [ ] Golden set + script đo precision/recall (mutation testing UI) → `data/golden/`.
-- [ ] Cài deps + chạy pytest + integration test với ảnh thật.
+- [ ] Integration test với ảnh thật (cần OCR backend + llama.cpp server).
 - [ ] Few-shot examples cho agents G1–G6 (cần ảnh mẫu có lỗi biết trước).
