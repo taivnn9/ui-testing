@@ -19,8 +19,6 @@ from ..schema.thresholds import (
     BLUR_CLEAR,
     BLUR_WARN,
     HASH_IDENTICAL,
-    HASH_NEAR_DUP,
-    UPSCALE_RATIO,
 )
 from .r5_severity import apply_modifiers, clamp_confidence, get_position_modifier
 
@@ -305,6 +303,104 @@ def check_hash_duplicates(doc: CanonicalDoc) -> list[CandidateIssue]:
                     f"({'identical' if is_identical else 'near-dup'})"
                 ),
                 evidence=Evidence(bbox=elem_a.bbox, crop=elem_a.crop),
+            )
+        )
+
+    return issues
+
+
+# ---------------------------------------------------------------------------
+# R3-IMG02 — Méo / sai tỉ lệ (displayed ratio ≠ intrinsic ratio)
+# ---------------------------------------------------------------------------
+
+def check_distortion(doc: CanonicalDoc) -> list[CandidateIssue]:
+    """
+    R3-IMG02: lệch tỉ lệ render so với gốc > ASPECT_WARN → medium, > ASPECT_ERROR → high.
+    deviation = |disp_ratio − intr_ratio| / intr_ratio   (F0.4 §5.1, tất định).
+    """
+    issues: list[CandidateIssue] = []
+    vp_h = doc.screen.viewport.h
+
+    for elem in doc.elements:
+        if not _visible(elem):
+            continue
+        if elem.role not in _IMAGE_ROLES:
+            continue
+        im = elem.image_meta
+        if im is None:
+            continue
+        iw, ih, dw, dh = im.intrinsic_w, im.intrinsic_h, im.displayed_w, im.displayed_h
+        if not all(isinstance(v, (int, float)) and v for v in (iw, ih, dw, dh)):
+            continue
+
+        intr_ratio = iw / ih
+        disp_ratio = dw / dh
+        if intr_ratio <= 0:
+            continue
+        deviation = abs(disp_ratio - intr_ratio) / intr_ratio
+        if deviation < ASPECT_WARN:
+            continue
+
+        sev_range = SeverityRange(min="low", max="high")
+        baseline = "high" if deviation >= ASPECT_ERROR else "medium"
+        modifiers: list[int] = [get_position_modifier(elem.bbox, vp_h)]
+        if not elem.interactive and elem.z <= 1:
+            modifiers.append(-1)
+        sev = apply_modifiers(baseline, modifiers, sev_range)  # type: ignore[arg-type]
+        confidence = clamp_confidence(
+            elem.confidence * (0.85 if deviation >= ASPECT_ERROR else 0.7)
+        )
+
+        issues.append(
+            CandidateIssue(
+                rule="R3-IMG02",
+                element=elem.id,
+                severity=sev,
+                severity_range=sev_range,
+                confidence=confidence,
+                detail=(
+                    f"Méo tỉ lệ: hiển thị {dw}×{dh} (ratio {disp_ratio:.2f}) ≠ gốc "
+                    f"{iw}×{ih} (ratio {intr_ratio:.2f}), lệch {deviation * 100:.0f}% "
+                    f"> {ASPECT_WARN * 100:.0f}%"
+                ),
+                evidence=Evidence(bbox=elem.bbox, crop=elem.crop),
+            )
+        )
+
+    return issues
+
+
+# ---------------------------------------------------------------------------
+# R3-IMG09 — Scale-mode sai (stretch → méo)
+# ---------------------------------------------------------------------------
+
+def check_scale_mode(doc: CanonicalDoc) -> list[CandidateIssue]:
+    """
+    R3-IMG09: scale_mode='stretch' → ảnh không giữ tỉ lệ (signal-based, confidence thấp,
+    agent xác nhận). Các mode fit/fill/none giữ tỉ lệ nên bỏ qua.
+    """
+    issues: list[CandidateIssue] = []
+
+    for elem in doc.elements:
+        if not _visible(elem):
+            continue
+        if elem.role not in _IMAGE_ROLES:
+            continue
+        im = elem.image_meta
+        if im is None or im.scale_mode != "stretch":
+            continue
+
+        sev_range = SeverityRange(min="low", max="high")
+        confidence = clamp_confidence(elem.confidence * 0.6)
+        issues.append(
+            CandidateIssue(
+                rule="R3-IMG09",
+                element=elem.id,
+                severity="medium",
+                severity_range=sev_range,
+                confidence=confidence,
+                detail="scale_mode='stretch' → ảnh có thể bị méo (nên dùng fit/fill để giữ tỉ lệ)",
+                evidence=Evidence(bbox=elem.bbox, crop=elem.crop),
             )
         )
 

@@ -6,7 +6,7 @@
 
 Liên quan: [`../catalog-tieu-chi-loi-ui.md`](../catalog-tieu-chi-loi-ui.md) (danh sách gốc), [`../F0.4-thresholds.md`](../F0.4-thresholds.md) (ngưỡng), [`../F1.1-codex-cli-architecture.md`](../F1.1-codex-cli-architecture.md) (kiến trúc reasoning).
 
-> **Độ phủ thực tế:** 🟦 có rule tất định **40** · 🟥 chỉ agent Codex **55** · ⏳ chưa xử lý **26** / 121.
+> **Độ phủ thực tế:** 🟦 có rule tất định **43** · 🟥 chỉ agent Codex **52** · ⏳ chưa xử lý **26** / 121.
 
 ## CNT — Content & Semantics — nội dung text nói gì
 
@@ -71,7 +71,7 @@ Liên quan: [`../catalog-tieu-chi-loi-ui.md`](../catalog-tieu-chi-loi-ui.md) (da
 | `LAY-01` | Overlap / va chạm phần tử vô lý | high | 🟦 rule | [LAY-01.md](LAY-01.md) |
 | `LAY-02` | Off-screen / cắt mép viewport | high | 🟦 rule | [LAY-02.md](LAY-02.md) |
 | `LAY-03` | Tràn ra ngoài container cha | medium | 🟦 rule | [LAY-03.md](LAY-03.md) |
-| `LAY-04` | Lệch grid (không theo 8pt) | low | 🟥 agent | [LAY-04.md](LAY-04.md) |
+| `LAY-04` | Lệch grid (không theo 8pt) | low | 🟦 rule | [LAY-04.md](LAY-04.md) |
 | `LAY-05` | Lệch optical alignment | low | 🟥 agent | [LAY-05.md](LAY-05.md) |
 | `LAY-06` | Z-order / occlusion | high | 🟥 agent | [LAY-06.md](LAY-06.md) |
 | `LAY-07` | Quá chật / quá nhiều khoảng trắng | low | 🟥 agent | [LAY-07.md](LAY-07.md) |
@@ -89,14 +89,14 @@ Liên quan: [`../catalog-tieu-chi-loi-ui.md`](../catalog-tieu-chi-loi-ui.md) (da
 | ID | Tiêu chí | Sev | Triển khai | Chi tiết |
 |---|---|---|---|---|
 | `IMG-01` | Ảnh vỡ / broken | high | 🟦 rule | [IMG-01.md](IMG-01.md) |
-| `IMG-02` | Méo / sai tỉ lệ | medium | 🟥 agent | [IMG-02.md](IMG-02.md) |
+| `IMG-02` | Méo / sai tỉ lệ | medium | 🟦 rule | [IMG-02.md](IMG-02.md) |
 | `IMG-03` | Mờ / pixel hoá | medium | 🟦 rule | [IMG-03.md](IMG-03.md) |
 | `IMG-04` | Crop sai (cắt mất phần quan trọng) | medium | ⏳ chưa | [IMG-04.md](IMG-04.md) |
 | `IMG-05` | Thiếu ảnh (slot trống) | medium | 🟦 rule | [IMG-05.md](IMG-05.md) |
 | `IMG-06` | Icon sai ngữ nghĩa | medium | 🟥 agent | [IMG-06.md](IMG-06.md) |
 | `IMG-07` | Icon lệch tâm trong nút | low | 🟦 rule | [IMG-07.md](IMG-07.md) |
 | `IMG-08` | Icon placeholder / chưa load | medium | 🟦 rule | [IMG-08.md](IMG-08.md) |
-| `IMG-09` | Scale-mode sai | medium | 🟥 agent | [IMG-09.md](IMG-09.md) |
+| `IMG-09` | Scale-mode sai | medium | 🟦 rule | [IMG-09.md](IMG-09.md) |
 | `IMG-10` | Sai phiên bản / lộn brand | medium | ⏳ chưa | [IMG-10.md](IMG-10.md) |
 | `IMG-11` | Logo mờ/sai màu/tỉ lệ | low | ⏳ chưa | [IMG-11.md](IMG-11.md) |
 | `IMG-12` | Ảnh trùng lặp ngoài ý muốn | low | 🟦 rule | [IMG-12.md](IMG-12.md) |

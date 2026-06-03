@@ -17,6 +17,7 @@ from __future__ import annotations
 
 from ..schema.models import CandidateIssue, CanonicalDoc
 from .r1_geometry import (
+    check_grid_alignment,
     check_near_duplicate_position,
     check_offscreen,
     check_overflow,
@@ -28,9 +29,11 @@ from .r1_geometry import (
 from .r2_color import check_contrast, check_dark_mode, check_opacity
 from .r3_image import (
     check_blur,
+    check_distortion,
     check_hash_duplicates,
     check_icon_centering,
     check_placeholder_icon,
+    check_scale_mode,
 )
 from .r4_text import (
     check_debug_text,
@@ -77,6 +80,7 @@ def run_rule_engine(doc: CanonicalDoc) -> CanonicalDoc:
     new_issues.extend(check_overflow(doc))
     new_issues.extend(check_touch_target(doc))
     new_issues.extend(check_tap_gap(doc))
+    new_issues.extend(check_grid_alignment(doc))
 
     # R2 — Color/contrast
     new_issues.extend(check_contrast(doc))
@@ -85,6 +89,8 @@ def run_rule_engine(doc: CanonicalDoc) -> CanonicalDoc:
 
     # R3 — Image
     new_issues.extend(check_blur(doc))
+    new_issues.extend(check_distortion(doc))
+    new_issues.extend(check_scale_mode(doc))
     new_issues.extend(check_icon_centering(doc))
     new_issues.extend(check_placeholder_icon(doc))
     new_issues.extend(check_hash_duplicates(doc))

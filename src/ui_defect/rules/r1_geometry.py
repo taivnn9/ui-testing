@@ -7,14 +7,12 @@ Nguồn: elements[].bbox, relations[], screen.viewport, screen.safe_area, screen
 from __future__ import annotations
 
 from ..schema.models import (
-    BBox,
     CandidateIssue,
     CanonicalDoc,
     Evidence,
     SeverityRange,
 )
 from ..schema.thresholds import (
-    GAP_MIN_PX,
     GRID_TOLERANCE_PX,
     GRID_UNIT_LOGICAL,
     OVERFLOW_THRESHOLD,
@@ -22,8 +20,8 @@ from ..schema.thresholds import (
     touch_gap_px,
     touch_min_px,
 )
-from ..utils.geometry import gap_between, iou
-from .r5_severity import apply_modifiers, clamp_confidence, get_position_modifier
+from ..utils.geometry import gap_between
+from .r5_severity import apply_modifiers, clamp_confidence
 
 # Tolerance pixel cho offscreen check
 _OFFSCREEN_TOL_SIDE: float = 2.0
@@ -586,5 +584,59 @@ def check_safe_area(doc: CanonicalDoc) -> list[CandidateIssue]:
                         evidence=Evidence(bbox=b),
                     )
                 )
+
+    return issues
+
+
+# ---------------------------------------------------------------------------
+# R1-LAY04 — Lệch grid (bbox không bám lưới 8pt)
+# ---------------------------------------------------------------------------
+
+def check_grid_alignment(doc: CanonicalDoc) -> list[CandidateIssue]:
+    """
+    R1-LAY04: cạnh trái/trên của element không bám lưới GRID_UNIT (8 × dpr) quá
+    GRID_TOLERANCE_PX. Tất định nhưng dễ false-positive → severity thấp + confidence thấp
+    (agent xác nhận). Chỉ xét element nội dung (text/button/input/icon/image), bỏ container.
+    """
+    issues: list[CandidateIssue] = []
+    dpr = doc.screen.viewport.dpr
+    unit = GRID_UNIT_LOGICAL * dpr
+    tol = GRID_TOLERANCE_PX
+    _ROLES = {"text", "button", "input", "icon", "image", "toggle", "tab"}
+
+    for elem in doc.elements:
+        if not _visible(elem):
+            continue
+        if elem.role not in _ROLES:
+            continue
+        b = elem.bbox
+
+        def off(v: float) -> float:
+            r = v % unit
+            return min(r, unit - r)  # khoảng cách tới mốc lưới gần nhất
+
+        off_x, off_y = off(b.x), off(b.y)
+        # Chỉ flag khi lệch RÕ (> tol) nhưng không phải sát mốc kế (tránh nhiễu làm tròn)
+        bad_x = tol < off_x < (unit - tol)
+        bad_y = tol < off_y < (unit - tol)
+        if not (bad_x or bad_y):
+            continue
+
+        confidence = clamp_confidence(elem.confidence * 0.5)
+        sev_range = SeverityRange(min="trivial", max="medium")
+        issues.append(
+            CandidateIssue(
+                rule="R1-LAY04",
+                element=elem.id,
+                severity="low",  # type: ignore[arg-type]
+                severity_range=sev_range,
+                confidence=confidence,
+                detail=(
+                    f"Lệch lưới {GRID_UNIT_LOGICAL}pt: x={b.x:.0f} (lệch {off_x:.1f}px), "
+                    f"y={b.y:.0f} (lệch {off_y:.1f}px); unit={unit:.0f}px tol={tol}px"
+                ),
+                evidence=Evidence(bbox=b),
+            )
+        )
 
     return issues

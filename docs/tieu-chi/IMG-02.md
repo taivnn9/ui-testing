@@ -2,7 +2,7 @@
 
 > **Nhóm:** Images, Icons & Media — ảnh, icon, media (`IMG`)
 > **Severity nền:** `medium` (range `low→high`) · **Tags:** —
-> **Trạng thái triển khai:** 🟥 Chỉ agent Codex (CHƯA có rule tất định)
+> **Trạng thái triển khai:** ✅ Đã implement (rule/analyzer tất định + agent xác nhận)
 >
 > _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
@@ -10,9 +10,9 @@
 `image_meta` (A7)
 
 ## Kỹ thuật & ai đánh giá
-🟥 **Agent Codex** (text-only) — chưa có rule riêng, phán đoán từ JSON
+🟦 **Rule tất định** (code emit candidate) → 🟥 agent Codex xác nhận/bác
 
-Ghi chú: R3 (F0.4 §5.1).
+Chi tiết kỹ thuật: R3-IMG02 (`r3_image.check_distortion`): |disp_ratio−intr_ratio|/intr_ratio.
 
 ## ❌ Không đạt (fail) khi
 lệch ratio > 5% (warn) / > 15% (error)
