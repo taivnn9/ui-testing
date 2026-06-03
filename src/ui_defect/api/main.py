@@ -2,13 +2,11 @@
 from __future__ import annotations
 
 import os
-from datetime import datetime, timezone
-from typing import Optional
-
+from datetime import UTC, datetime
 from pathlib import Path
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from PIL import Image, UnidentifiedImageError
 
@@ -27,8 +25,11 @@ app.mount("/static", StaticFiles(directory=_WEB_DIR / "static"), name="static")
 
 
 @app.get("/", include_in_schema=False)
-def index():
-    return FileResponse(_WEB_DIR / "index.html")
+def index() -> FileResponse:
+    path = _WEB_DIR / "index.html"
+    if not path.is_file():
+        raise HTTPException(500, detail="frontend_not_found")
+    return FileResponse(path)
 
 
 _MAX_IMAGE_BYTES = int(os.environ.get("MAX_IMAGE_SIZE_MB", "10")) * 1024 * 1024
@@ -41,18 +42,18 @@ def health():
 
 @app.post("/analyze", response_model=AnalyzeResponse)
 async def analyze(
-    screenshot: UploadFile = File(..., description="Ảnh PNG/JPG màn hình — trường duy nhất bắt buộc"),
+    screenshot: UploadFile = File(..., description="Ảnh PNG/JPG màn hình — trường duy nhất bắt buộc"),  # noqa: B008
     # Tất cả optional — hệ thống tự detect từ ảnh nếu không cấp
     platform: str = Form("android", description="android (default) | ios | web"),
-    viewport_w: Optional[int] = Form(None, description="Tự lấy img.width nếu bỏ trống"),
-    viewport_h: Optional[int] = Form(None, description="Tự lấy img.height nếu bỏ trống"),
-    theme: Optional[str] = Form(None, description="light|dark — tự detect từ luminance"),
+    viewport_w: int | None = Form(None, description="Tự lấy img.width nếu bỏ trống"),
+    viewport_h: int | None = Form(None, description="Tự lấy img.height nếu bỏ trống"),
+    theme: str | None = Form(None, description="light|dark — tự detect từ luminance"),
     dpr: float = Form(1.0),
-    locale: Optional[str] = Form(None, description="vd vi-VN — tự detect từ OCR text"),
-    safe_area_top: Optional[int] = Form(None, description="Override A13 nếu muốn chính xác"),
-    safe_area_bottom: Optional[int] = Form(None),
+    locale: str | None = Form(None, description="vd vi-VN — tự detect từ OCR text"),
+    safe_area_top: int | None = Form(None, description="Override A13 nếu muốn chính xác"),
+    safe_area_bottom: int | None = Form(None),
     font_scale: float = Form(1.0),
-    route: Optional[str] = Form(None),
+    route: str | None = Form(None),
     min_severity: str = Form("low"),
     min_confidence: float = Form(0.4),
     run_vlm: bool = Form(True),
@@ -107,7 +108,7 @@ async def analyze(
     min_idx = _sev_order.index(min_severity) if min_severity in _sev_order else 0
     filtered = [i for i in output.issues if _sev_order.index(i.severity) >= min_idx]
 
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
     return AnalyzeResponse(
         screen_id=output.screen_id,
         analyzed_at=now,
