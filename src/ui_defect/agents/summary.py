@@ -2,11 +2,16 @@
 from __future__ import annotations
 
 import hashlib
+import re
 from dataclasses import dataclass, field
 
-from ..schema.models import BBox, SeverityRange
+from ..schema.models import BBox, CandidateIssue, SeverityRange
 from ..schema.models import CanonicalDoc
 from .runner import AgentFinding
+
+# Mã catalog dạng XXX-NN (vd STY-01, LAY-02) nhúng trong tên rule.
+# Khớp cả "STY-01_contrast" và "R1-LAY02" (không gạch giữa chữ và số).
+_CODE_RE = re.compile(r"([A-Z]{3})-?(\d{2})")
 
 _SEVERITY_ORDER = ["trivial", "low", "medium", "high", "critical"]
 _SEVERITY_WEIGHT = {s: i + 1 for i, s in enumerate(_SEVERITY_ORDER)}
@@ -112,16 +117,74 @@ def _sort_priority(issue: IssueOutput, viewport_h: int) -> float:
     return sev_w * issue.confidence * fold_w
 
 
+def _issue_type_from_rule(rule: str) -> str:
+    """Trích mã catalog (STY-01…) từ tên rule; không có thì trả nguyên tên rule."""
+    m = _CODE_RE.search(rule)
+    return f"{m.group(1)}-{m.group(2)}" if m else rule
+
+
+def _candidate_to_issue(
+    c: CandidateIssue, screen_id: str, elem_map: dict
+) -> IssueOutput:
+    """
+    Map CandidateIssue (rule engine) → IssueOutput trực tiếp, KHÔNG qua VLM.
+    Dùng cho chế độ rule-only (run_vlm=false) để vẫn trả lỗi tất định.
+    """
+    issue_type = _issue_type_from_rule(c.rule)
+    elem = elem_map.get(c.element or "")
+    bbox_dict = None
+    if elem:
+        bbox_dict = {"x": round(elem.bbox.x), "y": round(elem.bbox.y),
+                     "w": round(elem.bbox.w), "h": round(elem.bbox.h)}
+    evidence: dict = {}
+    if c.evidence:
+        if c.evidence.bbox:
+            b = c.evidence.bbox
+            evidence["bbox"] = {"x": round(b.x), "y": round(b.y),
+                                "w": round(b.w), "h": round(b.h)}
+        if c.evidence.crop:
+            evidence["crop"] = c.evidence.crop
+    return IssueOutput(
+        id=_make_issue_id(issue_type, c.element, screen_id),
+        issue_type=issue_type,
+        title=_ISSUE_TITLES.get(issue_type, issue_type),
+        severity=c.severity,
+        confidence=round(c.confidence, 2),
+        tags=_ISSUE_TAGS.get(issue_type, []),
+        temporal=False,
+        element_id=c.element,
+        element_role=elem.role if elem else None,
+        element_bbox=bbox_dict,
+        element_text=elem.text[:80] if elem and elem.text else None,
+        evidence=evidence,
+        description=c.detail,
+        sources=[c.rule, "rule-engine"],
+    )
+
+
 def build_summary(
     findings: list[AgentFinding],
     doc: CanonicalDoc,
     screen_id: str,
     pipeline_meta: dict | None = None,
+    rule_only_fallback: bool = False,
 ) -> AnalyzeOutput:
+    """
+    Gom findings (VLM) → output.
+
+    `rule_only_fallback=True` (chế độ run_vlm=false): không có VLM findings nên
+    surface thẳng `doc.candidate_issues` từ rule engine → vẫn có kết quả tất định
+    (contrast, touch-target, placeholder…) mà không cần llama.cpp server.
+    """
     elem_map = {e.id: e for e in doc.elements}
     viewport_h = doc.screen.viewport.h
 
     issues: list[IssueOutput] = []
+
+    if rule_only_fallback and not findings:
+        for c in doc.candidate_issues:
+            issues.append(_candidate_to_issue(c, screen_id, elem_map))
+
     for f in findings:
         elem = elem_map.get(f.element_id or "")
         bbox_dict = None

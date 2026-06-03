@@ -183,12 +183,14 @@ def run_pipeline(
         findings=findings,
         doc=doc,
         screen_id=_screen_id,
+        rule_only_fallback=not run_agents,
         pipeline_meta={
             "analyzers_ran": analyzers_ran,
             "rules_ran": rules_ran,
             "agents_ran": agents_ran,
             "total_candidates_pre_filter": len(doc.candidate_issues),
-            "final_issues": len(findings),
+            "final_issues": len(findings) if run_agents else len(doc.candidate_issues),
+            "mode": "vlm" if run_agents else "rule-only",
             "pipeline_duration_ms": round((t1 - t0) * 1000),
         },
     )
