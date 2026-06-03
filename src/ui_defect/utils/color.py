@@ -68,10 +68,34 @@ def _kmeans_numpy(
     max_iter: int = 50,
     seed: int = 42,
 ) -> np.ndarray:
-    """K-means thuần numpy — fallback khi không có scikit-learn."""
+    """
+    K-means thuần numpy — fallback khi không có scikit-learn.
+
+    Khởi tạo center bằng **k-means++** (giống sklearn) thay vì random thuần:
+    random init dễ bốc trúng nhiều điểm cùng màu (vd ảnh 80% nền trắng) → center
+    trùng nhau → cluster rỗng → chỉ trả 1 màu (degenerate). k-means++ ưu tiên chọn
+    center xa nhau nên tách được fg/bg ổn định.
+    """
     rng = np.random.default_rng(seed)
-    centers = data[rng.choice(len(data), k, replace=False)]
-    labels = np.zeros(len(data), dtype=np.int32)
+    n = len(data)
+    k = min(k, n)
+
+    # ── k-means++ init ───────────────────────────────────────────────────────
+    centers = np.empty((k, data.shape[1]), dtype=data.dtype)
+    centers[0] = data[rng.integers(n)]
+    for i in range(1, k):
+        d2 = np.min(
+            np.linalg.norm(data[:, None] - centers[None, :i], axis=2) ** 2, axis=1
+        )
+        total = float(d2.sum())
+        if total <= 0:
+            # mọi điểm trùng các center đã chọn → chọn ngẫu nhiên
+            centers[i] = data[rng.integers(n)]
+        else:
+            centers[i] = data[rng.choice(n, p=d2 / total)]
+
+    # ── Lloyd iterations ─────────────────────────────────────────────────────
+    labels = np.zeros(n, dtype=np.int32)
     for _ in range(max_iter):
         dists = np.linalg.norm(data[:, None] - centers[None], axis=2)
         new_labels = np.argmin(dists, axis=1).astype(np.int32)

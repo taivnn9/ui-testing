@@ -10,7 +10,8 @@ SeverityType = Literal["critical", "high", "medium", "low", "trivial"]
 RelType = Literal["left_of", "right_of", "above", "below", "contains", "overlaps", "sibling"]
 RoleType = Literal[
     "button", "text", "image", "icon", "input", "toggle",
-    "list", "container", "tab", "nav", "modal", "skeleton", "spinner", "unknown",
+    "list", "container", "tab", "nav", "modal", "skeleton", "spinner",
+    "divider", "unknown",
 ]
 
 
