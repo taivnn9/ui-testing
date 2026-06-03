@@ -37,7 +37,7 @@ def run_pipeline(
     platform: str,
     viewport_w: int,
     viewport_h: int,
-    dpr: float = 2.0,
+    dpr: float = 1.0,   # khớp default API; A13 (resolve_metadata) có thể override
     locale: str = "en-US",
     theme: str = "light",
     font_scale: float = 1.0,
