@@ -2,15 +2,17 @@
 
 > **Nhóm:** Platform & Environment — nền tảng, môi trường (`ENV`)
 > **Severity nền:** `low` (range `trivial→medium`) · **Tags:** mob
-> **Trạng thái:** ✅ Có rule tất định
+> **Trạng thái triển khai:** 🟥 Chỉ agent Codex (CHƯA có rule tất định)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 `image_meta` + dpr
 
 ## Kỹ thuật & ai đánh giá
-🟦 Rule tất định (code tính từ số/box/pixel) — R3 (upscale)
+🟥 **Agent Codex** (text-only) — chưa có rule riêng, phán đoán từ JSON
+
+Ghi chú: R3 (upscale).
 
 ## ❌ Không đạt (fail) khi
 @1x trên màn @3x → mờ

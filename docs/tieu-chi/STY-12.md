@@ -2,15 +2,15 @@
 
 > **Nhóm:** Color, Contrast & Visual Style — màu, tương phản, style (`STY`)
 > **Severity nền:** `medium` (range `low→high`) · **Tags:** —
-> **Trạng thái:** 🟥 Agent đánh giá (chưa có rule)
+> **Trạng thái triển khai:** 🟥 Chỉ agent Codex (CHƯA có rule tất định)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 `bg_color`, `bg_is_solid_px`
 
 ## Kỹ thuật & ai đánh giá
-🟥 Agent Codex (phán đoán text-only)
+🟥 **Agent Codex** (text-only) — chưa có rule riêng, phán đoán từ JSON
 
 ## ❌ Không đạt (fail) khi
 vùng đáng trong suốt lại nền đặc

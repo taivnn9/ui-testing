@@ -2,15 +2,17 @@
 
 > **Nhóm:** UI Components & Controls — thành phần điều khiển (`CMP`)
 > **Severity nền:** `critical` (range `high→critical`) · **Tags:** —
-> **Trạng thái:** ✅ Có rule tất định
+> **Trạng thái triển khai:** 🟥 Chỉ agent Codex (CHƯA có rule tất định)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 overlap + interactive
 
 ## Kỹ thuật & ai đánh giá
-🟦 Rule tất định (code tính từ số/box/pixel) — R1
+🟥 **Agent Codex** (text-only) — chưa có rule riêng, phán đoán từ JSON
+
+Ghi chú: R1.
 
 ## ❌ Không đạt (fail) khi
 element trên che control interactive

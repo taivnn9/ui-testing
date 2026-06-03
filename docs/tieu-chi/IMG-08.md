@@ -2,15 +2,17 @@
 
 > **Nhóm:** Images, Icons & Media — ảnh, icon, media (`IMG`)
 > **Severity nền:** `medium` (range `low→high`) · **Tags:** —
-> **Trạng thái:** ✅ Có rule tất định
+> **Trạng thái triển khai:** ✅ Đã implement (rule/analyzer tất định + agent xác nhận)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 A6 cờ, A9
 
 ## Kỹ thuật & ai đánh giá
-🟦 Rule tất định (code tính từ số/box/pixel) — R3
+🟦 **Rule tất định** (code emit candidate) → 🟥 agent Codex xác nhận/bác
+
+Chi tiết kỹ thuật: R3.
 
 ## ❌ Không đạt (fail) khi
 ô xám / dấu ? thay cho icon

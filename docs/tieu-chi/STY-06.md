@@ -2,15 +2,17 @@
 
 > **Nhóm:** Color, Contrast & Visual Style — màu, tương phản, style (`STY`)
 > **Severity nền:** `low` (range `trivial→medium`) · **Tags:** multi
-> **Trạng thái:** ⏳ Phase 2 — chưa triển khai
+> **Trạng thái triển khai:** ⏳ Chưa xử lý (Phase 2)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 `color`
 
 ## Kỹ thuật & ai đánh giá
-⏳ Chưa triển khai (Phase 2 / cần nhiều ảnh hoặc tương tác) — (cần ref brand)
+⏳ **Chưa triển khai** — cần nhìn nội dung ảnh / nhiều ảnh / tương tác (Phase 2)
+
+Ghi chú: (cần ref brand).
 
 ## ❌ Không đạt (fail) khi
 màu lệch palette brand

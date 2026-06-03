@@ -2,15 +2,15 @@
 
 > **Nhóm:** Images, Icons & Media — ảnh, icon, media (`IMG`)
 > **Severity nền:** `medium` (range `low→medium`) · **Tags:** —
-> **Trạng thái:** 🟥 Agent đánh giá (chưa có rule)
+> **Trạng thái triển khai:** ✅ Đã implement (rule/analyzer tất định + agent xác nhận)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 A9 (vùng dở)
 
 ## Kỹ thuật & ai đánh giá
-🟥 Agent Codex (phán đoán text-only)
+🟦 **Rule tất định** (code emit candidate) → 🟥 agent Codex xác nhận/bác
 
 ## ❌ Không đạt (fail) khi
 ảnh chỉ load 1 phần / progressive kẹt

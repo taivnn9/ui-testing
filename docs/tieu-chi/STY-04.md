@@ -2,15 +2,17 @@
 
 > **Nhóm:** Color, Contrast & Visual Style — màu, tương phản, style (`STY`)
 > **Severity nền:** `high` (range `medium→critical`) · **Tags:** dark,a11y
-> **Trạng thái:** ✅ Có rule tất định
+> **Trạng thái triển khai:** ✅ Đã implement (rule/analyzer tất định + agent xác nhận)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 `contrast_ratio` icon
 
 ## Kỹ thuật & ai đánh giá
-🟦 Rule tất định (code tính từ số/box/pixel) — R2
+🟦 **Rule tất định** (code emit candidate) → 🟥 agent Codex xác nhận/bác
+
+Chi tiết kỹ thuật: R2.
 
 ## ❌ Không đạt (fail) khi
 icon contrast < 3.0 trong theme

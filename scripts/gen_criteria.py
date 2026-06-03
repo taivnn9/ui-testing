@@ -26,19 +26,50 @@ GROUPS = {
     "CONS": "Consistency xuyên màn — cần nhiều ảnh",
 }
 
-# who: rule | agent | both | phase2   → nhãn + cách đánh giá
-WHO = {
-    "rule":   "🟦 Rule tất định (code tính từ số/box/pixel)",
-    "agent":  "🟥 Agent Codex (phán đoán text-only)",
-    "both":   "🟦🟥 Rule fire candidate → Agent Codex xác nhận/bác",
-    "phase2": "⏳ Chưa triển khai (Phase 2 / cần nhiều ảnh hoặc tương tác)",
+# ── TRẠNG THÁI TRIỂN KHAI THỰC TẾ (đối chiếu code 2026-06-03) ──────────────────
+# Xác minh bằng `rule="..."` mà rules/*.py + analyzers thực sự emit (không theo thiết kế).
+# rule  = code tất định emit candidate cho tiêu chí này (rules R1–R4 hoặc analyzer A7/A8/A9/A10).
+# none  = CHƯA xử lý được: cần nhìn nội dung ảnh / đa ảnh / tương tác (Phase 2).
+# agent = không có rule riêng, nhưng agent Codex phán đoán được từ dữ liệu text/JSON.
+RULE_IMPL = {
+    "CNT-01", "CNT-02", "CNT-04", "CNT-05", "CNT-06", "CNT-07", "CNT-08",
+    "TYP-01", "TYP-03", "TYP-05", "TYP-09", "TYP-14",
+    "STY-01", "STY-02", "STY-03", "STY-04", "STY-05", "STY-10", "STY-13",
+    "LAY-01", "LAY-02", "LAY-03", "LAY-14",
+    "IMG-01", "IMG-03", "IMG-05", "IMG-07", "IMG-08", "IMG-12", "IMG-14",
+    "CMP-01", "CMP-12", "CMP-16",
+    "STATE-01", "STATE-03", "STATE-06",
+    "ENV-01", "ENV-02", "ENV-03", "ENV-04",
 }
-STATUS = {
-    "rule":   "✅ Có rule tất định",
-    "agent":  "🟥 Agent đánh giá (chưa có rule)",
-    "both":   "✅ Rule + agent xác nhận",
-    "phase2": "⏳ Phase 2 — chưa triển khai",
+NONE_IMPL = {
+    "TYP-07", "TYP-08", "STY-06", "LAY-09", "LAY-10",
+    "IMG-04", "IMG-10", "IMG-11", "IMG-15", "STATE-09", "CMP-15",
+    "ENV-05", "ENV-07", "ENV-08", "ENV-09", "ENV-11", "ENV-12",
+    "CONS-01", "CONS-02", "CONS-03", "CONS-04", "CONS-05",
+    "CONS-06", "CONS-07", "CONS-08", "CONS-09",
 }
+
+
+def impl_of(cid: str) -> str:
+    if cid in RULE_IMPL:
+        return "rule"
+    if cid in NONE_IMPL:
+        return "none"
+    return "agent"
+
+
+# Mô tả "kỹ thuật & ai đánh giá" theo trạng thái thực tế
+IMPL_TECH = {
+    "rule":  "🟦 **Rule tất định** (code emit candidate) → 🟥 agent Codex xác nhận/bác",
+    "agent": "🟥 **Agent Codex** (text-only) — chưa có rule riêng, phán đoán từ JSON",
+    "none":  "⏳ **Chưa triển khai** — cần nhìn nội dung ảnh / nhiều ảnh / tương tác (Phase 2)",
+}
+IMPL_STATUS = {
+    "rule":  "✅ Đã implement (rule/analyzer tất định + agent xác nhận)",
+    "agent": "🟥 Chỉ agent Codex (CHƯA có rule tất định)",
+    "none":  "⏳ Chưa xử lý (Phase 2)",
+}
+IMPL_BADGE = {"rule": "🟦 rule", "agent": "🟥 agent", "none": "⏳ chưa"}
 
 # Mỗi tiêu chí: (id, name, sev, range, tags, data, who, tech, fail, pass_, status)
 # pass_ = "" → mặc định "Không có dấu hiệu ở mục 'Không đạt'."
@@ -428,16 +459,21 @@ def group_of(cid: str) -> str:
 
 def render_one(c: dict) -> str:
     g = group_of(c["id"])
+    impl = impl_of(c["id"])
     pass_ = c["pass_"] or "Không phát hiện dấu hiệu ở mục **Không đạt**."
     tags = c["tags"] or "—"
-    tech = (WHO[c["who"]] + (f" — {c['tech']}" if c["tech"] else ""))
+    tech = IMPL_TECH[impl]
+    if impl == "rule" and c["tech"]:
+        tech += f"\n\nChi tiết kỹ thuật: {c['tech']}."
+    elif impl != "rule" and c["tech"]:
+        tech += f"\n\nGhi chú: {c['tech']}."
     return f"""# {c['id']} — {c['name']}
 
 > **Nhóm:** {GROUPS[g]} (`{g}`)
 > **Severity nền:** `{c['sev']}` (range `{c['rng']}`) · **Tags:** {tags}
-> **Trạng thái:** {STATUS[c['status']]}
+> **Trạng thái triển khai:** {IMPL_STATUS[impl]}
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 {c['data']}
@@ -463,21 +499,21 @@ def render_index() -> str:
         f"**{len(DATA)} tiêu chí / {len(GROUPS)} nhóm.** Mỗi tiêu chí có file chi tiết riêng "
         "(dữ liệu · kỹ thuật · đạt/không đạt). _Sinh tự động bởi `scripts/gen_criteria.py`._",
         "",
-        "**Cột Kỹ thuật:** 🟦 rule tất định · 🟥 agent Codex (text-only) · 🟦🟥 rule+agent · ⏳ Phase 2.",
+        "**Cột Triển khai (đối chiếu code thực):** 🟦 rule = code tất định emit candidate · "
+        "🟥 agent = chỉ agent Codex (chưa có rule) · ⏳ chưa = cần nhìn ảnh/đa ảnh/tương tác (Phase 2).",
         "",
         "Liên quan: [`../catalog-tieu-chi-loi-ui.md`](../catalog-tieu-chi-loi-ui.md) (danh sách gốc), "
         "[`../F0.4-thresholds.md`](../F0.4-thresholds.md) (ngưỡng), "
         "[`../F1.1-codex-cli-architecture.md`](../F1.1-codex-cli-architecture.md) (kiến trúc reasoning).",
         "",
     ]
-    badge = {"rule": "🟦", "agent": "🟥", "both": "🟦🟥", "phase2": "⏳"}
-    # đếm
-    counts: dict[str, int] = {}
+    # đếm theo trạng thái triển khai thực tế
+    counts: dict[str, int] = {"rule": 0, "agent": 0, "none": 0}
     for c in DATA:
-        counts[c["who"]] = counts.get(c["who"], 0) + 1
+        counts[impl_of(c["id"])] += 1
     lines.append(
-        f"> Phân bố: 🟦 rule {counts.get('rule',0)} · 🟦🟥 rule+agent {counts.get('both',0)} · "
-        f"🟥 agent {counts.get('agent',0)} · ⏳ phase2 {counts.get('phase2',0)}."
+        f"> **Độ phủ thực tế:** 🟦 có rule tất định **{counts['rule']}** · "
+        f"🟥 chỉ agent Codex **{counts['agent']}** · ⏳ chưa xử lý **{counts['none']}** / {len(DATA)}."
     )
     lines.append("")
     for g, gname in GROUPS.items():
@@ -486,11 +522,11 @@ def render_index() -> str:
             continue
         lines.append(f"## {g} — {gname}")
         lines.append("")
-        lines.append("| ID | Tiêu chí | Sev | Kỹ thuật | Chi tiết |")
+        lines.append("| ID | Tiêu chí | Sev | Triển khai | Chi tiết |")
         lines.append("|---|---|---|---|---|")
         for c in rows:
             lines.append(
-                f"| `{c['id']}` | {c['name']} | {c['sev']} | {badge[c['who']]} | "
+                f"| `{c['id']}` | {c['name']} | {c['sev']} | {IMPL_BADGE[impl_of(c['id'])]} | "
                 f"[{c['id']}.md]({c['id']}.md) |"
             )
         lines.append("")

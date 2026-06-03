@@ -2,15 +2,17 @@
 
 > **Nhóm:** Images, Icons & Media — ảnh, icon, media (`IMG`)
 > **Severity nền:** `low` (range `trivial→medium`) · **Tags:** —
-> **Trạng thái:** ✅ Rule + agent xác nhận
+> **Trạng thái triển khai:** ✅ Đã implement (rule/analyzer tất định + agent xác nhận)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 bbox icon vs nút
 
 ## Kỹ thuật & ai đánh giá
-🟦🟥 Rule fire candidate → Agent Codex xác nhận/bác — R1 + agent
+🟦 **Rule tất định** (code emit candidate) → 🟥 agent Codex xác nhận/bác
+
+Chi tiết kỹ thuật: R1 + agent.
 
 ## ❌ Không đạt (fail) khi
 icon lệch tâm / lệch baseline với label

@@ -2,15 +2,17 @@
 
 > **Nhóm:** Layout & Spatial Geometry — bố cục, hình học (`LAY`)
 > **Severity nền:** `medium` (range `low→high`) · **Tags:** —
-> **Trạng thái:** ✅ Rule + agent xác nhận
+> **Trạng thái triển khai:** 🟥 Chỉ agent Codex (CHƯA có rule tất định)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 bbox header/footer
 
 ## Kỹ thuật & ai đánh giá
-🟦🟥 Rule fire candidate → Agent Codex xác nhận/bác — R1 + agent
+🟥 **Agent Codex** (text-only) — chưa có rule riêng, phán đoán từ JSON
+
+Ghi chú: R1 + agent.
 
 ## ❌ Không đạt (fail) khi
 fixed header/footer che nội dung

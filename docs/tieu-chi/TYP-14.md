@@ -2,15 +2,17 @@
 
 > **Nhóm:** Typography & Text Rendering — text trông thế nào (`TYP`)
 > **Severity nền:** `low` (range `trivial→medium`) · **Tags:** i18n
-> **Trạng thái:** ✅ Rule + agent xác nhận
+> **Trạng thái triển khai:** ✅ Đã implement (rule/analyzer tất định + agent xác nhận)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 `has_replacement`
 
 ## Kỹ thuật & ai đánh giá
-🟦🟥 Rule fire candidate → Agent Codex xác nhận/bác — A8 + agent
+🟦 **Rule tất định** (code emit candidate) → 🟥 agent Codex xác nhận/bác
+
+Chi tiết kỹ thuật: A8 + agent.
 
 ## ❌ Không đạt (fail) khi
 emoji thành box / mất màu (has_replacement)

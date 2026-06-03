@@ -2,15 +2,17 @@
 
 > **Nhóm:** Platform & Environment — nền tảng, môi trường (`ENV`)
 > **Severity nền:** `high` (range `medium→critical`) · **Tags:** a11y,mob
-> **Trạng thái:** ✅ Rule + agent xác nhận
+> **Trạng thái triển khai:** 🟥 Chỉ agent Codex (CHƯA có rule tất định)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 `font_scale` + overflow
 
 ## Kỹ thuật & ai đánh giá
-🟦🟥 Rule fire candidate → Agent Codex xác nhận/bác — R1 + agent
+🟥 **Agent Codex** (text-only) — chưa có rule riêng, phán đoán từ JSON
+
+Ghi chú: R1 + agent.
 
 ## ❌ Không đạt (fail) khi
 font_scale lớn gây tràn/cắt

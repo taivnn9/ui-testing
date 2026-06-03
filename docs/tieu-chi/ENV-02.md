@@ -2,15 +2,17 @@
 
 > **Nhóm:** Platform & Environment — nền tảng, môi trường (`ENV`)
 > **Severity nền:** `medium` (range `low→high`) · **Tags:** mob
-> **Trạng thái:** ✅ Rule + agent xác nhận
+> **Trạng thái triển khai:** ✅ Đã implement (rule/analyzer tất định + agent xác nhận)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 `safe_area`, color
 
 ## Kỹ thuật & ai đánh giá
-🟦🟥 Rule fire candidate → Agent Codex xác nhận/bác — R1 + agent
+🟦 **Rule tất định** (code emit candidate) → 🟥 agent Codex xác nhận/bác
+
+Chi tiết kỹ thuật: R1 + agent.
 
 ## ❌ Không đạt (fail) khi
 nội dung đè status bar / lẫn màu

@@ -2,15 +2,17 @@
 
 > **Nhóm:** Platform & Environment — nền tảng, môi trường (`ENV`)
 > **Severity nền:** `medium` (range `low→high`) · **Tags:** mob
-> **Trạng thái:** ✅ Có rule tất định
+> **Trạng thái triển khai:** ✅ Đã implement (rule/analyzer tất định + agent xác nhận)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 `safe_area.bottom`
 
 ## Kỹ thuật & ai đánh giá
-🟦 Rule tất định (code tính từ số/box/pixel) — R1
+🟦 **Rule tất định** (code emit candidate) → 🟥 agent Codex xác nhận/bác
+
+Chi tiết kỹ thuật: R1.
 
 ## ❌ Không đạt (fail) khi
 nút chạm vùng home indicator

@@ -2,15 +2,17 @@
 
 > **Nhóm:** Images, Icons & Media — ảnh, icon, media (`IMG`)
 > **Severity nền:** `medium` (range `low→medium`) · **Tags:** resp
-> **Trạng thái:** ✅ Có rule tất định
+> **Trạng thái triển khai:** ✅ Đã implement (rule/analyzer tất định + agent xác nhận)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 A8 Laplacian + A7 upscale
 
 ## Kỹ thuật & ai đánh giá
-🟦 Rule tất định (code tính từ số/box/pixel) — R3/A8
+🟦 **Rule tất định** (code emit candidate) → 🟥 agent Codex xác nhận/bác
+
+Chi tiết kỹ thuật: R3/A8.
 
 ## ❌ Không đạt (fail) khi
 upscale (>1.5×) + blur dưới ngưỡng

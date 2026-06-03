@@ -2,15 +2,15 @@
 
 > **Nhóm:** Layout & Spatial Geometry — bố cục, hình học (`LAY`)
 > **Severity nền:** `high` (range `medium→critical`) · **Tags:** resp,web
-> **Trạng thái:** ⏳ Phase 2 — chưa triển khai
+> **Trạng thái triển khai:** ⏳ Chưa xử lý (Phase 2)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 bbox, wrap (cần multi-viewport)
 
 ## Kỹ thuật & ai đánh giá
-⏳ Chưa triển khai (Phase 2 / cần nhiều ảnh hoặc tương tác)
+⏳ **Chưa triển khai** — cần nhìn nội dung ảnh / nhiều ảnh / tương tác (Phase 2)
 
 ## ❌ Không đạt (fail) khi
 cột sập / rớt dòng xấu khi đổi kích thước

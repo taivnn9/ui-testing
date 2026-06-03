@@ -2,15 +2,17 @@
 
 > **Nhóm:** Typography & Text Rendering — text trông thế nào (`TYP`)
 > **Severity nền:** `medium` (range `low→high`) · **Tags:** a11y
-> **Trạng thái:** ✅ Có rule tất định
+> **Trạng thái triển khai:** ✅ Đã implement (rule/analyzer tất định + agent xác nhận)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 `style.font_size`, `font_scale`
 
 ## Kỹ thuật & ai đánh giá
-🟦 Rule tất định (code tính từ số/box/pixel) — ngưỡng F0.4 §4
+🟦 **Rule tất định** (code emit candidate) → 🟥 agent Codex xác nhận/bác
+
+Chi tiết kỹ thuật: ngưỡng F0.4 §4.
 
 ## ❌ Không đạt (fail) khi
 font_size < FONT_MIN_PX (11px device)

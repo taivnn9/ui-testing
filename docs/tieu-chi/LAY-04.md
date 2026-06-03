@@ -2,15 +2,17 @@
 
 > **Nhóm:** Layout & Spatial Geometry — bố cục, hình học (`LAY`)
 > **Severity nền:** `low` (range `trivial→medium`) · **Tags:** —
-> **Trạng thái:** ✅ Có rule tất định
+> **Trạng thái triển khai:** 🟥 Chỉ agent Codex (CHƯA có rule tất định)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 bbox
 
 ## Kỹ thuật & ai đánh giá
-🟦 Rule tất định (code tính từ số/box/pixel) — R1 (GRID_TOLERANCE 2px)
+🟥 **Agent Codex** (text-only) — chưa có rule riêng, phán đoán từ JSON
+
+Ghi chú: R1 (GRID_TOLERANCE 2px).
 
 ## ❌ Không đạt (fail) khi
 abs(pos mod 8) > 2px

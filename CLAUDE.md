@@ -135,6 +135,8 @@ candidate) · 1 lần `codex exec`/ảnh (rẻ). Backend chọn qua env `AGENT_B
       — text-only, skill files `agents/skills/*.md`, output khóa `--output-schema`. **Thay VLM** (F1.1).
       (Code VLM cũ `g0_framework.py`/`llm_client.py`/`prompts.py` + docs G0–G6/F1.0 **đã xóa**.)
 - [x] Tài liệu tiêu chí: tổng hợp + 1 file/tiêu chí ở `docs/tieu-chi/` (sinh bởi `scripts/gen_criteria.py`).
+      **Độ phủ thực tế (đối chiếu code):** 🟦 40 có rule tất định · 🟥 55 chỉ agent Codex · ⏳ 26 chưa xử lý / 121.
+- [ ] Wire các rule còn thiếu so với F0.4 (vd IMG-02 méo tỉ lệ, IMG-09 scale-mode, LAY-04 grid) → tăng tỉ lệ "có rule".
 - [x] API service (`src/ui_defect/api/`) — FastAPI, POST /analyze, zero-config (chỉ cần ảnh).
 - [x] Web UI (`src/ui_defect/web/`) — upload, phân tích, list lỗi + overlay Set-of-Marks
       (bbox màu theo severity, liên kết 2 chiều, filter). FastAPI serve `GET /` + `/static`. Spec: `docs/F2.0-web-ui.md`.

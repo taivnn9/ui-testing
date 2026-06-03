@@ -2,15 +2,15 @@
 
 > **Nhóm:** Platform & Environment — nền tảng, môi trường (`ENV`)
 > **Severity nền:** `high` (range `medium→critical`) · **Tags:** mob
-> **Trạng thái:** ⏳ Phase 2 — chưa triển khai
+> **Trạng thái triển khai:** ✅ Đã implement (rule/analyzer tất định + agent xác nhận)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 (cần state bàn phím)
 
 ## Kỹ thuật & ai đánh giá
-⏳ Chưa triển khai (Phase 2 / cần nhiều ảnh hoặc tương tác)
+🟦 **Rule tất định** (code emit candidate) → 🟥 agent Codex xác nhận/bác
 
 ## ❌ Không đạt (fail) khi
 input/submit bị bàn phím che

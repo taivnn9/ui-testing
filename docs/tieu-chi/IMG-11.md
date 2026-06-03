@@ -2,15 +2,17 @@
 
 > **Nhóm:** Images, Icons & Media — ảnh, icon, media (`IMG`)
 > **Severity nền:** `low` (range `trivial→medium`) · **Tags:** —
-> **Trạng thái:** ⏳ Phase 2 — chưa triển khai
+> **Trạng thái triển khai:** ⏳ Chưa xử lý (Phase 2)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 image_meta + pixel
 
 ## Kỹ thuật & ai đánh giá
-⏳ Chưa triển khai (Phase 2 / cần nhiều ảnh hoặc tương tác) — (cần nhìn)
+⏳ **Chưa triển khai** — cần nhìn nội dung ảnh / nhiều ảnh / tương tác (Phase 2)
+
+Ghi chú: (cần nhìn).
 
 ## ❌ Không đạt (fail) khi
 logo mờ / sai màu / sai tỉ lệ

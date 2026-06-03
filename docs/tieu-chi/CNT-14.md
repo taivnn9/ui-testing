@@ -2,15 +2,17 @@
 
 > **Nhóm:** Content & Semantics — nội dung text nói gì (`CNT`)
 > **Severity nền:** `high` (range `medium→critical`) · **Tags:** ctx
-> **Trạng thái:** 🟥 Agent đánh giá (chưa có rule)
+> **Trạng thái triển khai:** 🟥 Chỉ agent Codex (CHƯA có rule tất định)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 `element.text`
 
 ## Kỹ thuật & ai đánh giá
-🟥 Agent Codex (phán đoán text-only) — (confidence thấp)
+🟥 **Agent Codex** (text-only) — chưa có rule riêng, phán đoán từ JSON
+
+Ghi chú: (confidence thấp).
 
 ## ❌ Không đạt (fail) khi
 thiếu/sai disclaimer kỳ vọng

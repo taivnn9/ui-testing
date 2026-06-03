@@ -2,15 +2,15 @@
 
 > **Nhóm:** State & Lifecycle — trạng thái màn (`STATE`)
 > **Severity nền:** `medium` (range `low→high`) · **Tags:** mob
-> **Trạng thái:** 🟥 Agent đánh giá (chưa có rule)
+> **Trạng thái triển khai:** 🟥 Chỉ agent Codex (CHƯA có rule tất định)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 role + dup
 
 ## Kỹ thuật & ai đánh giá
-🟥 Agent Codex (phán đoán text-only)
+🟥 **Agent Codex** (text-only) — chưa có rule riêng, phán đoán từ JSON
 
 ## ❌ Không đạt (fail) khi
 nhân đôi item / kẹt

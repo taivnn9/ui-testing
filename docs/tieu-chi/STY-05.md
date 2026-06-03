@@ -2,15 +2,15 @@
 
 > **Nhóm:** Color, Contrast & Visual Style — màu, tương phản, style (`STY`)
 > **Severity nền:** `medium` (range `low→high`) · **Tags:** —
-> **Trạng thái:** 🟥 Agent đánh giá (chưa có rule)
+> **Trạng thái triển khai:** ✅ Đã implement (rule/analyzer tất định + agent xác nhận)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 `style.opacity`
 
 ## Kỹ thuật & ai đánh giá
-🟥 Agent Codex (phán đoán text-only)
+🟦 **Rule tất định** (code emit candidate) → 🟥 agent Codex xác nhận/bác
 
 ## ❌ Không đạt (fail) khi
 element mờ/trong suốt ngoài ý muốn

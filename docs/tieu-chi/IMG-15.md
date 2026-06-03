@@ -2,15 +2,17 @@
 
 > **Nhóm:** Images, Icons & Media — ảnh, icon, media (`IMG`)
 > **Severity nền:** `high` (range `medium→critical`) · **Tags:** ctx
-> **Trạng thái:** ⏳ Phase 2 — chưa triển khai
+> **Trạng thái triển khai:** ⏳ Chưa xử lý (Phase 2)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 nội dung ảnh + ngữ cảnh
 
 ## Kỹ thuật & ai đánh giá
-⏳ Chưa triển khai (Phase 2 / cần nhiều ảnh hoặc tương tác) — (cần nhìn nội dung)
+⏳ **Chưa triển khai** — cần nhìn nội dung ảnh / nhiều ảnh / tương tác (Phase 2)
+
+Ghi chú: (cần nhìn nội dung).
 
 ## ❌ Không đạt (fail) khi
 sai ảnh sản phẩm

@@ -2,15 +2,17 @@
 
 > **Nhóm:** Typography & Text Rendering — text trông thế nào (`TYP`)
 > **Severity nền:** `high` (range `medium→critical`) · **Tags:** i18n
-> **Trạng thái:** ✅ Rule + agent xác nhận
+> **Trạng thái triển khai:** ✅ Đã implement (rule/analyzer tất định + agent xác nhận)
 >
-> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA rồi chạy lại._
+> _Sinh tự động bởi `scripts/gen_criteria.py` — đừng sửa tay; sửa ở DATA/sets rồi chạy lại._
 
 ## Dữ liệu dùng để đánh giá
 `has_replacement` (A5/A8)
 
 ## Kỹ thuật & ai đánh giá
-🟦🟥 Rule fire candidate → Agent Codex xác nhận/bác — A8 cờ → agent xác nhận
+🟦 **Rule tất định** (code emit candidate) → 🟥 agent Codex xác nhận/bác
+
+Chi tiết kỹ thuật: A8 cờ → agent xác nhận.
 
 ## ❌ Không đạt (fail) khi
 segment có `has_replacement=true` (□ ▯ `�`)
