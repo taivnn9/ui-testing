@@ -14,6 +14,7 @@ Bản **quyết định kiến trúc gọn** dùng để tham chiếu nhanh: `..
 | File | Nội dung |
 |---|---|
 | [`../SETUP.md`](../SETUP.md) | Cài đặt & chạy (file đọc đầu tiên). |
+| [`cai-tesseract-windows.md`](cai-tesseract-windows.md) | Cài Tesseract OCR trên Windows (PATH, language data). |
 | [`huong-dan-web-ui.md`](huong-dan-web-ui.md) | Cách dùng giao diện web: upload → phân tích → đọc overlay lỗi. |
 | [`go-loi.md`](go-loi.md) | Đọc lỗi & phân biệt lỗi cấu hình vs lỗi code (DEBUG_ERRORS, agent_errors). |
 | [`F2.0-web-ui.md`](F2.0-web-ui.md) | Thiết kế & kiến trúc Web UI (spec). |
