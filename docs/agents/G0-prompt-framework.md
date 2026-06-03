@@ -80,14 +80,18 @@ def render_som(
 
 ---
 
-## 2. Output Schema (JSON tool_use)
+## 2. Output Schema (JSON object)
 
-### 2.1 Tool definition (Anthropic API format)
+### 2.1 Schema định nghĩa
+
+> llama.cpp dùng `response_format={"type":"json_object"}` — **không** có tool_use kiểu
+> Anthropic. Schema dưới đây được **nhúng vào system prompt** (`g0_framework.py`) để model
+> trả về đúng cấu trúc; `input_schema` là bộ field bắt buộc của object `findings[]`.
 
 ```json
 {
   "name": "report_ui_defects",
-  "description": "Báo cáo các lỗi UI phát hiện được trong ảnh.",
+  "description": "Báo cáo các lỗi UI phát hiện được trong ảnh (trả về JSON object).",
   "input_schema": {
     "type": "object",
     "properties": {
@@ -206,7 +210,7 @@ SEVERITY GUIDE:
 
 [FEW-SHOT EXAMPLES — see agent-specific file]
 
-Now review the following screen and report findings using the report_ui_defects tool.
+Now review the following screen and return findings as a single JSON object matching the report_ui_defects schema above (keys: findings, self_critique, summary).
 ```
 
 ---
@@ -264,58 +268,38 @@ Expected output:
 
 ## 5. Call wrapper (API pattern)
 
+> Triển khai thực: `agents/g0_framework.py::call_agent` → `agents/llm_client.py::call_llm`
+> (llama.cpp `/v1/chat/completions`, OpenAI-compatible). Ảnh truyền qua
+> `image_url` data-URI base64; JSON schema nhúng trong `system_prompt`.
+
 ```python
 def call_agent(
     agent_id: str,
     marked_image: Image.Image,
-    system_prompt: str,
+    system_prompt: str,        # đã nhúng JSON schema (mục 2) + few-shot
     user_payload: dict,
-    model: str = "claude-sonnet-4-6",
+    model: str | None = None,  # mặc định lấy từ env LLM_MODEL
     max_tokens: int = 1024,
 ) -> dict:
     """
-    Gọi Claude API với vision + tool_use.
-    Trả dict findings từ tool_use input.
+    Gọi VLM (llama.cpp) với vision + JSON output.
+    Trả dict findings (keys: findings, self_critique, summary).
     """
-    import anthropic
-    import base64
-    from io import BytesIO
-    
-    # Encode ảnh
-    buf = BytesIO()
-    marked_image.save(buf, format="PNG")
-    img_b64 = base64.standard_b64encode(buf.getvalue()).decode()
-    
-    client = anthropic.Anthropic()
-    
-    # Turn 1: main analysis
-    response = client.messages.create(
-        model=model,
-        max_tokens=max_tokens,
-        system=system_prompt,
-        tools=[REPORT_TOOL_SCHEMA],
-        tool_choice={"type": "any"},
-        messages=[{
-            "role": "user",
-            "content": [
-                {
-                    "type": "image",
-                    "source": {"type": "base64", "media_type": "image/png", "data": img_b64}
-                },
-                {
-                    "type": "text",
-                    "text": f"Schema và candidates:\n{json.dumps(user_payload, ensure_ascii=False, indent=2)}"
-                }
-            ]
-        }]
+    from .llm_client import call_llm
+
+    user_text = (
+        "Schema và candidates:\n"
+        + json.dumps(user_payload, ensure_ascii=False, indent=2)
     )
-    
-    # Extract tool_use result
-    for block in response.content:
-        if block.type == "tool_use":
-            return block.input
-    
-    return {"findings": [], "self_critique": [], "summary": "no tool use"}
+    # call_llm tự encode ảnh → image_url base64, set response_format=json_object,
+    # và parse JSON (có fallback _parse_json_from_text nếu model kèm text).
+    return call_llm(
+        system_prompt=system_prompt,
+        user_text=user_text,
+        image=marked_image,
+        max_tokens=max_tokens,
+        model=model,
+    )
 ```
 
 ---
@@ -346,24 +330,16 @@ AGENT_ISSUE_FILTER = {
 
 ---
 
-## 7. Prompt caching (Anthropic API)
+## 7. Tối ưu token / latency (llama.cpp)
 
-System prompt + few-shot examples dài → **cache với `cache_control: ephemeral`** để tiết kiệm chi phí khi gọi nhiều ảnh liên tiếp:
+> ⚠️ **Prompt caching kiểu Anthropic (`cache_control: ephemeral`) KHÔNG áp dụng** —
+> đã bỏ khi chuyển sang llama.cpp. Thay vào đó dựa vào cơ chế của server.
 
-```python
-# System prompt và few-shot: đặt cache_control trên block cuối của static content
-messages=[{
-    "role": "user",
-    "content": [
-        {"type": "text", "text": FEW_SHOT_EXAMPLES, "cache_control": {"type": "ephemeral"}},
-        {"type": "image", ...},  # dynamic — không cache
-        {"type": "text", "text": dynamic_payload}
-    ]
-}]
-```
-
-→ Static: system + few-shot (~1500 token) → cache hit sau lần đầu.
-→ Dynamic: ảnh + schema mỗi call (~800 token).
+- **KV-cache / prompt reuse của llama.cpp**: đặt phần **tĩnh** (system prompt + few-shot)
+  ở đầu, phần **động** (ảnh + schema) ở cuối. llama.cpp tái dùng prefix KV-cache giữa các
+  request giống prefix → giảm prefill cho system + few-shot.
+- **Context trimming** (mục 6): mỗi agent chỉ nhận subset elements/issues liên quan.
+- Ước tính: static system + few-shot (~1500 token), dynamic ảnh + schema mỗi call (~800 token).
 
 ---
 

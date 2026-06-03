@@ -159,23 +159,22 @@ Thứ tự: A13 → A5 → A3 → A6 → A12 → A4 → A7 → A8 → A9 → A10
 |---|---|---|
 | Analyzers (A3–A13) | < 2s | CPU-only, không GPU |
 | Rule Engine (R1–R5) | < 200ms | Pure Python, no ML |
-| VLM Agents (G1–G6 parallel) | < 8s | Claude API, 6 parallel calls |
+| VLM Agents (G1–G6 parallel) | < 8s | llama.cpp endpoint, 6 parallel calls |
 | V1 + S1 | < 1s | Mostly code |
 | **Total E2E** | **< 12s** | Cho ảnh 390×844 |
-| Concurrent requests | 5 | Giới hạn bởi VLM API rate limit |
+| Concurrent requests | 5 | Giới hạn bởi throughput llama.cpp server |
 
 ---
 
 ## 8. Cấu hình môi trường
 
 ```bash
-# .env
-ANTHROPIC_API_KEY=sk-...
-VLM_MODEL=claude-sonnet-4-6
+# .env — VLM gọi qua llama.cpp OpenAI-compatible endpoint (xem .env.example)
+LLM_BASE_URL=http://localhost:8080   # URL server llama.cpp
+LLM_MODEL=gemma-4                     # tên model đang serve
+LLM_API_KEY=none                      # api key nếu server yêu cầu, không thì "none"
+LLM_TIMEOUT_SEC=120
 MAX_IMAGE_SIZE_MB=10
-CROPS_DIR=/tmp/ui_defect_crops
-CROPS_TTL_HOURS=1
-MIN_ELEMENT_CONFIDENCE=0.35
 DEBUG=false
 ```
 

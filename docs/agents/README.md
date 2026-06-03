@@ -3,8 +3,10 @@
 > **Mục đích:** nhận ảnh + schema + `candidate_issues[]` từ Rule Engine → VLM
 > **xác nhận/bác bỏ** candidate + **phát hiện thêm** lỗi cần thẩm mỹ/ngữ cảnh.
 >
-> Model đề xuất: **Claude claude-sonnet-4-6** (vision + tool_use + structured output).
-> Tất cả agent gọi qua Anthropic API (hoặc self-host VLM compatible API).
+> Model: **VLM self-host qua llama.cpp** OpenAI-compatible endpoint (vd `gemma-4`,
+> cấu hình `LLM_MODEL`). Tất cả agent gọi qua `agents/llm_client.py` → `/v1/chat/completions`.
+> Structured output bằng **JSON schema nhúng trong system prompt** + `response_format=json_object`
+> (không dùng tool_use kiểu Anthropic — llama.cpp chưa hỗ trợ đồng nhất).
 
 ---
 
@@ -16,8 +18,9 @@ Model trỏ element theo `element_id` (vd `e7`) — **không đoán toạ độ,
 → Chi tiết kỹ thuật: [`G0-prompt-framework.md`](G0-prompt-framework.md#set-of-marks-renderer)
 
 ### 2. Structured output bắt buộc
-Mọi agent đều dùng **tool_use / JSON schema** để nhận response có cấu trúc.
-Không dùng free-form text → không parse lại, không mất dữ liệu.
+Mọi agent nhúng **JSON schema vào system prompt** + bật `response_format=json_object`
+để nhận response có cấu trúc (llama.cpp). Không dùng free-form text → không parse lại,
+không mất dữ liệu. `llm_client._parse_json_from_text` làm fallback nếu model trả kèm text.
 → Schema output: [`G0-prompt-framework.md`](G0-prompt-framework.md#output-schema)
 
 ### 3. Decompose theo nhóm tiêu chí
@@ -98,7 +101,7 @@ Mỗi agent nhận:
 
 ## Open decisions
 
-- [ ] **Model**: Claude claude-sonnet-4-6 hay dùng hosted VLM self-serve? Đề xuất: Claude API trước (có vision + tool_use tốt), self-host sau khi validate pipeline.
+- [x] **Model**: ~~Claude API hay self-host?~~ → **đã chốt self-host llama.cpp** (`LLM_MODEL`, vd gemma-4). VLM vision qua `image_url` base64.
 - [ ] **Few-shot images**: lưu ở đâu? Đề xuất: `data/few_shot/<agent_id>/` — anh cần tạo ~3 ảnh mẫu/agent có lỗi đã biết.
 - [ ] **Parallel hay sequential?** Đề xuất: parallel (n8n parallel execution) — tiết kiệm latency.
 - [ ] **Token budget per agent**: ước tính ~2000 token prompt + ~500 response cho ảnh 390×844. Cần benchmark thực tế.

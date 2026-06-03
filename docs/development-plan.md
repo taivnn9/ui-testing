@@ -62,7 +62,7 @@
 
 ## Phase 3 — Judgment Agents (VLM, ~6–7 nhóm → `docs/agents/<id>.md`)
 > **Spec ✅** toàn bộ G0–G6 + V1 + S1 tại `docs/agents/`. Chờ implement.
-- [~] **G0** Prompt framework — **spec ✅** [`agents/G0-prompt-framework.md`](agents/G0-prompt-framework.md): SoM renderer, output schema JSON tool_use, call wrapper, prompt caching
+- [~] **G0** Prompt framework — **spec ✅** [`agents/G0-prompt-framework.md`](agents/G0-prompt-framework.md): SoM renderer, output schema JSON object (llama.cpp `json_object`), call wrapper qua `llm_client`
 - [~] **G1** Text/Content — **spec ✅** [`agents/G1-text-content.md`](agents/G1-text-content.md): CNT-01–14, TYP-03/06–11; few-shot 2 examples
 - [~] **G2** Typography/Render — **spec ✅** [`agents/G2-typography-render.md`](agents/G2-typography-render.md): TYP-01/02/04/05/09/12–14; xác nhận A8
 - [~] **G3** Color/Style — **spec ✅** [`agents/G3-color-style.md`](agents/G3-color-style.md): STY-01–13; xác nhận A4+R2
