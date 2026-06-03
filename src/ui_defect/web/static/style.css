@@ -41,6 +41,20 @@ header h1 { font-size: 18px; margin: 0; }
 .col-results { flex: 1 1 40%; min-width: 280px; }
 @media (max-width: 900px) { .layout { flex-direction: column; } }
 
+.img-tabs { display: flex; gap: 4px; margin-bottom: 8px; }
+.img-tab {
+  background: transparent; border: 1px solid var(--border); border-radius: 8px;
+  padding: 6px 14px; font-size: 13px; cursor: pointer; color: var(--muted);
+}
+.img-tab.active { background: var(--sev-low); color: #fff; border-color: var(--sev-low); }
+.img-caption {
+  font-size: 14px; margin-bottom: 8px; min-height: 22px; display: flex;
+  align-items: center; gap: 8px; color: var(--text);
+}
+.img-caption:empty { display: none; }
+.img-caption .issue-num { width: 22px; }
+.cap-note { color: var(--muted); font-size: 12px; }
+
 .canvas-wrap { position: relative; display: inline-block; max-width: 100%; }
 .canvas-wrap img { max-width: 100%; height: auto; display: block; border: 1px solid var(--border); }
 .overlay {

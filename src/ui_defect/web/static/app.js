@@ -15,6 +15,7 @@ const state = {
   issues: [],          // [{...issue, _num}]
   activeId: null,
   hiddenSev: new Set(),
+  viewMode: "issue",   // "issue" = full ảnh + 1 khung của lỗi đang chọn; "overview" = tất cả khung
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -36,7 +37,16 @@ function init() {
   $("#toggleAdvanced").addEventListener("click", () => {
     $("#advanced").classList.toggle("hidden");
   });
+  $("#tabIssue").addEventListener("click", () => setViewMode("issue"));
+  $("#tabOverview").addEventListener("click", () => setViewMode("overview"));
   window.addEventListener("resize", positionOverlays);
+}
+
+function setViewMode(mode) {
+  state.viewMode = mode;
+  $("#tabIssue").classList.toggle("active", mode === "issue");
+  $("#tabOverview").classList.toggle("active", mode === "overview");
+  renderOverlays();
 }
 
 function onFile(file) {
@@ -59,7 +69,7 @@ function onFile(file) {
   state.activeId = null;
   document.querySelector("#summary").innerHTML = "";
   renderResults();
-  clearOverlays();
+  setViewMode("issue");   // reset tab + xoá overlay & caption
 }
 
 async function analyze() {
@@ -89,6 +99,9 @@ async function analyze() {
       (SEV[b.severity]?.rank || 0) - (SEV[a.severity]?.rank || 0) ||
       b.confidence - a.confidence);
     state.issues.forEach((it, i) => { it._num = i + 1; });
+    // Mặc định xem "theo lỗi", tự chọn lỗi đầu tiên (ưu tiên lỗi có bbox) để thấy ngay 1 khung sạch
+    state.activeId = (state.issues.find((it) => it.element_bbox) || state.issues[0] || {}).id || null;
+    setViewMode("issue");
     renderSummary(data.summary);
     renderResults();
     renderOverlays();
@@ -211,20 +224,55 @@ function renderResults() {
 
 function renderOverlays() {
   clearOverlays();
+  updateCaption();
   const wrap = $("#canvasWrap");
-  const visible = state.issues.filter(
-    (it) => !state.hiddenSev.has(it.severity) && it.element_bbox);
-  visible.forEach((it) => {
+  if (!state.issues.length) return;
+
+  let toDraw;
+  if (state.viewMode === "overview") {
+    // Tổng quan: tất cả khung (theo filter severity)
+    toDraw = state.issues.filter(
+      (it) => !state.hiddenSev.has(it.severity) && it.element_bbox);
+  } else {
+    // Theo lỗi: chỉ khung của lỗi đang chọn
+    const act = state.issues.find((it) => it.id === state.activeId);
+    toDraw = act && act.element_bbox ? [act] : [];
+  }
+
+  toDraw.forEach((it) => {
     const c = SEV[it.severity]?.color || "#999";
     const ov = document.createElement("div");
     ov.className = "overlay";
     ov.dataset.id = it.id;
     ov.style.borderColor = c;
     ov.innerHTML = `<span class="marker" style="background:${c}">${it._num}</span>`;
-    ov.addEventListener("click", () => setActive(it.id));
+    ov.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (state.activeId !== it.id) setActive(it.id);   // không toggle tắt khung đang xem
+    });
     wrap.appendChild(ov);
   });
   positionOverlays();
+}
+
+function updateCaption() {
+  const cap = $("#imgCaption");
+  if (!cap) return;
+  if (!state.issues.length) { cap.innerHTML = ""; return; }
+  if (state.viewMode === "overview") {
+    const n = state.issues.filter(
+      (it) => !state.hiddenSev.has(it.severity) && it.element_bbox).length;
+    cap.innerHTML = `<strong>Tổng quan</strong> — ${n} khung trên ảnh`;
+    return;
+  }
+  const act = state.issues.find((it) => it.id === state.activeId);
+  if (!act) { cap.innerHTML = "Chọn một lỗi ở danh sách để xem ảnh."; return; }
+  const c = SEV[act.severity]?.color || "#999";
+  const note = act.element_bbox
+    ? ""
+    : ` <span class="cap-note">(lỗi toàn màn hình — không có vùng cụ thể)</span>`;
+  cap.innerHTML =
+    `<span class="issue-num" style="background:${c}">${act._num}</span> ${esc(act.title)}${note}`;
 }
 
 function positionOverlays() {
@@ -245,14 +293,13 @@ function positionOverlays() {
 function setActive(id) {
   state.activeId = (state.activeId === id) ? null : id;
   renderResults();
-  document.querySelectorAll(".overlay").forEach((ov) => {
-    ov.classList.toggle("active", ov.dataset.id === state.activeId);
-  });
   if (state.activeId) {
+    // Chọn 1 lỗi → chuyển sang xem "theo lỗi" (full ảnh + đúng khung của lỗi này)
+    setViewMode("issue");   // cập nhật tab + renderOverlays
     const node = document.querySelector(`.issue[data-id="${state.activeId}"]`);
     if (node) node.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    const ov = document.querySelector(`.overlay[data-id="${state.activeId}"]`);
-    if (ov) ov.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  } else {
+    renderOverlays();
   }
 }
 
