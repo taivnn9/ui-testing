@@ -56,6 +56,8 @@ function onFile(file) {
   $("#analyzeBtn").disabled = false;
   // reset kết quả cũ
   state.issues = [];
+  state.activeId = null;
+  document.querySelector("#summary").innerHTML = "";
   renderResults();
   clearOverlays();
 }
