@@ -1,0 +1,16 @@
+{
+  "case_id": "r4_cnt04_mobile_login",
+  "base": "mobile_login",
+  "mutation": "mut_r4_cnt04_lorem",
+  "kind": "positive",
+  "expected": [
+    {
+      "rule": "R4-CNT04",
+      "element": "e3",
+      "severity_range": {
+        "min": "medium",
+        "max": "high"
+      }
+    }
+  ]
+}

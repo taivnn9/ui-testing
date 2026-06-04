@@ -1,0 +1,16 @@
+{
+  "case_id": "r3_img02_mobile_login",
+  "base": "mobile_login",
+  "mutation": "mut_r3_img02_distortion",
+  "kind": "positive",
+  "expected": [
+    {
+      "rule": "R3-IMG02",
+      "element": "e2",
+      "severity_range": {
+        "min": "low",
+        "max": "high"
+      }
+    }
+  ]
+}

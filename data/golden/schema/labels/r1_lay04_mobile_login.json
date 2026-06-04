@@ -1,0 +1,16 @@
+{
+  "case_id": "r1_lay04_mobile_login",
+  "base": "mobile_login",
+  "mutation": "mut_r1_lay04_grid",
+  "kind": "positive",
+  "expected": [
+    {
+      "rule": "R1-LAY04",
+      "element": "e3",
+      "severity_range": {
+        "min": "trivial",
+        "max": "medium"
+      }
+    }
+  ]
+}

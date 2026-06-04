@@ -1,0 +1,16 @@
+{
+  "case_id": "r4_typ05_mobile_login",
+  "base": "mobile_login",
+  "mutation": "mut_r4_typ05_font",
+  "kind": "positive",
+  "expected": [
+    {
+      "rule": "R4-TYP05",
+      "element": "e7",
+      "severity_range": {
+        "min": "low",
+        "max": "high"
+      }
+    }
+  ]
+}

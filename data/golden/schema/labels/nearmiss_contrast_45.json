@@ -1,0 +1,7 @@
+{
+  "case_id": "nearmiss_contrast_45",
+  "base": "mobile_login",
+  "mutation": "nm_contrast_ok",
+  "kind": "negative",
+  "expected": []
+}

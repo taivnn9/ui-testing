@@ -1,0 +1,7 @@
+{
+  "case_id": "negative_web_table",
+  "base": "web_table",
+  "mutation": "none",
+  "kind": "negative",
+  "expected": []
+}

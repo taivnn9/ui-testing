@@ -1,0 +1,7 @@
+{
+  "case_id": "negative_mobile_form",
+  "base": "mobile_form",
+  "mutation": "none",
+  "kind": "negative",
+  "expected": []
+}

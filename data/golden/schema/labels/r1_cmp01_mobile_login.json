@@ -1,0 +1,16 @@
+{
+  "case_id": "r1_cmp01_mobile_login",
+  "base": "mobile_login",
+  "mutation": "mut_r1_cmp01_touch_target",
+  "kind": "positive",
+  "expected": [
+    {
+      "rule": "R1-CMP01",
+      "element": "e6",
+      "severity_range": {
+        "min": "medium",
+        "max": "high"
+      }
+    }
+  ]
+}

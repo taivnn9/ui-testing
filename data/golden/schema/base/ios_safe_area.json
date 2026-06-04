@@ -1,0 +1,291 @@
+{
+  "screen": {
+    "id": "ios_safe_area",
+    "platform": "ios",
+    "route": "/profile",
+    "viewport": {
+      "w": 390,
+      "h": 844,
+      "dpr": 1.0
+    },
+    "safe_area": {
+      "top": 48,
+      "bottom": 32,
+      "left": 0,
+      "right": 0
+    },
+    "theme": "light",
+    "locale": "en-US",
+    "font_scale": 1.0
+  },
+  "image": {
+    "full": "ios_safe_area.png",
+    "w": 390,
+    "h": 844
+  },
+  "elements": [
+    {
+      "id": "e1",
+      "role": "container",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 0.0,
+        "y": 48.0,
+        "w": 390.0,
+        "h": 764.0
+      },
+      "bbox_norm": {
+        "x": 0.0,
+        "y": 0.05687203791469194,
+        "w": 1.0,
+        "h": 0.9052132701421801
+      },
+      "children": [],
+      "z": 0,
+      "text_truncated": false,
+      "style": {
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": false,
+      "interactive_confidence": 0.0,
+      "interactive_signals": [],
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e2",
+      "role": "nav",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 0.0,
+        "y": 48.0,
+        "w": 390.0,
+        "h": 48.0
+      },
+      "bbox_norm": {
+        "x": 0.0,
+        "y": 0.05687203791469194,
+        "w": 1.0,
+        "h": 0.05687203791469194
+      },
+      "parent": "e1",
+      "children": [],
+      "z": 0,
+      "text": "Profile page",
+      "text_truncated": false,
+      "style": {
+        "font_size": 16.0,
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": true,
+      "interactive_confidence": 0.9,
+      "interactive_signals": [],
+      "touch_target": {
+        "w": 390.0,
+        "h": 48.0
+      },
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e3",
+      "role": "image",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 152.0,
+        "y": 120.0,
+        "w": 88.0,
+        "h": 88.0
+      },
+      "bbox_norm": {
+        "x": 0.38974358974358975,
+        "y": 0.14218009478672985,
+        "w": 0.22564102564102564,
+        "h": 0.10426540284360189
+      },
+      "parent": "e1",
+      "children": [],
+      "z": 0,
+      "text_truncated": false,
+      "style": {
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "image_meta": {
+        "intrinsic_w": 176,
+        "intrinsic_h": 176,
+        "displayed_w": 88,
+        "displayed_h": 88,
+        "scale_mode": "fit",
+        "is_broken": false,
+        "is_partial_load": false,
+        "intrinsic_unavailable": false
+      },
+      "interactive": false,
+      "interactive_confidence": 0.0,
+      "interactive_signals": [],
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e4",
+      "role": "text",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 96.0,
+        "y": 224.0,
+        "w": 200.0,
+        "h": 32.0
+      },
+      "bbox_norm": {
+        "x": 0.24615384615384617,
+        "y": 0.26540284360189575,
+        "w": 0.5128205128205128,
+        "h": 0.037914691943127965
+      },
+      "parent": "e1",
+      "children": [],
+      "z": 0,
+      "text": "Jordan Avery",
+      "text_truncated": false,
+      "style": {
+        "font_size": 20.0,
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": false,
+      "interactive_confidence": 0.0,
+      "interactive_signals": [],
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e5",
+      "role": "button",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 48.0,
+        "y": 288.0,
+        "w": 296.0,
+        "h": 56.0
+      },
+      "bbox_norm": {
+        "x": 0.12307692307692308,
+        "y": 0.3412322274881517,
+        "w": 0.7589743589743589,
+        "h": 0.06635071090047394
+      },
+      "parent": "e1",
+      "children": [],
+      "z": 0,
+      "text": "Edit profile",
+      "text_truncated": false,
+      "style": {
+        "font_size": 16.0,
+        "font_family": "System",
+        "color": "#FFFFFF",
+        "bg_color": "#1565C0",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": true,
+      "interactive_confidence": 0.9,
+      "interactive_signals": [],
+      "touch_target": {
+        "w": 296.0,
+        "h": 56.0
+      },
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e6",
+      "role": "button",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 48.0,
+        "y": 720.0,
+        "w": 296.0,
+        "h": 56.0
+      },
+      "bbox_norm": {
+        "x": 0.12307692307692308,
+        "y": 0.8530805687203792,
+        "w": 0.7589743589743589,
+        "h": 0.06635071090047394
+      },
+      "parent": "e1",
+      "children": [],
+      "z": 0,
+      "text": "Sign out now",
+      "text_truncated": false,
+      "style": {
+        "font_size": 16.0,
+        "font_family": "System",
+        "color": "#1565C0",
+        "bg_color": "#FFFFFF",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": true,
+      "interactive_confidence": 0.9,
+      "interactive_signals": [],
+      "touch_target": {
+        "w": 296.0,
+        "h": 56.0
+      },
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    }
+  ],
+  "relations": [],
+  "candidate_issues": []
+}

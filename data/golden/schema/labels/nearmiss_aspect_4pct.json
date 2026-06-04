@@ -1,0 +1,7 @@
+{
+  "case_id": "nearmiss_aspect_4pct",
+  "base": "mobile_login",
+  "mutation": "nm_aspect_ok",
+  "kind": "negative",
+  "expected": []
+}

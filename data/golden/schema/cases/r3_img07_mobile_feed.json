@@ -1,0 +1,372 @@
+{
+  "screen": {
+    "id": "mobile_feed",
+    "platform": "android",
+    "route": "/feed",
+    "viewport": {
+      "w": 360,
+      "h": 800,
+      "dpr": 1.0
+    },
+    "safe_area": {
+      "top": 0,
+      "bottom": 0,
+      "left": 0,
+      "right": 0
+    },
+    "theme": "light",
+    "locale": "en-US",
+    "font_scale": 1.0
+  },
+  "image": {
+    "full": "mobile_feed.png",
+    "w": 360,
+    "h": 800
+  },
+  "elements": [
+    {
+      "id": "e1",
+      "role": "nav",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 0.0,
+        "y": 0.0,
+        "w": 360.0,
+        "h": 56.0
+      },
+      "bbox_norm": {
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 0.07
+      },
+      "children": [],
+      "z": 0,
+      "text": "Your feed today",
+      "text_truncated": false,
+      "style": {
+        "font_size": 16.0,
+        "font_family": "System",
+        "color": "#FFFFFF",
+        "bg_color": "#222222",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": true,
+      "interactive_confidence": 0.9,
+      "interactive_signals": [],
+      "touch_target": {
+        "w": 360.0,
+        "h": 56.0
+      },
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e2",
+      "role": "container",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 0.0,
+        "y": 64.0,
+        "w": 360.0,
+        "h": 200.0
+      },
+      "bbox_norm": {
+        "x": 0.0,
+        "y": 0.08,
+        "w": 1.0,
+        "h": 0.25
+      },
+      "children": [],
+      "z": 0,
+      "text_truncated": false,
+      "style": {
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": false,
+      "interactive_confidence": 0.0,
+      "interactive_signals": [],
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e3",
+      "role": "image",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 16.0,
+        "y": 72.0,
+        "w": 80.0,
+        "h": 80.0
+      },
+      "bbox_norm": {
+        "x": 0.044444444444444446,
+        "y": 0.09,
+        "w": 0.2222222222222222,
+        "h": 0.1
+      },
+      "parent": "e2",
+      "children": [],
+      "z": 0,
+      "text_truncated": false,
+      "style": {
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "image_meta": {
+        "intrinsic_w": 160,
+        "intrinsic_h": 160,
+        "displayed_w": 80,
+        "displayed_h": 80,
+        "scale_mode": "fill",
+        "is_broken": false,
+        "is_partial_load": false,
+        "intrinsic_unavailable": false
+      },
+      "interactive": false,
+      "interactive_confidence": 0.0,
+      "interactive_signals": [],
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e4",
+      "role": "text",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 112.0,
+        "y": 72.0,
+        "w": 232.0,
+        "h": 24.0
+      },
+      "bbox_norm": {
+        "x": 0.3111111111111111,
+        "y": 0.09,
+        "w": 0.6444444444444445,
+        "h": 0.03
+      },
+      "parent": "e2",
+      "children": [],
+      "z": 0,
+      "text": "A great article",
+      "text_truncated": false,
+      "style": {
+        "font_size": 18.0,
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": false,
+      "interactive_confidence": 0.0,
+      "interactive_signals": [],
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e5",
+      "role": "text",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 112.0,
+        "y": 104.0,
+        "w": 232.0,
+        "h": 48.0
+      },
+      "bbox_norm": {
+        "x": 0.3111111111111111,
+        "y": 0.13,
+        "w": 0.6444444444444445,
+        "h": 0.06
+      },
+      "parent": "e2",
+      "children": [],
+      "z": 0,
+      "text": "Read the full story inside",
+      "text_truncated": false,
+      "style": {
+        "font_size": 14.0,
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": false,
+      "interactive_confidence": 0.0,
+      "interactive_signals": [],
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e6",
+      "role": "button",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 16.0,
+        "y": 168.0,
+        "w": 160.0,
+        "h": 48.0
+      },
+      "bbox_norm": {
+        "x": 0.044444444444444446,
+        "y": 0.21,
+        "w": 0.4444444444444444,
+        "h": 0.06
+      },
+      "parent": "e2",
+      "children": [
+        "e98"
+      ],
+      "z": 0,
+      "text": "Open story",
+      "text_truncated": false,
+      "style": {
+        "font_size": 16.0,
+        "font_family": "System",
+        "color": "#FFFFFF",
+        "bg_color": "#1565C0",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": true,
+      "interactive_confidence": 0.9,
+      "interactive_signals": [],
+      "touch_target": {
+        "w": 160.0,
+        "h": 48.0
+      },
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e7",
+      "role": "button",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 192.0,
+        "y": 168.0,
+        "w": 152.0,
+        "h": 48.0
+      },
+      "bbox_norm": {
+        "x": 0.5333333333333333,
+        "y": 0.21,
+        "w": 0.4222222222222222,
+        "h": 0.06
+      },
+      "parent": "e2",
+      "children": [],
+      "z": 0,
+      "text": "Save later",
+      "text_truncated": false,
+      "style": {
+        "font_size": 16.0,
+        "font_family": "System",
+        "color": "#1565C0",
+        "bg_color": "#FFFFFF",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": true,
+      "interactive_confidence": 0.9,
+      "interactive_signals": [],
+      "touch_target": {
+        "w": 152.0,
+        "h": 48.0
+      },
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e98",
+      "role": "icon",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 24.0,
+        "y": 176.0,
+        "w": 24.0,
+        "h": 24.0
+      },
+      "bbox_norm": {
+        "x": 0.06666666666666667,
+        "y": 0.22,
+        "w": 0.06666666666666667,
+        "h": 0.03
+      },
+      "parent": "e6",
+      "children": [],
+      "z": 0,
+      "text_truncated": false,
+      "style": {
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "contrast_ratio": 5.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": false,
+      "interactive_confidence": 0.0,
+      "interactive_signals": [],
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    }
+  ],
+  "relations": [],
+  "candidate_issues": []
+}

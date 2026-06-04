@@ -1,0 +1,16 @@
+{
+  "case_id": "r2_sty03_mobile_login",
+  "base": "mobile_login",
+  "mutation": "mut_r2_sty03_dark_mode",
+  "kind": "positive",
+  "expected": [
+    {
+      "rule": "R2-STY03",
+      "element": "e6",
+      "severity_range": {
+        "min": "medium",
+        "max": "critical"
+      }
+    }
+  ]
+}

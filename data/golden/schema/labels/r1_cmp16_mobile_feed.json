@@ -1,0 +1,16 @@
+{
+  "case_id": "r1_cmp16_mobile_feed",
+  "base": "mobile_feed",
+  "mutation": "mut_r1_cmp16_tap_gap",
+  "kind": "positive",
+  "expected": [
+    {
+      "rule": "R1-CMP16",
+      "element": "e6",
+      "severity_range": {
+        "min": "low",
+        "max": "high"
+      }
+    }
+  ]
+}

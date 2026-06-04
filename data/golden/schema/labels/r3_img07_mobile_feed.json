@@ -1,0 +1,16 @@
+{
+  "case_id": "r3_img07_mobile_feed",
+  "base": "mobile_feed",
+  "mutation": "mut_r3_img07_icon_offcenter",
+  "kind": "positive",
+  "expected": [
+    {
+      "rule": "R3-IMG07",
+      "element": "e98",
+      "severity_range": {
+        "min": "trivial",
+        "max": "medium"
+      }
+    }
+  ]
+}

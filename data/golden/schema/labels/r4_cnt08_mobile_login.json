@@ -1,0 +1,16 @@
+{
+  "case_id": "r4_cnt08_mobile_login",
+  "base": "mobile_login",
+  "mutation": "mut_r4_cnt08_epoch",
+  "kind": "positive",
+  "expected": [
+    {
+      "rule": "R4-CNT08",
+      "element": "e3",
+      "severity_range": {
+        "min": "low",
+        "max": "high"
+      }
+    }
+  ]
+}

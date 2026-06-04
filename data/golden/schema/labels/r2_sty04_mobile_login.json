@@ -1,0 +1,16 @@
+{
+  "case_id": "r2_sty04_mobile_login",
+  "base": "mobile_login",
+  "mutation": "mut_r2_sty04_dark_icon",
+  "kind": "positive",
+  "expected": [
+    {
+      "rule": "R2-STY04",
+      "element": "e2",
+      "severity_range": {
+        "min": "medium",
+        "max": "critical"
+      }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "case_id": "r4_cnt06_mobile_login",
+  "base": "mobile_login",
+  "mutation": "mut_r4_cnt06_mojibake",
+  "kind": "positive",
+  "expected": [
+    {
+      "rule": "R4-CNT06",
+      "element": "e3",
+      "severity_range": {
+        "min": "low",
+        "max": "high"
+      }
+    }
+  ]
+}

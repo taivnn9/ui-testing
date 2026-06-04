@@ -1,0 +1,16 @@
+{
+  "case_id": "r2_sty13_mobile_login",
+  "base": "mobile_login",
+  "mutation": "mut_r2_sty13_icon_contrast",
+  "kind": "positive",
+  "expected": [
+    {
+      "rule": "R2-STY13",
+      "element": "e2",
+      "severity_range": {
+        "min": "low",
+        "max": "high"
+      }
+    }
+  ]
+}

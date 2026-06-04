@@ -1,0 +1,7 @@
+{
+  "case_id": "negative_web_landing",
+  "base": "web_landing",
+  "mutation": "none",
+  "kind": "negative",
+  "expected": []
+}

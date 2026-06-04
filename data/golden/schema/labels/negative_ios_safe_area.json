@@ -1,0 +1,7 @@
+{
+  "case_id": "negative_ios_safe_area",
+  "base": "ios_safe_area",
+  "mutation": "none",
+  "kind": "negative",
+  "expected": []
+}

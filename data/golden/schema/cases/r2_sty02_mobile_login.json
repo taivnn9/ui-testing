@@ -1,0 +1,332 @@
+{
+  "screen": {
+    "id": "mobile_login",
+    "platform": "android",
+    "route": "/login",
+    "viewport": {
+      "w": 360,
+      "h": 800,
+      "dpr": 1.0
+    },
+    "safe_area": {
+      "top": 0,
+      "bottom": 0,
+      "left": 0,
+      "right": 0
+    },
+    "theme": "light",
+    "locale": "en-US",
+    "font_scale": 1.0
+  },
+  "image": {
+    "full": "mobile_login.png",
+    "w": 360,
+    "h": 800
+  },
+  "elements": [
+    {
+      "id": "e1",
+      "role": "container",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 0.0,
+        "y": 0.0,
+        "w": 360.0,
+        "h": 800.0
+      },
+      "bbox_norm": {
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0
+      },
+      "children": [],
+      "z": 0,
+      "text_truncated": false,
+      "style": {
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": false,
+      "interactive_confidence": 0.0,
+      "interactive_signals": [],
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e2",
+      "role": "image",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 128.0,
+        "y": 80.0,
+        "w": 104.0,
+        "h": 104.0
+      },
+      "bbox_norm": {
+        "x": 0.35555555555555557,
+        "y": 0.1,
+        "w": 0.28888888888888886,
+        "h": 0.13
+      },
+      "parent": "e1",
+      "children": [],
+      "z": 0,
+      "text_truncated": false,
+      "style": {
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "image_meta": {
+        "intrinsic_w": 200,
+        "intrinsic_h": 200,
+        "displayed_w": 104,
+        "displayed_h": 104,
+        "scale_mode": "fit",
+        "is_broken": false,
+        "is_partial_load": false,
+        "intrinsic_unavailable": false
+      },
+      "interactive": false,
+      "interactive_confidence": 0.0,
+      "interactive_signals": [],
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e3",
+      "role": "text",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 96.0,
+        "y": 216.0,
+        "w": 168.0,
+        "h": 32.0
+      },
+      "bbox_norm": {
+        "x": 0.26666666666666666,
+        "y": 0.27,
+        "w": 0.4666666666666667,
+        "h": 0.04
+      },
+      "parent": "e1",
+      "children": [],
+      "z": 0,
+      "text": "Welcome back",
+      "text_truncated": false,
+      "style": {
+        "font_size": 22.0,
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "contrast_ratio": 1.1,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": false,
+      "interactive_confidence": 0.0,
+      "interactive_signals": [],
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e4",
+      "role": "input",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 32.0,
+        "y": 304.0,
+        "w": 296.0,
+        "h": 56.0
+      },
+      "bbox_norm": {
+        "x": 0.08888888888888889,
+        "y": 0.38,
+        "w": 0.8222222222222222,
+        "h": 0.07
+      },
+      "parent": "e1",
+      "children": [],
+      "z": 0,
+      "text": "Email address",
+      "text_truncated": false,
+      "style": {
+        "font_size": 16.0,
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": true,
+      "interactive_confidence": 0.9,
+      "interactive_signals": [],
+      "touch_target": {
+        "w": 296.0,
+        "h": 56.0
+      },
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e5",
+      "role": "input",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 32.0,
+        "y": 376.0,
+        "w": 296.0,
+        "h": 56.0
+      },
+      "bbox_norm": {
+        "x": 0.08888888888888889,
+        "y": 0.47,
+        "w": 0.8222222222222222,
+        "h": 0.07
+      },
+      "parent": "e1",
+      "children": [],
+      "z": 0,
+      "text": "Secret code",
+      "text_truncated": false,
+      "style": {
+        "font_size": 16.0,
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": true,
+      "interactive_confidence": 0.9,
+      "interactive_signals": [],
+      "touch_target": {
+        "w": 296.0,
+        "h": 56.0
+      },
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e6",
+      "role": "button",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 32.0,
+        "y": 456.0,
+        "w": 296.0,
+        "h": 56.0
+      },
+      "bbox_norm": {
+        "x": 0.08888888888888889,
+        "y": 0.57,
+        "w": 0.8222222222222222,
+        "h": 0.07
+      },
+      "parent": "e1",
+      "children": [],
+      "z": 0,
+      "text": "Sign in now",
+      "text_truncated": false,
+      "style": {
+        "font_size": 16.0,
+        "font_family": "System",
+        "color": "#FFFFFF",
+        "bg_color": "#1565C0",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": true,
+      "interactive_confidence": 0.9,
+      "interactive_signals": [],
+      "touch_target": {
+        "w": 296.0,
+        "h": 56.0
+      },
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e7",
+      "role": "text",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 104.0,
+        "y": 536.0,
+        "w": 152.0,
+        "h": 24.0
+      },
+      "bbox_norm": {
+        "x": 0.28888888888888886,
+        "y": 0.67,
+        "w": 0.4222222222222222,
+        "h": 0.03
+      },
+      "parent": "e1",
+      "children": [],
+      "z": 0,
+      "text": "Reset access?",
+      "text_truncated": false,
+      "style": {
+        "font_size": 14.0,
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": false,
+      "interactive_confidence": 0.0,
+      "interactive_signals": [],
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    }
+  ],
+  "relations": [],
+  "candidate_issues": []
+}

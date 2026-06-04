@@ -1,0 +1,16 @@
+{
+  "case_id": "r1_lay03_mobile_feed",
+  "base": "mobile_feed",
+  "mutation": "mut_r1_lay03_overflow",
+  "kind": "positive",
+  "expected": [
+    {
+      "rule": "R1-LAY03",
+      "element": "e5",
+      "severity_range": {
+        "min": "low",
+        "max": "high"
+      }
+    }
+  ]
+}

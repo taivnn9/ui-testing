@@ -1,0 +1,361 @@
+{
+  "screen": {
+    "id": "web_table",
+    "platform": "web",
+    "route": "/dashboard",
+    "viewport": {
+      "w": 1280,
+      "h": 800,
+      "dpr": 1.0
+    },
+    "safe_area": {
+      "top": 0,
+      "bottom": 0,
+      "left": 0,
+      "right": 0
+    },
+    "theme": "light",
+    "locale": "en-US",
+    "font_scale": 1.0
+  },
+  "image": {
+    "full": "web_table.png",
+    "w": 1280,
+    "h": 800
+  },
+  "elements": [
+    {
+      "id": "e1",
+      "role": "nav",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1280.0,
+        "h": 64.0
+      },
+      "bbox_norm": {
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 0.08
+      },
+      "children": [],
+      "z": 0,
+      "text": "Dashboard reports",
+      "text_truncated": false,
+      "style": {
+        "font_size": 16.0,
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": true,
+      "interactive_confidence": 0.9,
+      "interactive_signals": [],
+      "touch_target": {
+        "w": 1280.0,
+        "h": 64.0
+      },
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e2",
+      "role": "container",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 0.0,
+        "y": 64.0,
+        "w": 1280.0,
+        "h": 600.0
+      },
+      "bbox_norm": {
+        "x": 0.0,
+        "y": 0.08,
+        "w": 1.0,
+        "h": 0.75
+      },
+      "children": [],
+      "z": 0,
+      "text_truncated": false,
+      "style": {
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": false,
+      "interactive_confidence": 0.0,
+      "interactive_signals": [],
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e3",
+      "role": "text",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 32.0,
+        "y": 96.0,
+        "w": 200.0,
+        "h": 32.0
+      },
+      "bbox_norm": {
+        "x": 0.025,
+        "y": 0.12,
+        "w": 0.15625,
+        "h": 0.04
+      },
+      "parent": "e2",
+      "children": [],
+      "z": 0,
+      "text": "Total users",
+      "text_truncated": false,
+      "style": {
+        "font_size": 16.0,
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": false,
+      "interactive_confidence": 0.0,
+      "interactive_signals": [],
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e4",
+      "role": "text",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 320.0,
+        "y": 96.0,
+        "w": 200.0,
+        "h": 32.0
+      },
+      "bbox_norm": {
+        "x": 0.25,
+        "y": 0.12,
+        "w": 0.15625,
+        "h": 0.04
+      },
+      "parent": "e2",
+      "children": [],
+      "z": 0,
+      "text": "Active sessions",
+      "text_truncated": false,
+      "style": {
+        "font_size": 16.0,
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": false,
+      "interactive_confidence": 0.0,
+      "interactive_signals": [],
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e5",
+      "role": "text",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 608.0,
+        "y": 96.0,
+        "w": 200.0,
+        "h": 32.0
+      },
+      "bbox_norm": {
+        "x": 0.475,
+        "y": 0.12,
+        "w": 0.15625,
+        "h": 0.04
+      },
+      "parent": "e2",
+      "children": [],
+      "z": 0,
+      "text": "Revenue total",
+      "text_truncated": false,
+      "style": {
+        "font_size": 16.0,
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": false,
+      "interactive_confidence": 0.0,
+      "interactive_signals": [],
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e6",
+      "role": "text",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 32.0,
+        "y": 144.0,
+        "w": 200.0,
+        "h": 32.0
+      },
+      "bbox_norm": {
+        "x": 0.025,
+        "y": 0.18,
+        "w": 0.15625,
+        "h": 0.04
+      },
+      "parent": "e2",
+      "children": [],
+      "z": 0,
+      "text": "Twelve thousand",
+      "text_truncated": false,
+      "style": {
+        "font_size": 16.0,
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": false,
+      "interactive_confidence": 0.0,
+      "interactive_signals": [],
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e7",
+      "role": "text",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 320.0,
+        "y": 144.0,
+        "w": 200.0,
+        "h": 32.0
+      },
+      "bbox_norm": {
+        "x": 0.25,
+        "y": 0.18,
+        "w": 0.15625,
+        "h": 0.04
+      },
+      "parent": "e2",
+      "children": [],
+      "z": 0,
+      "text": "Eight hundred",
+      "text_truncated": false,
+      "style": {
+        "font_size": 16.0,
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": false,
+      "interactive_confidence": 0.0,
+      "interactive_signals": [],
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e8",
+      "role": "button",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 1088.0,
+        "y": 96.0,
+        "w": 160.0,
+        "h": 48.0
+      },
+      "bbox_norm": {
+        "x": 0.85,
+        "y": 0.12,
+        "w": 0.125,
+        "h": 0.06
+      },
+      "parent": "e2",
+      "children": [],
+      "z": 0,
+      "text": "Export data",
+      "text_truncated": false,
+      "style": {
+        "font_size": 16.0,
+        "font_family": "System",
+        "color": "#FFFFFF",
+        "bg_color": "#1565C0",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": true,
+      "interactive_confidence": 0.9,
+      "interactive_signals": [],
+      "touch_target": {
+        "w": 160.0,
+        "h": 48.0
+      },
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    }
+  ],
+  "relations": [],
+  "candidate_issues": []
+}

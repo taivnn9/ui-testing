@@ -1,0 +1,16 @@
+{
+  "case_id": "r4_state03_mobile_login",
+  "base": "mobile_login",
+  "mutation": "mut_r4_state03_stacktrace",
+  "kind": "positive",
+  "expected": [
+    {
+      "rule": "R4-STATE03",
+      "element": "e3",
+      "severity_range": {
+        "min": "medium",
+        "max": "critical"
+      }
+    }
+  ]
+}

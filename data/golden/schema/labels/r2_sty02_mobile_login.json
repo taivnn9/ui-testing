@@ -1,0 +1,16 @@
+{
+  "case_id": "r2_sty02_mobile_login",
+  "base": "mobile_login",
+  "mutation": "mut_r2_sty02_invisible",
+  "kind": "positive",
+  "expected": [
+    {
+      "rule": "R2-STY02",
+      "element": "e3",
+      "severity_range": {
+        "min": "high",
+        "max": "critical"
+      }
+    }
+  ]
+}

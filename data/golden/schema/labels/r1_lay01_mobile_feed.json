@@ -1,0 +1,16 @@
+{
+  "case_id": "r1_lay01_mobile_feed",
+  "base": "mobile_feed",
+  "mutation": "mut_r1_lay01_overlap",
+  "kind": "positive",
+  "expected": [
+    {
+      "rule": "R1-LAY01",
+      "element": "e4",
+      "severity_range": {
+        "min": "medium",
+        "max": "critical"
+      }
+    }
+  ]
+}

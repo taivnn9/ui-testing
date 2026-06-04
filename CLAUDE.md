@@ -142,7 +142,12 @@ candidate) · 1 lần `codex exec`/ảnh (rẻ). Backend chọn qua env `AGENT_B
       (bbox màu theo severity, liên kết 2 chiều, filter). FastAPI serve `GET /` + `/static`. Spec: `docs/F2.0-web-ui.md`.
 - [x] Cài deps + pytest unit: **111/111 pass** (2026-06-03, +4 test codex reasoning).
 - [x] Pivot VLM→Codex CLI verify end-to-end: ảnh→CV→rule→`codex exec`→findings (mode=codex, lọc FP).
-- [ ] Golden set + script đo precision/recall (mutation testing UI) → `data/golden/`.
+- [x] **Golden set Tier-1 + đo precision/recall** (mutation testing schema-level, backend-agnostic) —
+      `scripts/gen_golden.py` (38 case: 28 positive/rule + 10 negative) + `scripts/score_golden.py`
+      (precision/recall/F1 per-rule, cờ `--with-agent` qua `AGENT_BACKEND` để chạy Cline/Codex) +
+      `tests/integration/test_golden.py`. Rule-only **P=R=F1=1.000**, phủ **28/32 rule**. Spec: `docs/F4.0-golden-set.md`.
+- [ ] **Golden Tier-2** (ảnh thật Playwright) — phủ nốt 4 rule cần analyzer extra field
+      (R1-ENV02/03 status/nav-bar, R3-IMG08 placeholder, R3-IMG12 dup-pairs). Cần OCR backend.
 - [ ] Integration test với ảnh thật (cần OCR backend; reasoning cần `codex login`).
 - [ ] Tinh chỉnh skill files `agents/skills/*.md` theo kết quả thực tế.
 - [ ] Cắm backend Cline (máy công ty) vào `agents/backends.py`.

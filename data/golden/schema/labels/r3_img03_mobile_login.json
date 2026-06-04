@@ -1,0 +1,16 @@
+{
+  "case_id": "r3_img03_mobile_login",
+  "base": "mobile_login",
+  "mutation": "mut_r3_img03_blur",
+  "kind": "positive",
+  "expected": [
+    {
+      "rule": "R3-IMG03",
+      "element": "e2",
+      "severity_range": {
+        "min": "low",
+        "max": "medium"
+      }
+    }
+  ]
+}

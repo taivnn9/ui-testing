@@ -1,0 +1,373 @@
+{
+  "screen": {
+    "id": "mobile_form",
+    "platform": "android",
+    "route": "/signup",
+    "viewport": {
+      "w": 360,
+      "h": 800,
+      "dpr": 1.0
+    },
+    "safe_area": {
+      "top": 0,
+      "bottom": 0,
+      "left": 0,
+      "right": 0
+    },
+    "theme": "light",
+    "locale": "en-US",
+    "font_scale": 1.0
+  },
+  "image": {
+    "full": "mobile_form.png",
+    "w": 360,
+    "h": 800
+  },
+  "elements": [
+    {
+      "id": "e1",
+      "role": "container",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 0.0,
+        "y": 0.0,
+        "w": 360.0,
+        "h": 800.0
+      },
+      "bbox_norm": {
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0
+      },
+      "children": [],
+      "z": 0,
+      "text_truncated": false,
+      "style": {
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": false,
+      "interactive_confidence": 0.0,
+      "interactive_signals": [],
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e2",
+      "role": "text",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 32.0,
+        "y": 48.0,
+        "w": 296.0,
+        "h": 32.0
+      },
+      "bbox_norm": {
+        "x": 0.08888888888888889,
+        "y": 0.06,
+        "w": 0.8222222222222222,
+        "h": 0.04
+      },
+      "parent": "e1",
+      "children": [],
+      "z": 0,
+      "text": "Create account",
+      "text_truncated": false,
+      "style": {
+        "font_size": 24.0,
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": false,
+      "interactive_confidence": 0.0,
+      "interactive_signals": [],
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e3",
+      "role": "input",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 32.0,
+        "y": 120.0,
+        "w": 296.0,
+        "h": 56.0
+      },
+      "bbox_norm": {
+        "x": 0.08888888888888889,
+        "y": 0.15,
+        "w": 0.8222222222222222,
+        "h": 0.07
+      },
+      "parent": "e1",
+      "children": [],
+      "z": 0,
+      "text": "Full name",
+      "text_truncated": false,
+      "style": {
+        "font_size": 16.0,
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": true,
+      "interactive_confidence": 0.9,
+      "interactive_signals": [],
+      "touch_target": {
+        "w": 296.0,
+        "h": 56.0
+      },
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e4",
+      "role": "input",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 32.0,
+        "y": 192.0,
+        "w": 296.0,
+        "h": 56.0
+      },
+      "bbox_norm": {
+        "x": 0.08888888888888889,
+        "y": 0.24,
+        "w": 0.8222222222222222,
+        "h": 0.07
+      },
+      "parent": "e1",
+      "children": [],
+      "z": 0,
+      "text": "Email address",
+      "text_truncated": false,
+      "style": {
+        "font_size": 16.0,
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": true,
+      "interactive_confidence": 0.9,
+      "interactive_signals": [],
+      "touch_target": {
+        "w": 296.0,
+        "h": 56.0
+      },
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e5",
+      "role": "input",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 32.0,
+        "y": 264.0,
+        "w": 296.0,
+        "h": 56.0
+      },
+      "bbox_norm": {
+        "x": 0.08888888888888889,
+        "y": 0.33,
+        "w": 0.8222222222222222,
+        "h": 0.07
+      },
+      "parent": "e1",
+      "children": [],
+      "z": 0,
+      "text": "Phone number",
+      "text_truncated": false,
+      "style": {
+        "font_size": 16.0,
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": true,
+      "interactive_confidence": 0.9,
+      "interactive_signals": [],
+      "touch_target": {
+        "w": 296.0,
+        "h": 56.0
+      },
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e6",
+      "role": "toggle",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 32.0,
+        "y": 344.0,
+        "w": 56.0,
+        "h": 32.0
+      },
+      "bbox_norm": {
+        "x": 0.08888888888888889,
+        "y": 0.43,
+        "w": 0.15555555555555556,
+        "h": 0.04
+      },
+      "parent": "e1",
+      "children": [],
+      "z": 0,
+      "text_truncated": false,
+      "style": {
+        "font_size": 16.0,
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": true,
+      "interactive_confidence": 0.9,
+      "interactive_signals": [],
+      "touch_target": {
+        "w": 56.0,
+        "h": 48.0
+      },
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e7",
+      "role": "text",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 96.0,
+        "y": 344.0,
+        "w": 232.0,
+        "h": 32.0
+      },
+      "bbox_norm": {
+        "x": 0.26666666666666666,
+        "y": 0.43,
+        "w": 0.6444444444444445,
+        "h": 0.04
+      },
+      "parent": "e1",
+      "children": [],
+      "z": 0,
+      "text": "Accept the terms",
+      "text_truncated": false,
+      "style": {
+        "font_size": 14.0,
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": false,
+      "interactive_confidence": 0.0,
+      "interactive_signals": [],
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e8",
+      "role": "button",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 32.0,
+        "y": 416.0,
+        "w": 296.0,
+        "h": 56.0
+      },
+      "bbox_norm": {
+        "x": 0.08888888888888889,
+        "y": 0.52,
+        "w": 0.8222222222222222,
+        "h": 0.07
+      },
+      "parent": "e1",
+      "children": [],
+      "z": 0,
+      "text": "Submit form",
+      "text_truncated": false,
+      "style": {
+        "font_size": 16.0,
+        "font_family": "System",
+        "color": "#FFFFFF",
+        "bg_color": "#1565C0",
+        "contrast_ratio": 7.0,
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "interactive": true,
+      "interactive_confidence": 0.9,
+      "interactive_signals": [],
+      "touch_target": {
+        "w": 296.0,
+        "h": 56.0
+      },
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    }
+  ],
+  "relations": [],
+  "candidate_issues": []
+}
