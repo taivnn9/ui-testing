@@ -100,8 +100,8 @@ b. **Template matching** icon phổ biến (tùy chọn): tăng recall cho phát
 ## 8. Open decisions (cần anh chốt — lựa chọn lớn)
 
 - [ ] **Phase 1 dùng ML pretrained để phát hiện icon (OmniParser/GroundingDINO) hay thuần CV?**
-  Đề xuất: **core CV thuần** (contour + màu + edge + template) cho Phase 1; **thêm ML nếu golden set cho thấy recall icon < 70%**. Lý do: CV đủ bắt được icon phổ biến, tránh dependency nặng; ML add-on dễ bật sau.
-- [ ] **Ngưỡng size icon (min/max px):** đề xuất 16–80px cạnh ngắn, aspect 0.5–2.0. Tune bằng golden set.
+  Đề xuất: **core CV thuần** (contour + màu + edge + template) cho Phase 1; **thêm ML nếu standard set cho thấy recall icon < 70%**. Lý do: CV đủ bắt được icon phổ biến, tránh dependency nặng; ML add-on dễ bật sau.
+- [ ] **Ngưỡng size icon (min/max px):** đề xuất 16–80px cạnh ngắn, aspect 0.5–2.0. Tune bằng standard set.
 - [ ] **Bộ template matching:** có dựng sẵn bộ template icon phổ biến (arrow, hamburger, X, search, back, share...) không? Khoảng 20–30 template đủ bắt IMG-08 placeholder phổ biến.
 - [ ] **CLIP zero-shot** như lớp giữa (rẻ hơn OmniParser): query `"icon"` vs `"photo"` vs `"text"` → có muốn thử không, hay đủ CV thuần?
 

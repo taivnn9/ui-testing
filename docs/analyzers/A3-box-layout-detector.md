@@ -67,9 +67,9 @@ chạy được nhóm LAY** (nhóm "vàng").
 
 ## 8. Open decisions (cần anh chốt — lựa chọn lớn)
 - [ ] **Phase 1 dùng pretrained ML detector (OmniParser/GroundingDINO) như add-on, hay thuần
-  CV+OCR?** Đề xuất: **core CV+OCR trước**; chỉ thêm ML-detector nếu golden set cho thấy recall
+  CV+OCR?** Đề xuất: **core CV+OCR trước**; chỉ thêm ML-detector nếu standard set cho thấy recall
   component quá thấp. (Quyết định này động tới nguyên tắc "no YOLO" — nên hỏi anh.)
-- [ ] Ngưỡng lọc region (min area, aspect ratio) → **tune bằng golden set (GS)**.
+- [ ] Ngưỡng lọc region (min area, aspect ratio) → **tune bằng standard set (GS)**.
 
 ## 9. TDD outline
 - test contour detect trên ảnh card đơn giản → đúng số box.

@@ -51,7 +51,7 @@ Không có DOM/XML adapter, không có Mode A/B.
    không + bắt lỗi cần thẩm mỹ/ngữ cảnh + gán severity + giải thích.
 4. **Mỗi lỗi phải có `severity` + `confidence` + `evidence`**. False positive là thứ giết
    hệ thống loại này → ưu tiên precision, có pass self-critique/verify.
-5. **Phải có Golden Set** (tập ảnh có nhãn lỗi sẵn) để đo precision/recall và tune ngưỡng.
+5. **Phải có bộ chuẩn** (`standard_v1` — tập ảnh/dữ liệu có nhãn lỗi sẵn) để đo precision/recall và tune ngưỡng.
    Mẹo tạo nhanh: **mutation testing UI** (cố tình inject lỗi: đổi font-size, bóp ảnh,
    nhồi text dài, đổi màu) → có ngay tập positive đã biết.
 
@@ -142,11 +142,11 @@ candidate) · 1 lần `codex exec`/ảnh (rẻ). Backend chọn qua env `AGENT_B
       (bbox màu theo severity, liên kết 2 chiều, filter). FastAPI serve `GET /` + `/static`. Spec: `docs/F2.0-web-ui.md`.
 - [x] Cài deps + pytest unit: **111/111 pass** (2026-06-03, +4 test codex reasoning).
 - [x] Pivot VLM→Codex CLI verify end-to-end: ảnh→CV→rule→`codex exec`→findings (mode=codex, lọc FP).
-- [x] **Golden set Tier-1 + đo precision/recall** (mutation testing schema-level, backend-agnostic) —
-      `scripts/gen_golden.py` (38 case: 28 positive/rule + 10 negative) + `scripts/score_golden.py`
+- [x] **Bộ chuẩn `standard_v1` Tier-1 + đo precision/recall** (kiểm thử đột biến schema-level, backend-agnostic) —
+      `scripts/gen_standard.py` (38 case: 28 positive/rule + 10 negative) + `scripts/score_standard.py`
       (precision/recall/F1 per-rule, cờ `--with-agent` qua `AGENT_BACKEND` để chạy Cline/Codex) +
-      `tests/integration/test_golden.py`. Rule-only **P=R=F1=1.000**, phủ **28/32 rule**. Spec: `docs/F4.0-golden-set.md`.
-- [ ] **Golden Tier-2** (ảnh thật Playwright) — phủ nốt 4 rule cần analyzer extra field
+      `tests/integration/test_standard.py`. Rule-only **P=R=F1=1.000**, phủ **28/32 rule**. Spec: `docs/F4.0-standard-set.md`.
+- [ ] **Standard Tier-2** (ảnh thật Playwright) — phủ nốt 4 rule cần analyzer extra field
       (R1-ENV02/03 status/nav-bar, R3-IMG08 placeholder, R3-IMG12 dup-pairs). Cần OCR backend.
 - [ ] Integration test với ảnh thật (cần OCR backend; reasoning cần `codex login`).
 - [ ] Tinh chỉnh skill files `agents/skills/*.md` theo kết quả thực tế.

@@ -28,7 +28,7 @@
 - [x] **F0.1** Tech stack: **Python + FastAPI** + OpenCV/Pillow/numpy + OCR (PaddleOCR/Tesseract) + pydantic + VLM qua API.
 - [x] **F0.2** Lock **Canonical Schema v1** → [`docs/F0.2-canonical-schema.md`](F0.2-canonical-schema.md): `screen / image / elements[] / relations[] / candidate_issues[]` + field-level `_sources` + severity **5 mức** (`critical/high/medium/low/trivial`) + Pydantic v2 skeleton.
 - [x] **F0.3** Scaffold repo → `src/ui_defect/{schema,analyzers,rules,agents,api,utils}` + `tests/` + `pyproject.toml` + `requirements*.txt` (pip). Python 3.12 hệ thống.
-- [x] **F0.4** Chốt **đơn vị & ngưỡng chuẩn** → [`docs/F0.4-thresholds.md`](F0.4-thresholds.md): pt/dp/px↔dpr, touch 44pt/48dp, contrast 4.5/3:1, font 11px, blur Laplacian, hash Hamming, grid 8pt. Ngưỡng `[tune]` cần golden set.
+- [x] **F0.4** Chốt **đơn vị & ngưỡng chuẩn** → [`docs/F0.4-thresholds.md`](F0.4-thresholds.md): pt/dp/px↔dpr, touch 44pt/48dp, contrast 4.5/3:1, font 11px, blur Laplacian, hash Hamming, grid 8pt. Ngưỡng `[tune]` cần standard set.
 
 ## Phase 1 — Analyzers (bóc tách từng cái → `docs/analyzers/<id>.md`)
 > Thứ tự ưu tiên = mở khoá nhiều tiêu chí nhất + chuẩn zero-ref nhất.
@@ -37,7 +37,7 @@
 > ~~**A2 — Style Reader**~~ (đã bỏ — không còn DOM/XML input)
 
 **Nhóm "dựng cấu trúc" (vision-only, tự dựng từ ảnh):**
-- [x] **A3 — Box/Layout Detector** `[vision]` — code ✅ `src/ui_defect/analyzers/a3_box_layout.py`. OpenCV CV core; ML add-on dành Phase 2 sau golden set.
+- [x] **A3 — Box/Layout Detector** `[vision]` — code ✅ `src/ui_defect/analyzers/a3_box_layout.py`. OpenCV CV core; ML add-on dành Phase 2 sau standard set.
 - [x] **A5 — OCR / Text Extractor** (text + box) `[vision]` — code ✅ `src/ui_defect/analyzers/a5_ocr.py`. PaddleOCR primary + Tesseract fallback.
 - [ ] **A12 — Interactivity Classifier** (đoán phần tử nào tương tác) `[vision]` — ⚠ khó — **spec ✅** [`analyzers/A12-interactivity-classifier.md`](analyzers/A12-interactivity-classifier.md). Chưa code.
 - [x] **A6 — Icon/Graphic Detector** `[vision]` — code ✅ `src/ui_defect/analyzers/a6_icon_detector.py`. CV: color_count + edge_density + template matching.
@@ -79,9 +79,9 @@
   request params (platform/viewport/locale/theme/safe_area), response schema đầy đủ,
   error codes, pipeline orchestration code, SLO targets (< 12s E2E)
 
-## Phase 6 — Golden Set & đo lường (META — sống còn)
+## Phase 6 — Standard Set & đo lường (META — sống còn)
 - [ ] **GS1** Mutation-testing UI harness (inject lỗi: đổi font/bóp ảnh/nhồi text/đổi màu → positive đã biết)
-- [ ] **GS2** Tập ảnh có nhãn (golden set) — vision-only
+- [ ] **GS2** Tập ảnh có nhãn (standard set) — vision-only
 - [ ] **GS3** Script đo precision/recall theo từng tiêu chí
 - [ ] **GS4** Tune ngưỡng rule + calibrate severity dựa trên P/R
 
@@ -110,6 +110,6 @@
 - [x] **Phase 3** — Agents code xong (G0 SoM+wrapper, G1–G6 runner, V1 critic, S1 summary).
 - [x] **Phase 4** — Verify + Summary code xong (critic.py + summary.py).
 - [x] **Phase 5** — FastAPI endpoint code xong (api/main.py + pipeline.py).
-- [ ] **Phase 6** — Golden Set + đo P/R (chưa bắt đầu).
+- [ ] **Phase 6** — Standard Set + đo P/R (chưa bắt đầu).
 - [ ] **Testing** — chạy pytest, fix issues thực tế.
 - [ ] **Integration test** — gọi thật với ảnh mẫu.

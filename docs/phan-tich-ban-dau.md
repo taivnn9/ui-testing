@@ -172,7 +172,7 @@ Capture (ảnh + hierarchy)  →  Normalize (schema mục 3)
   subagent song song (mỗi ảnh / mỗi nhóm tiêu chí).
 
 **Phần META mà 90% dự án kiểu này quên → và rồi sập:**
-> **Phải có Golden Set** — tập screenshot có nhãn lỗi sẵn (ground truth) để đo
+> **Phải có Standard Set** — tập screenshot có nhãn lỗi sẵn (ground truth) để đo
 > **precision/recall**. Không có nó thì không tune được ngưỡng, không biết hệ thống đáng tin
 > hay không. Mẹo tạo positive nhanh: **mutation testing UI** — cố tình inject lỗi (đổi
 > font-size, bóp ảnh, thêm text dài, đổi màu) vào app rồi chụp → có ngay tập lỗi đã biết.

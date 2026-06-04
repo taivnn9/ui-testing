@@ -192,7 +192,7 @@ CandidateIssue:
 
 ## 6. Open decisions
 
-- [ ] **Ngưỡng auto-confirm confidence?** Đề xuất: ≥ 0.9 cho rule tất định; ≥ 0.85 cho regex rõ. Tune sau khi có golden set.
+- [ ] **Ngưỡng auto-confirm confidence?** Đề xuất: ≥ 0.9 cho rule tất định; ≥ 0.85 cho regex rõ. Tune sau khi có standard set.
 - [ ] **Số lượng modifier tối đa?** Nếu quá nhiều modifier cùng hướng có thể overcorrect → clamp theo range là đủ.
 - [ ] **Bảng CTA detection:** làm sao biết button là CTA chính? Đề xuất: VLM agent G6 (Component) đánh dấu `is_primary=true` trong pass đầu → R5 modifier dùng flag này.
 

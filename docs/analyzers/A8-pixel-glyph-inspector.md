@@ -151,7 +151,7 @@ Kết hợp: cạnh chữ (Canny) có `edge_irregularity` cao → răng cưa (ja
 ## 8. Open decisions (cần anh chốt — lựa chọn lớn)
 
 - [ ] **Ngưỡng Laplacian variance** theo từng dpr — đề xuất 50/100/200 cho dpr 1/2/3 — **tune bằng
-  golden set (GS)** trước khi lock.
+  standard set (GS)** trước khi lock.
 - [ ] **Ngưỡng `box_uniformity`** cho tofu detect: đề xuất `> 0.92` — cần test trên ảnh icon đặc
   hợp lệ vs tofu thật để chọn ngưỡng phân định.
 - [ ] **Có chạy A8 trên tất cả text-box hay chỉ khi A5 set `has_replacement=true`?**

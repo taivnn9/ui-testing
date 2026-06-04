@@ -1,7 +1,7 @@
 """
 Ngưỡng chuẩn dùng chung cho Rule Engine và Analyzer.
 Nguồn gốc: docs/F0.4-thresholds.md
-Ngưỡng đánh dấu TUNE = cần điều chỉnh sau khi có Golden Set.
+Ngưỡng đánh dấu TUNE = cần điều chỉnh sau khi có Standard Set.
 """
 
 

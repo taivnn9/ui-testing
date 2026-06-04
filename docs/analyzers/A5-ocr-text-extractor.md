@@ -91,7 +91,7 @@ d. **Nhận dạng script/ngôn ngữ** — phân loại chữ viết (phục v�
   cả 2 để đối chiếu?)
 - [ ] **Bộ ngôn ngữ mặc định** + auto chọn theo `screen.locale` nếu có. Đề xuất `latin+vi+cjk`,
   thêm `arabic` khi locale RTL.
-- [ ] Ngưỡng upscale text-bé & ngưỡng conf để gắn cờ → **tune bằng golden set (GS)**.
+- [ ] Ngưỡng upscale text-bé & ngưỡng conf để gắn cờ → **tune bằng standard set (GS)**.
 
 ## 9. TDD outline (khi vào code)
 - test: ảnh 1 dòng text sạch → đúng `text` + bbox + conf cao.

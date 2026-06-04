@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Agent A — Generator cho Golden Set Tier-1 (schema-level mutation testing).
+Agent A — Generator cho Standard Set Tier-1 (schema-level mutation testing).
 
 Sinh:
-  data/golden/schema/base/<base>.json    — CanonicalDoc SẠCH (0 issue)
-  data/golden/schema/cases/<case>.json    — CanonicalDoc đã mutate (input rule engine)
-  data/golden/schema/labels/<case>.json   — ground truth (kỳ vọng)
-  data/golden/images/README.md            — TODO Tier-2
+  data/standard_v1/schema/base/<base>.json    — CanonicalDoc SẠCH (0 issue)
+  data/standard_v1/schema/cases/<case>.json    — CanonicalDoc đã mutate (input rule engine)
+  data/standard_v1/schema/labels/<case>.json   — ground truth (kỳ vọng)
+  data/standard_v1/images/README.md            — TODO Tier-2
 
 Quy tắc:
   - KHÔNG gọi agent/LLM/OCR/ảnh. Thuần dựng JSON từ Pydantic models.
@@ -14,9 +14,9 @@ Quy tắc:
   - Tự kiểm bằng run_rule_engine sau khi sinh: positive PHẢI fire đúng (rule, element),
     negative PHẢI sạch.
 
-CLI: python scripts/gen_golden.py [--out data/golden/schema]
+CLI: python scripts/gen_standard.py [--out data/standard_v1/schema]
 
-Spec: docs/F4.0-golden-set.md (§3 schema khóa chặt, §4 việc của Agent A).
+Spec: docs/F4.0-standard-set.md (§3 schema khóa chặt, §4 việc của Agent A).
 """
 from __future__ import annotations
 
@@ -871,9 +871,9 @@ def self_check(out_dir: Path) -> list[tuple[str, bool, str]]:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Sinh Golden Set Tier-1 (schema mutation).")
-    ap.add_argument("--out", default="data/golden/schema",
-                    help="Thư mục output (mặc định data/golden/schema)")
+    ap = argparse.ArgumentParser(description="Sinh Standard Set Tier-1 (schema mutation).")
+    ap.add_argument("--out", default="data/standard_v1/schema",
+                    help="Thư mục output (mặc định data/standard_v1/schema)")
     args = ap.parse_args()
 
     out_dir = (_REPO / args.out) if not Path(args.out).is_absolute() else Path(args.out)
@@ -884,14 +884,14 @@ def main() -> int:
     images_dir = out_dir.parent / "images"
     images_dir.mkdir(parents=True, exist_ok=True)
     (images_dir / "README.md").write_text(
-        "# Golden Set Tier-2 — ảnh thật (CHƯA BUILD)\n\n"
+        "# Standard Set Tier-2 — ảnh thật (CHƯA BUILD)\n\n"
         "TODO (F4.1): render ảnh thật bằng Playwright + mutate CSS/DOM rồi chạy qua\n"
         "Vision Adapter (OCR + CV) → CanonicalDoc → so với label. Cần OCR backend local\n"
         "(xem F1.1/SETUP). Hiện chỉ có Tier-1 schema-level ở `../schema/`.\n",
         encoding="utf-8",
     )
 
-    print(f"== Golden Set sinh tại: {out_dir}")
+    print(f"== Standard Set sinh tại: {out_dir}")
     print(f"   base     : {stats['n_base']}")
     print(f"   positive : {stats['n_positive']}")
     print(f"   negative : {stats['n_negative']}")

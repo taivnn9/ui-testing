@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-score_golden.py — Harness chấm điểm Golden Set (precision/recall/F1) cho rule engine.
+score_standard.py — Harness chấm điểm Standard Set (precision/recall/F1) cho rule engine.
 
-Đọc dữ liệu do Agent A sinh ra ở `data/golden/schema/{cases,labels}/`:
+Đọc dữ liệu do Agent A sinh ra ở `data/standard_v1/schema/{cases,labels}/`:
   - cases/<id>.json   = 1 CanonicalDoc đã mutate (INPUT cho rule engine)
   - labels/<id>.json  = ground truth (expected[] + kind positive|negative)
 
 Mặc định **rule-only** (deterministic, backend-agnostic):
   doc = CanonicalDoc.model_validate(case); out = run_rule_engine(doc) → out.candidate_issues
 
-Matching (xem docs/F4.0-golden-set.md §5):
+Matching (xem docs/F4.0-standard-set.md §5):
   1 expected = TP nếu tồn tại candidate cùng `rule` AND cùng `element`
   (element=null khớp issue cấp screen) AND `severity` nằm trong `severity_range`.
   - expected không match → FN.
@@ -20,7 +20,7 @@ Tùy chọn `--with-agent`: thay rule-only bằng full reasoning QUA ABSTRACTION
   TUYỆT ĐỐI KHÔNG import codex_client trực tiếp. Backend lỗi → cảnh báo, vẫn xuất rule-only.
 
 CLI:
-  python scripts/score_golden.py [--golden data/golden/schema] [--with-agent] [--rule R1-CMP01]
+  python scripts/score_standard.py [--standard data/standard_v1/schema] [--with-agent] [--rule R1-CMP01]
 """
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
-# Cho phép chạy trực tiếp `python scripts/score_golden.py` (thêm src/ vào path).
+# Cho phép chạy trực tiếp `python scripts/score_standard.py` (thêm src/ vào path).
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 _SRC = _REPO_ROOT / "src"
 if _SRC.is_dir() and str(_SRC) not in sys.path:
@@ -108,20 +108,20 @@ def _expected_matches_candidate(exp: dict, cand: CandidateIssue) -> bool:
     return _severity_in_range(cand.severity, rng.get("min", "trivial"), rng.get("max", "critical"))
 
 
-# ── Load golden pairs ─────────────────────────────────────────────────────────
+# ── Load standard pairs ─────────────────────────────────────────────────────────
 @dataclass
-class GoldenCase:
+class StandardCase:
     case_id: str
     case_json: dict
     label: dict
 
 
-def load_golden(golden_dir: Path) -> list[GoldenCase]:
-    cases_dir = golden_dir / "cases"
-    labels_dir = golden_dir / "labels"
+def load_standard(standard_dir: Path) -> list[StandardCase]:
+    cases_dir = standard_dir / "cases"
+    labels_dir = standard_dir / "labels"
     if not cases_dir.is_dir() or not labels_dir.is_dir():
         return []
-    out: list[GoldenCase] = []
+    out: list[StandardCase] = []
     for case_path in sorted(cases_dir.glob("*.json")):
         cid = case_path.stem
         label_path = labels_dir / f"{cid}.json"
@@ -130,7 +130,7 @@ def load_golden(golden_dir: Path) -> list[GoldenCase]:
             continue
         case_json = json.loads(case_path.read_text(encoding="utf-8"))
         label = json.loads(label_path.read_text(encoding="utf-8"))
-        out.append(GoldenCase(case_id=cid, case_json=case_json, label=label))
+        out.append(StandardCase(case_id=cid, case_json=case_json, label=label))
     return out
 
 
@@ -185,14 +185,14 @@ def _candidates_with_agent(case_json: dict, warnings: list[str]) -> list[Candida
 
 # ── Scoring core ──────────────────────────────────────────────────────────────
 def score(
-    golden: list[GoldenCase],
+    standard: list[StandardCase],
     *,
     with_agent: bool = False,
     rule_filter: str | None = None,
 ) -> ScoreResult:
-    result = ScoreResult(n_cases=len(golden))
+    result = ScoreResult(n_cases=len(standard))
 
-    for gc in golden:
+    for gc in standard:
         expected: list[dict] = list(gc.label.get("expected") or [])
         if rule_filter:
             expected = [e for e in expected if e.get("rule") == rule_filter]
@@ -253,7 +253,7 @@ def _fmt_row(name: str, c: Counts) -> str:
 
 def render_report(result: ScoreResult, *, mode: str) -> str:
     lines: list[str] = []
-    lines.append("# Golden Set — Report\n")
+    lines.append("# Standard Set — Report\n")
     lines.append(f"- Mode: **{mode}**")
     lines.append(f"- Số case: **{result.n_cases}**")
     o = result.overall
@@ -300,7 +300,7 @@ def render_report(result: ScoreResult, *, mode: str) -> str:
 
 def print_console(result: ScoreResult, *, mode: str) -> None:
     o = result.overall
-    print(f"\n=== Golden Set scoring (mode={mode}, cases={result.n_cases}) ===")
+    print(f"\n=== Standard Set scoring (mode={mode}, cases={result.n_cases}) ===")
     print(f"{'rule':<16} {'TP':>3} {'FP':>3} {'FN':>3}  {'P':>6} {'R':>6} {'F1':>6}")
     print("-" * 52)
     for rule in sorted(result.per_rule):
@@ -328,11 +328,11 @@ def print_console(result: ScoreResult, *, mode: str) -> None:
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Chấm điểm Golden Set (precision/recall/F1).")
+    parser = argparse.ArgumentParser(description="Chấm điểm Standard Set (precision/recall/F1).")
     parser.add_argument(
-        "--golden",
-        default="data/golden/schema",
-        help="Thư mục golden (chứa cases/ + labels/). Mặc định data/golden/schema.",
+        "--standard",
+        default="data/standard_v1/schema",
+        help="Thư mục standard (chứa cases/ + labels/). Mặc định data/standard_v1/schema.",
     )
     parser.add_argument(
         "--with-agent",
@@ -342,24 +342,24 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--rule", default=None, help="Chỉ chấm 1 rule ID (vd R1-CMP01).")
     parser.add_argument(
         "--report",
-        default="data/golden/report.md",
+        default="data/standard_v1/report.md",
         help="Đường dẫn ghi report markdown.",
     )
     args = parser.parse_args(argv)
 
-    golden_dir = (_REPO_ROOT / args.golden) if not Path(args.golden).is_absolute() else Path(args.golden)
-    golden = load_golden(golden_dir)
+    standard_dir = (_REPO_ROOT / args.standard) if not Path(args.standard).is_absolute() else Path(args.standard)
+    standard = load_standard(standard_dir)
     mode = "agent" if args.with_agent else "rule-only"
 
-    if not golden:
+    if not standard:
         print(
-            f"[skip] Không tìm thấy golden case ở {golden_dir} "
+            f"[skip] Không tìm thấy standard case ở {standard_dir} "
             f"(cases/ + labels/). Agent A có thể chưa sinh dữ liệu.",
             file=sys.stderr,
         )
         return 0
 
-    result = score(golden, with_agent=args.with_agent, rule_filter=args.rule)
+    result = score(standard, with_agent=args.with_agent, rule_filter=args.rule)
     print_console(result, mode=mode)
 
     report_path = (_REPO_ROOT / args.report) if not Path(args.report).is_absolute() else Path(args.report)

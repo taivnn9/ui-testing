@@ -70,7 +70,7 @@ b. **Pair comparison** — so từng cặp trong tập; phân loại theo ngư�
 
 > **Đề xuất Phase 1:** dùng **`imagehash.phash` (hash_size=16)** làm primary. Khi
 > Hamming ≤ `T_dup` → duplicate; `T_dup < Hamming ≤ T_near` → near-dup; còn lại → khác.
-> Ngưỡng T mặc định: T_dup=6, T_near=15 — **tune bằng golden set (GS)**.
+> Ngưỡng T mặc định: T_dup=6, T_near=15 — **tune bằng standard set (GS)**.
 
 ## 5. Pipeline A10 (đề xuất)
 1. **Thu thập crop:** lấy path `element.crop` từ schema; nếu rỗng → cắt bằng Pillow từ `bbox` + ảnh full.
@@ -105,12 +105,12 @@ b. **Pair comparison** — so từng cặp trong tập; phân loại theo ngư�
 - [ ] **Loại hash mặc định: pHash hay dHash?** Đề xuất `phash` vì ổn hơn với nén nhẹ/resize;
   nhưng `dhash` nhanh hơn và phân biệt cấu trúc cạnh tốt. Cân nhắc chạy cả hai rồi AND kết quả.
 - [ ] **Ngưỡng Hamming (T_dup, T_near):** T_dup=6, T_near=15 là khởi điểm → **bắt buộc tune
-  bằng golden set** (ảnh placeholder giống nhau hợp lệ vs duplicate thật). Anh chốt giá trị nào để bắt đầu test?
+  bằng standard set** (ảnh placeholder giống nhau hợp lệ vs duplicate thật). Anh chốt giá trị nào để bắt đầu test?
 - [ ] **Xử lý "trùng chủ ý" (placeholder mặc định, icon tab):** (a) blacklist role/pattern tĩnh;
   (b) hạ confidence tự động theo heuristic vị trí; (c) để nguyên cho VLM phân biệt tất.
   Đề xuất: (b)+(c) — heuristic giảm FP, VLM xác nhận cuối.
 - [ ] **Có thêm SSIM / ORB không?** Đề xuất Phase 1 chỉ dùng `imagehash` cho đơn giản; thêm
-  SSIM/ORB nếu golden set cho thấy FP/FN cao.
+  SSIM/ORB nếu standard set cho thấy FP/FN cao.
 
 ## 9. TDD outline (khi vào code)
 - test: 2 crop ảnh y hệt → Hamming=0, verdict=`duplicate`.

@@ -1,10 +1,10 @@
 """
-Integration test cho Golden Set scoring harness (scripts/score_golden.py).
+Integration test cho Standard Set scoring harness (scripts/score_standard.py).
 
 2 phần:
   1. Synthetic — tự dựng case+label inline (tmp_path) để kiểm logic matching TP/FP/FN
-     KHÔNG phụ thuộc Agent A (golden thật có thể chưa tồn tại lúc test này chạy).
-  2. Baseline — chạy rule-only trên golden THẬT (data/golden/schema). Nếu trống → skip.
+     KHÔNG phụ thuộc Agent A (standard thật có thể chưa tồn tại lúc test này chạy).
+  2. Baseline — chạy rule-only trên standard THẬT (data/standard_v1/schema). Nếu trống → skip.
 
 Không import codex_client. Không gọi agent backend (rule-only, deterministic).
 """
@@ -18,21 +18,21 @@ from pathlib import Path
 import pytest
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-_SCRIPT = _REPO_ROOT / "scripts" / "score_golden.py"
+_SCRIPT = _REPO_ROOT / "scripts" / "score_standard.py"
 
-# Baseline thoáng lúc đầu (xem F4.0 §5.7). TODO: siết lên ~0.9 sau khi golden ổn định.
+# Baseline thoáng lúc đầu (xem F4.0 §5.7). TODO: siết lên ~0.9 sau khi standard ổn định.
 BASELINE_PRECISION = 0.8
 BASELINE_RECALL = 0.8
 
 
 def _load_scorer():
-    """Import scripts/score_golden.py như module (không nằm trong package)."""
-    spec = importlib.util.spec_from_file_location("score_golden", _SCRIPT)
+    """Import scripts/score_standard.py như module (không nằm trong package)."""
+    spec = importlib.util.spec_from_file_location("score_standard", _SCRIPT)
     assert spec and spec.loader
     mod = importlib.util.module_from_spec(spec)
     # Đăng ký vào sys.modules TRƯỚC exec để @dataclass introspect được module
     # (annotation kiểu `str | None` cần cls.__module__ có trong sys.modules).
-    sys.modules["score_golden"] = mod
+    sys.modules["score_standard"] = mod
     spec.loader.exec_module(mod)
     return mod
 
@@ -78,11 +78,11 @@ def _tiny_button_doc_json() -> dict:
     return _clean_doc_json(button_wh=72.0)
 
 
-def _write_pair(golden_dir: Path, case_id: str, case_json: dict, label: dict) -> None:
-    (golden_dir / "cases").mkdir(parents=True, exist_ok=True)
-    (golden_dir / "labels").mkdir(parents=True, exist_ok=True)
-    (golden_dir / "cases" / f"{case_id}.json").write_text(json.dumps(case_json), encoding="utf-8")
-    (golden_dir / "labels" / f"{case_id}.json").write_text(json.dumps(label), encoding="utf-8")
+def _write_pair(standard_dir: Path, case_id: str, case_json: dict, label: dict) -> None:
+    (standard_dir / "cases").mkdir(parents=True, exist_ok=True)
+    (standard_dir / "labels").mkdir(parents=True, exist_ok=True)
+    (standard_dir / "cases" / f"{case_id}.json").write_text(json.dumps(case_json), encoding="utf-8")
+    (standard_dir / "labels" / f"{case_id}.json").write_text(json.dumps(label), encoding="utf-8")
 
 
 # ── Synthetic tests: TP / FP / FN ─────────────────────────────────────────────
@@ -104,9 +104,9 @@ def test_synthetic_true_positive(tmp_path: Path):
             ],
         },
     )
-    golden = scorer.load_golden(gdir)
-    assert len(golden) == 1
-    res = scorer.score(golden)
+    standard = scorer.load_standard(gdir)
+    assert len(standard) == 1
+    res = scorer.score(standard)
     assert res.overall.tp == 1
     assert res.overall.fn == 0
     assert res.overall.fp == 0
@@ -132,7 +132,7 @@ def test_synthetic_false_negative(tmp_path: Path):
             ],
         },
     )
-    res = scorer.score(scorer.load_golden(gdir))
+    res = scorer.score(scorer.load_standard(gdir))
     assert res.overall.fn == 1
     assert res.overall.tp == 0
     assert res.overall.recall() == 0.0
@@ -154,7 +154,7 @@ def test_synthetic_false_positive(tmp_path: Path):
             "expected": [],
         },
     )
-    res = scorer.score(scorer.load_golden(gdir))
+    res = scorer.score(scorer.load_standard(gdir))
     assert res.overall.fp >= 1
     assert res.overall.tp == 0
     assert res.overall.precision() < 1.0
@@ -171,7 +171,7 @@ def test_synthetic_clean_negative_no_fp(tmp_path: Path):
         {"case_id": "neg_clean_v1", "base": "syn", "mutation": "none",
          "kind": "negative", "expected": []},
     )
-    res = scorer.score(scorer.load_golden(gdir))
+    res = scorer.score(scorer.load_standard(gdir))
     assert res.overall.fp == 0
     assert res.overall.tp == 0
     assert res.overall.fn == 0
@@ -196,7 +196,7 @@ def test_synthetic_severity_out_of_range_is_fn(tmp_path: Path):
             ],
         },
     )
-    res = scorer.score(scorer.load_golden(gdir))
+    res = scorer.score(scorer.load_standard(gdir))
     # expected không match (severity lệch) → FN; candidate thừa → FP.
     assert res.overall.tp == 0
     assert res.overall.fn == 1
@@ -228,26 +228,26 @@ def test_rule_filter(tmp_path: Path):
             ],
         },
     )
-    res = scorer.score(scorer.load_golden(gdir), rule_filter="R1-CMP01")
+    res = scorer.score(scorer.load_standard(gdir), rule_filter="R1-CMP01")
     # Chỉ xét R1-CMP01: TP=1, không tính expected R2 (đã lọc khỏi expected).
     assert res.overall.tp == 1
     assert "R2-STY01" not in res.per_rule
 
 
-# ── Baseline test trên golden THẬT (skip nếu trống) ───────────────────────────
-def test_golden_baseline_rule_only():
+# ── Baseline test trên standard THẬT (skip nếu trống) ───────────────────────────
+def test_standard_baseline_rule_only():
     """
-    Rule-only trên golden thật: precision & recall >= BASELINE.
-    TODO: siết baseline lên sau khi golden set ổn định (hiện 0.8/0.8).
+    Rule-only trên standard thật: precision & recall >= BASELINE.
+    TODO: siết baseline lên sau khi standard set ổn định (hiện 0.8/0.8).
     """
-    golden_dir = _REPO_ROOT / "data" / "golden" / "schema"
-    golden = scorer.load_golden(golden_dir)
-    if not golden:
+    standard_dir = _REPO_ROOT / "data" / "standard_v1" / "schema"
+    standard = scorer.load_standard(standard_dir)
+    if not standard:
         pytest.skip(
-            f"Golden set trống ({golden_dir}/cases + labels). "
+            f"Standard set trống ({standard_dir}/cases + labels). "
             "Agent A chưa sinh dữ liệu — bỏ qua baseline."
         )
-    res = scorer.score(golden)
+    res = scorer.score(standard)
     p, r = res.overall.precision(), res.overall.recall()
     assert p >= BASELINE_PRECISION, (
         f"precision={p:.3f} < baseline {BASELINE_PRECISION}. "

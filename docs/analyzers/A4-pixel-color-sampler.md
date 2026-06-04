@@ -132,8 +132,8 @@ d. **Suy diễn dark-mode, opacity, disabled** — từ phân tích màu toàn v
 ## 8. Open decisions (cần anh chốt — lựa chọn lớn)
 
 - [ ] **Thuật toán tách fg/bg:** đề xuất **K-means k=2 + dự phòng Canny** (trình bày ở mục 4.1).
-  Chốt vì ảnh hưởng toàn bộ precision — nên test trên golden set trước khi lock.
-- [ ] **Ngưỡng `bg_is_solid_px`** (variance pixel bg) → **tune bằng golden set (GS)**. Đề xuất
+  Chốt vì ảnh hưởng toàn bộ precision — nên test trên standard set trước khi lock.
+- [ ] **Ngưỡng `bg_is_solid_px`** (variance pixel bg) → **tune bằng standard set (GS)**. Đề xuất
   ban đầu: `std(L) > 15` (trên thang 0–255) → không đặc.
 - [ ] **Ngưỡng contrast candidate:** đề xuất `< 4.5` text thường, `< 3.0` chữ lớn/đồ hoạ — theo
   WCAG 2.1. Chốt cùng **bảng ngưỡng F0.4**.

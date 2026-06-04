@@ -101,7 +101,7 @@ c. **Suy từ pixel** — phương án dự phòng khi bảng không khớp: dò
 | Web (máy tính bàn) | web | bất kỳ | 1–2 | 0 | 0 | none |
 | Web (trình duyệt di động) | web | 375–430 | 2–3 | 0 | 50 | none |
 
-> Bảng trên là **khởi điểm** — cần review và mở rộng trước khi golden-set test.
+> Bảng trên là **khởi điểm** — cần review và mở rộng trước khi standard-set test.
 > Anh cần thêm device nào thường gặp nhất trong dự án → bổ sung (mục 8).
 
 ## 7. Edge cases (BẮT BUỘC xử lý)

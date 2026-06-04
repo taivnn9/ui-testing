@@ -1,4 +1,4 @@
-# Golden Set — Report
+# Standard Set — Report
 
 - Mode: **rule-only**
 - Số case: **38**

@@ -161,4 +161,4 @@ if ("STY-01_contrast", elem.id) not in existing_rules:
 A4 emit: `STY-01_contrast` khi tính inline.
 R2 emit: `R2-STY01` — khác prefix → dedup bằng element_id + rule_prefix.
 
-## Trạng thái: spec ✅ — chờ implement sau golden set.
+## Trạng thái: spec ✅ — chờ implement sau standard set.

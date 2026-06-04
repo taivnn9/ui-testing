@@ -172,7 +172,7 @@ g. **Phát hiện màn trống** — vùng entropy thấp.
 ## 8. Open decisions (cần anh chốt — lựa chọn lớn)
 
 - [ ] **Template set broken-image icon:** cần anh xác nhận cần hỗ trợ platform nào (Chrome/Firefox/Android/iOS native) để chuẩn bị đúng template. Đề xuất: bắt đầu với Chrome + Android + iOS (3 bộ), mở rộng sau.
-- [ ] **Ngưỡng entropy blank:** đề xuất `< 1.5 bit` — **tune bằng golden set (GS)** (ảnh nền trắng hợp lệ vs màn thật blank).
+- [ ] **Ngưỡng entropy blank:** đề xuất `< 1.5 bit` — **tune bằng standard set (GS)** (ảnh nền trắng hợp lệ vs màn thật blank).
 - [ ] **Ngưỡng skeleton:** `≥ 3 rect đều` — có thể quá ít cho màn phức tạp. Tune GS.
 - [ ] **A9 có gate sau A3 không?** Đề xuất: A9 **độc lập** (không cần A3) để detect ngay cả khi A3 fail. Nhưng nếu có A3 → dùng để lọc false positive. Anh muốn A9 required-after-A3 hay song song?
 - [ ] **Temporal context:** Phase 1 chỉ 1 ảnh → A9 báo "pattern present". Phase 2 nhận ≥2 frame → A9 nâng cấp verdict "stuck/kẹt". Confirm thiết kế này.

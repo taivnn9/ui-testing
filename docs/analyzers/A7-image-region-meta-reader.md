@@ -102,7 +102,7 @@ Nhận diện vùng **ảnh-photo** (lớn, nhiều màu) trên màn hình, đo 
 ## 7. Open decisions (cần anh chốt — lựa chọn lớn)
 
 - [ ] **Phase 2 có fetch URL ảnh gốc để lấy intrinsic không?** Đây là cách duy nhất tính được méo tỉ lệ. Trade-off: chậm (network), ảnh auth-gated, phức tạp pipeline. Đề xuất: Phase 1 bỏ qua IMG-09; Phase 2 optional URL-fetch. (Anh quyết.)
-- [ ] **Ngưỡng `blur_score`** (Laplacian variance) cho IMG-03: phụ thuộc loại ảnh (portrait vs icon vs illustration). Tune bằng golden set — đừng hard-code.
+- [ ] **Ngưỡng `blur_score`** (Laplacian variance) cho IMG-03: phụ thuộc loại ảnh (portrait vs icon vs illustration). Tune bằng standard set — đừng hard-code.
 
 ## 8. Edge cases (BẮT BUỘC xử lý)
 
@@ -120,4 +120,4 @@ Nhận diện vùng **ảnh-photo** (lớn, nhiều màu) trên màn hình, đo 
 - test ảnh < 32px → không check blur, không crash.
 - test Rule Engine không bắn IMG-09 khi `intrinsic_unavailable=true`.
 
-## Trạng thái: spec ✅ — chờ chốt mục 7 (URL-fetch intrinsic Phase 2 + ngưỡng blur tune golden set).
+## Trạng thái: spec ✅ — chờ chốt mục 7 (URL-fetch intrinsic Phase 2 + ngưỡng blur tune standard set).

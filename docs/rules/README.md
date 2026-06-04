@@ -69,4 +69,4 @@ Mỗi issue: `{ rule, element?, severity, severity_range, confidence, detail, ev
 
 - [ ] **Có dedup rule vs analyzer issue không?** Đề xuất: dedup bằng `(rule_prefix, element_id)` — nếu A4 đã có `STY-01_contrast` thì R2 không thêm nữa.
 - [ ] **Ngưỡng confidence tối thiểu để fire rule?** Đề xuất: `element.confidence >= 0.35`.
-- [ ] **Grid unit detection:** 8pt chuẩn; nhưng nếu dự án dùng 10px hay 4px thì sao? Đề xuất: **auto-detect** từ distribution của gaps trong màn → tune bằng golden set.
+- [ ] **Grid unit detection:** 8pt chuẩn; nhưng nếu dự án dùng 10px hay 4px thì sao? Đề xuất: **auto-detect** từ distribution của gaps trong màn → tune bằng standard set.

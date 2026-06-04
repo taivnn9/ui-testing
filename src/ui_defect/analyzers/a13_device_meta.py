@@ -15,7 +15,7 @@ from ..schema.models import SafeArea, Screen, Viewport
 
 # ── Bảng device profile tĩnh ─────────────────────────────────────────────────
 # Key: (platform, px_width, px_height) hoặc (platform, pt_width, pt_height, dpr)
-# Các màn hình phổ biến (thêm dần khi golden set mở rộng).
+# Các màn hình phổ biến (thêm dần khi standard set mở rộng).
 
 @dataclass
 class DeviceProfile:

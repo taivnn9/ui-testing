@@ -316,4 +316,4 @@ Severity nền: medium; range: low→high
 10. R1-LAY04/05/08/12  (low-priority alignment)
 ```
 
-## Trạng thái: spec ✅ — chờ implement sau golden set.
+## Trạng thái: spec ✅ — chờ implement sau standard set.

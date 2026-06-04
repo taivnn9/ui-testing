@@ -1,7 +1,7 @@
 # A11 — Face / Text-in-image Detector (trong vùng ảnh: khuôn mặt + text embedded)
 
 > Bóc tách chi tiết. Phase 1, nhóm "đo diện mạo". Tech: **Python + pretrained model nhẹ**.
-> ⚠ **Ưu tiên thấp** — có thể để sau golden set nếu cần tiết kiệm effort Phase 1.
+> ⚠ **Ưu tiên thấp** — có thể để sau standard set nếu cần tiết kiệm effort Phase 1.
 > Liên quan: [`A5-ocr-text-extractor.md`](A5-ocr-text-extractor.md) · [`A7-image-region-meta-reader.md`](A7-image-region-meta-reader.md) · [`A6-icon-graphic-detector.md`](A6-icon-graphic-detector.md) · [`../development-plan.md`](../development-plan.md)
 
 ## 1. Trách nhiệm
@@ -114,8 +114,8 @@ Vì hệ thống chỉ nhận ảnh, crop vùng ảnh đến từ A7 (bbox từ 
 
 - [ ] **Face detector library: MediaPipe vs OpenCV DNN?** Đề xuất **MediaPipe primary** (nhẹ, nhanh, chính xác với face thẳng/nghiêng nhẹ — phổ biến trên UI). OpenCV DNN fallback. Anh quyết nếu có ràng buộc runtime.
 - [ ] **Có thêm object/subject saliency (ngoài mặt) không?** IMG-04 nói "cắt mất phần quan trọng" — mặt là case phổ biến nhất, nhưng cũng có thể là text, sản phẩm, icon chính. Phase 1 chỉ detect mặt là đủ? (Đề xuất: **Phase 1 chỉ face**; subject saliency (SAM/CLIP saliency) để Phase 2.)
-- [ ] **Ngưỡng IoU "text in image":** đề xuất `0.5` (segment nằm > 50% trong vùng ảnh). Tune bằng golden set.
-- [ ] **Ưu tiên triển khai:** A11 ưu tiên thấp — nên **implement sau** khi golden set hình thành để biết IMG-04 có phổ biến trong data thực không. Nếu < 5% issue thì để Phase 2. Anh quyết có build Phase 1 không.
+- [ ] **Ngưỡng IoU "text in image":** đề xuất `0.5` (segment nằm > 50% trong vùng ảnh). Tune bằng standard set.
+- [ ] **Ưu tiên triển khai:** A11 ưu tiên thấp — nên **implement sau** khi standard set hình thành để biết IMG-04 có phổ biến trong data thực không. Nếu < 5% issue thì để Phase 2. Anh quyết có build Phase 1 không.
 
 ## 9. Edge cases (BẮT BUỘC xử lý)
 

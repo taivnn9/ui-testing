@@ -81,7 +81,7 @@ Mỗi tín hiệu cộng điểm confidence; ngưỡng để gán `interactive=t
 > ⚠ **Về ML pretrained:** khác với YOLO cần train lại, một classifier pretrained trên
 > UI screenshots (CLIP zero-shot hoặc model fine-tuned tập chung như Rico/MoTif) KHÔNG đòi
 > gán nhãn per-app → vẫn zero-reference. Nhưng Phase 1 **đề xuất heuristic trước** — đơn giản,
-> dễ debug, dễ tune ngưỡng; thêm ML nếu golden set cho thấy recall heuristic quá thấp.
+> dễ debug, dễ tune ngưỡng; thêm ML nếu standard set cho thấy recall heuristic quá thấp.
 > Trade-off: ML tăng recall nhưng tăng FP và dependency nặng — anh quyết.
 
 ## 5. Pipeline A12 (đề xuất)
@@ -114,7 +114,7 @@ Mỗi tín hiệu cộng điểm confidence; ngưỡng để gán `interactive=t
     Nhược: dependency nặng (CLIP model ~400MB), thêm latency, FP với ảnh/thumbnail.
   - *Model chuyên biệt (ScreenRecognition/UIBert):* precision+recall tốt nhất cho UI.
     Nhược: phụ thuộc model sẵn + có thể drift với app domain khác.
-  → **Đề xuất:** heuristic là core; chỉ thêm CLIP nếu golden set cho thấy recall < 70%.
+  → **Đề xuất:** heuristic là core; chỉ thêm CLIP nếu standard set cho thấy recall < 70%.
 - [ ] **Ngưỡng precision (0.65 để gán `interactive=true`):** cao hay thấp — đây là trade-off
   trực tiếp FP vs FN. FP → báo lỗi touch-target nhầm. FN → bỏ sót lỗi thật. Anh xác nhận
   ưu tiên precision hay recall?
