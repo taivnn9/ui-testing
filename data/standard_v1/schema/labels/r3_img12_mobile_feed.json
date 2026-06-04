@@ -1,0 +1,16 @@
+{
+  "case_id": "r3_img12_mobile_feed",
+  "base": "mobile_feed",
+  "mutation": "mut_r3_img12_duplicate",
+  "kind": "positive",
+  "expected": [
+    {
+      "rule": "R3-IMG12",
+      "element": "e3",
+      "severity_range": {
+        "min": "trivial",
+        "max": "medium"
+      }
+    }
+  ]
+}

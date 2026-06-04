@@ -16,7 +16,9 @@
     },
     "theme": "light",
     "locale": "en-US",
-    "font_scale": 1.0
+    "font_scale": 1.0,
+    "status_bar_h": 0.0,
+    "nav_bar_h": 0.0
   },
   "image": {
     "full": "mobile_feed.png",
@@ -144,7 +146,8 @@
         "scale_mode": "fill",
         "is_broken": false,
         "is_partial_load": false,
-        "intrinsic_unavailable": false
+        "intrinsic_unavailable": false,
+        "possible_placeholder": false
       },
       "interactive": false,
       "interactive_confidence": 0.0,
@@ -327,5 +330,6 @@
     }
   ],
   "relations": [],
-  "candidate_issues": []
+  "candidate_issues": [],
+  "duplicate_pairs": []
 }

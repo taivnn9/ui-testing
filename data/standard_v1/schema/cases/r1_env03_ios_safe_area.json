@@ -1,29 +1,29 @@
 {
   "screen": {
-    "id": "mobile_login",
-    "platform": "android",
-    "route": "/login",
+    "id": "ios_safe_area",
+    "platform": "ios",
+    "route": "/profile",
     "viewport": {
-      "w": 360,
-      "h": 800,
+      "w": 390,
+      "h": 844,
       "dpr": 1.0
     },
     "safe_area": {
-      "top": 0,
+      "top": 48,
       "bottom": 0,
       "left": 0,
       "right": 0
     },
-    "theme": "dark",
+    "theme": "light",
     "locale": "en-US",
     "font_scale": 1.0,
     "status_bar_h": 0.0,
-    "nav_bar_h": 0.0
+    "nav_bar_h": 34.0
   },
   "image": {
-    "full": "mobile_login.png",
-    "w": 360,
-    "h": 800
+    "full": "ios_safe_area.png",
+    "w": 390,
+    "h": 844
   },
   "elements": [
     {
@@ -33,15 +33,15 @@
       "confidence": 0.95,
       "bbox": {
         "x": 0.0,
-        "y": 0.0,
-        "w": 360.0,
-        "h": 800.0
+        "y": 48.0,
+        "w": 390.0,
+        "h": 764.0
       },
       "bbox_norm": {
         "x": 0.0,
-        "y": 0.0,
+        "y": 0.05687203791469194,
         "w": 1.0,
-        "h": 1.0
+        "h": 0.9052132701421801
       },
       "children": [],
       "z": 0,
@@ -65,67 +65,28 @@
     },
     {
       "id": "e2",
-      "role": "icon",
+      "role": "nav",
       "source": "vision",
       "confidence": 0.95,
       "bbox": {
-        "x": 128.0,
-        "y": 80.0,
-        "w": 104.0,
-        "h": 104.0
+        "x": 0.0,
+        "y": 48.0,
+        "w": 390.0,
+        "h": 48.0
       },
       "bbox_norm": {
-        "x": 0.35555555555555557,
-        "y": 0.1,
-        "w": 0.28888888888888886,
-        "h": 0.13
+        "x": 0.0,
+        "y": 0.05687203791469194,
+        "w": 1.0,
+        "h": 0.05687203791469194
       },
       "parent": "e1",
       "children": [],
       "z": 0,
+      "text": "Profile page",
       "text_truncated": false,
       "style": {
-        "font_family": "System",
-        "color": "#111111",
-        "bg_color": "#FFFFFF",
-        "contrast_ratio": 2.0,
-        "opacity": 1.0,
-        "border_radius": 4.0,
-        "sources": {
-          "contrast_ratio": "pixel"
-        }
-      },
-      "interactive": false,
-      "interactive_confidence": 0.0,
-      "interactive_signals": [],
-      "visible": true,
-      "clipped": false,
-      "offscreen": false
-    },
-    {
-      "id": "e3",
-      "role": "text",
-      "source": "vision",
-      "confidence": 0.95,
-      "bbox": {
-        "x": 96.0,
-        "y": 216.0,
-        "w": 168.0,
-        "h": 32.0
-      },
-      "bbox_norm": {
-        "x": 0.26666666666666666,
-        "y": 0.27,
-        "w": 0.4666666666666667,
-        "h": 0.04
-      },
-      "parent": "e1",
-      "children": [],
-      "z": 0,
-      "text": "Welcome back",
-      "text_truncated": false,
-      "style": {
-        "font_size": 22.0,
+        "font_size": 16.0,
         "font_family": "System",
         "color": "#111111",
         "bg_color": "#FFFFFF",
@@ -135,6 +96,59 @@
         "sources": {
           "contrast_ratio": "pixel"
         }
+      },
+      "interactive": true,
+      "interactive_confidence": 0.9,
+      "interactive_signals": [],
+      "touch_target": {
+        "w": 390.0,
+        "h": 48.0
+      },
+      "visible": true,
+      "clipped": false,
+      "offscreen": false
+    },
+    {
+      "id": "e3",
+      "role": "image",
+      "source": "vision",
+      "confidence": 0.95,
+      "bbox": {
+        "x": 152.0,
+        "y": 120.0,
+        "w": 88.0,
+        "h": 88.0
+      },
+      "bbox_norm": {
+        "x": 0.38974358974358975,
+        "y": 0.14218009478672985,
+        "w": 0.22564102564102564,
+        "h": 0.10426540284360189
+      },
+      "parent": "e1",
+      "children": [],
+      "z": 0,
+      "text_truncated": false,
+      "style": {
+        "font_family": "System",
+        "color": "#111111",
+        "bg_color": "#FFFFFF",
+        "opacity": 1.0,
+        "border_radius": 4.0,
+        "sources": {
+          "contrast_ratio": "pixel"
+        }
+      },
+      "image_meta": {
+        "intrinsic_w": 176,
+        "intrinsic_h": 176,
+        "displayed_w": 88,
+        "displayed_h": 88,
+        "scale_mode": "fit",
+        "is_broken": false,
+        "is_partial_load": false,
+        "intrinsic_unavailable": false,
+        "possible_placeholder": false
       },
       "interactive": false,
       "interactive_confidence": 0.0,
@@ -145,28 +159,28 @@
     },
     {
       "id": "e4",
-      "role": "input",
+      "role": "text",
       "source": "vision",
       "confidence": 0.95,
       "bbox": {
-        "x": 32.0,
-        "y": 304.0,
-        "w": 296.0,
-        "h": 56.0
+        "x": 96.0,
+        "y": 224.0,
+        "w": 200.0,
+        "h": 32.0
       },
       "bbox_norm": {
-        "x": 0.08888888888888889,
-        "y": 0.38,
-        "w": 0.8222222222222222,
-        "h": 0.07
+        "x": 0.24615384615384617,
+        "y": 0.26540284360189575,
+        "w": 0.5128205128205128,
+        "h": 0.037914691943127965
       },
       "parent": "e1",
       "children": [],
       "z": 0,
-      "text": "Email address",
+      "text": "Jordan Avery",
       "text_truncated": false,
       "style": {
-        "font_size": 16.0,
+        "font_size": 20.0,
         "font_family": "System",
         "color": "#111111",
         "bg_color": "#FFFFFF",
@@ -177,83 +191,34 @@
           "contrast_ratio": "pixel"
         }
       },
-      "interactive": true,
-      "interactive_confidence": 0.9,
+      "interactive": false,
+      "interactive_confidence": 0.0,
       "interactive_signals": [],
-      "touch_target": {
-        "w": 296.0,
-        "h": 56.0
-      },
       "visible": true,
       "clipped": false,
       "offscreen": false
     },
     {
       "id": "e5",
-      "role": "input",
-      "source": "vision",
-      "confidence": 0.95,
-      "bbox": {
-        "x": 32.0,
-        "y": 376.0,
-        "w": 296.0,
-        "h": 56.0
-      },
-      "bbox_norm": {
-        "x": 0.08888888888888889,
-        "y": 0.47,
-        "w": 0.8222222222222222,
-        "h": 0.07
-      },
-      "parent": "e1",
-      "children": [],
-      "z": 0,
-      "text": "Secret code",
-      "text_truncated": false,
-      "style": {
-        "font_size": 16.0,
-        "font_family": "System",
-        "color": "#111111",
-        "bg_color": "#FFFFFF",
-        "contrast_ratio": 7.0,
-        "opacity": 1.0,
-        "border_radius": 4.0,
-        "sources": {
-          "contrast_ratio": "pixel"
-        }
-      },
-      "interactive": true,
-      "interactive_confidence": 0.9,
-      "interactive_signals": [],
-      "touch_target": {
-        "w": 296.0,
-        "h": 56.0
-      },
-      "visible": true,
-      "clipped": false,
-      "offscreen": false
-    },
-    {
-      "id": "e6",
       "role": "button",
       "source": "vision",
       "confidence": 0.95,
       "bbox": {
-        "x": 32.0,
-        "y": 456.0,
+        "x": 48.0,
+        "y": 288.0,
         "w": 296.0,
         "h": 56.0
       },
       "bbox_norm": {
-        "x": 0.08888888888888889,
-        "y": 0.57,
-        "w": 0.8222222222222222,
-        "h": 0.07
+        "x": 0.12307692307692308,
+        "y": 0.3412322274881517,
+        "w": 0.7589743589743589,
+        "h": 0.06635071090047394
       },
       "parent": "e1",
       "children": [],
       "z": 0,
-      "text": "Sign in now",
+      "text": "Edit profile",
       "text_truncated": false,
       "style": {
         "font_size": 16.0,
@@ -279,31 +244,30 @@
       "offscreen": false
     },
     {
-      "id": "e7",
-      "role": "text",
+      "id": "e6",
+      "role": "button",
       "source": "vision",
       "confidence": 0.95,
       "bbox": {
-        "x": 104.0,
-        "y": 536.0,
-        "w": 152.0,
-        "h": 24.0
+        "x": 48.0,
+        "y": 784.0,
+        "w": 296.0,
+        "h": 56.0
       },
       "bbox_norm": {
-        "x": 0.28888888888888886,
-        "y": 0.67,
-        "w": 0.4222222222222222,
-        "h": 0.03
+        "x": 0.12307692307692308,
+        "y": 0.9289099526066351,
+        "w": 0.7589743589743589,
+        "h": 0.06635071090047394
       },
-      "parent": "e1",
       "children": [],
       "z": 0,
-      "text": "Reset access?",
+      "text": "Sign out now",
       "text_truncated": false,
       "style": {
-        "font_size": 14.0,
+        "font_size": 16.0,
         "font_family": "System",
-        "color": "#111111",
+        "color": "#1565C0",
         "bg_color": "#FFFFFF",
         "contrast_ratio": 7.0,
         "opacity": 1.0,
@@ -312,9 +276,13 @@
           "contrast_ratio": "pixel"
         }
       },
-      "interactive": false,
-      "interactive_confidence": 0.0,
+      "interactive": true,
+      "interactive_confidence": 0.9,
       "interactive_signals": [],
+      "touch_target": {
+        "w": 296.0,
+        "h": 56.0
+      },
       "visible": true,
       "clipped": false,
       "offscreen": false

@@ -1,10 +1,12 @@
 """
 Chọn backend cho tầng reasoning qua env AGENT_BACKEND.
 
-  codex  (mặc định) → Codex CLI headless (codex_client.run_codex)
+  codex  (mặc định) → Codex CLI headless (codex_client.run_codex)        — máy dev
+  cline             → Cline headless (cline_client.run_cline)             — máy công ty
   none              → không gọi agent (tương đương rule-only)
 
-Cline (máy công ty) sẽ cắm thêm ở đây khi có (cùng giao diện: prompt + schema → dict).
+Mọi backend cùng giao diện: (prompt, schema) -> dict. Cấu hình chi tiết qua env riêng
+(CODEX_* / CLINE_*). Xem codex_client.py, cline_client.py, docs/F1.1.
 """
 from __future__ import annotations
 
@@ -22,6 +24,9 @@ def run_backend(prompt: str, schema: dict[str, Any] | None = None) -> dict[str, 
     if backend == "codex":
         from .codex_client import run_codex
         return run_codex(prompt, schema)
+    if backend == "cline":
+        from .cline_client import run_cline
+        return run_cline(prompt, schema)
     if backend in ("none", "off", ""):
         return {"findings": [], "summary": "agent_backend=none"}
-    raise RuntimeError(f"AGENT_BACKEND không hỗ trợ: {backend!r} (dùng: codex | none)")
+    raise RuntimeError(f"AGENT_BACKEND không hỗ trợ: {backend!r} (dùng: codex | cline | none)")

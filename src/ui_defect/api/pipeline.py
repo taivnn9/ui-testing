@@ -21,7 +21,6 @@ from ..analyzers.a8_glyph_inspector import glyph_issues_to_candidates, inspect_b
 from ..analyzers.a9_pixel_pattern import detect_patterns, patterns_to_candidates
 from ..analyzers.a10_perceptual_hash import (
     compute_hashes,
-    duplicates_to_candidates,
     find_duplicates,
 )
 from ..analyzers.a12_interactivity import classify_interactivity
@@ -81,6 +80,8 @@ def run_pipeline(
         theme=theme,
         locale=locale,
         font_scale=font_scale,
+        status_bar_h=float(meta.status_bar_h),   # R1-ENV02
+        nav_bar_h=float(meta.nav_bar_h),          # R1-ENV03
     )
     analyzers_ran.append("A13")
 
@@ -144,12 +145,16 @@ def run_pipeline(
     # ── A10 — Perceptual Hash ─────────────────────────────────────────────────
     hash_results = compute_hashes(img, elements)
     dup_pairs = find_duplicates(hash_results)
-    dup_issues = duplicates_to_candidates(dup_pairs)
+    # R3-IMG12: A10 chỉ sinh DỮ LIỆU (duplicate_pairs); rule check_hash_duplicates phát issue
+    # (gom logic phán đoán về rule engine — nguyên tắc #3, tránh emit rule lạ IMG-dup-*)
+    duplicate_pairs_data = [
+        {"a": p.id_a, "b": p.id_b, "hamming": p.hamming_distance} for p in dup_pairs
+    ]
     analyzers_ran.append("A10")
 
     # ── A0 — Normalize ────────────────────────────────────────────────────────
     all_issues: list[CandidateIssue] = (
-        color_issues + img_issues + glyph_candidates + pattern_issues + dup_issues
+        color_issues + img_issues + glyph_candidates + pattern_issues
     )
     doc = normalize(
         screen=screen,
@@ -159,6 +164,7 @@ def run_pipeline(
         elements=elements,
         candidate_issues=all_issues,
     )
+    doc.duplicate_pairs = duplicate_pairs_data   # R3-IMG12 đọc trong rule engine
     analyzers_ran.append("A0")
 
     # ── Rule Engine R1–R4 ────────────────────────────────────────────────────

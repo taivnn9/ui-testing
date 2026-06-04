@@ -45,6 +45,8 @@ class Screen(BaseModel):
     locale: str = "en-US"
     font_scale: float = 1.0
     ts: Optional[str] = None
+    status_bar_h: float = 0.0   # device px — từ A13 (R1-ENV02 đọc)
+    nav_bar_h: float = 0.0      # device px — từ A13 (R1-ENV03 đọc)
 
 
 class Image(BaseModel):
@@ -87,6 +89,7 @@ class ImageMeta(BaseModel):
     is_broken: bool = False
     is_partial_load: bool = False
     intrinsic_unavailable: bool = False
+    possible_placeholder: bool = False   # từ A6 — icon/ảnh placeholder chưa load (R3-IMG08 đọc)
 
 
 class TouchTarget(BaseModel):
@@ -152,3 +155,4 @@ class CanonicalDoc(BaseModel):
     elements: list[Element] = Field(default_factory=list)
     relations: list[Relation] = Field(default_factory=list)
     candidate_issues: list[CandidateIssue] = Field(default_factory=list)
+    duplicate_pairs: list[dict] = Field(default_factory=list)  # từ A10 — [{a,b,hamming}] (R3-IMG12 đọc)

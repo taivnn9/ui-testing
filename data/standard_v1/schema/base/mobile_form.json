@@ -16,7 +16,9 @@
     },
     "theme": "light",
     "locale": "en-US",
-    "font_scale": 1.0
+    "font_scale": 1.0,
+    "status_bar_h": 0.0,
+    "nav_bar_h": 0.0
   },
   "image": {
     "full": "mobile_form.png",
@@ -369,5 +371,6 @@
     }
   ],
   "relations": [],
-  "candidate_issues": []
+  "candidate_issues": [],
+  "duplicate_pairs": []
 }

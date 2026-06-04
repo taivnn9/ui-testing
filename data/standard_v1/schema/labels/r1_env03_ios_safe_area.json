@@ -1,0 +1,16 @@
+{
+  "case_id": "r1_env03_ios_safe_area",
+  "base": "ios_safe_area",
+  "mutation": "mut_r1_env03_home_indicator",
+  "kind": "positive",
+  "expected": [
+    {
+      "rule": "R1-ENV03",
+      "element": "e6",
+      "severity_range": {
+        "min": "low",
+        "max": "high"
+      }
+    }
+  ]
+}

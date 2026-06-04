@@ -140,14 +140,21 @@ candidate) · 1 lần `codex exec`/ảnh (rẻ). Backend chọn qua env `AGENT_B
 - [x] API service (`src/ui_defect/api/`) — FastAPI, POST /analyze, zero-config (chỉ cần ảnh).
 - [x] Web UI (`src/ui_defect/web/`) — upload, phân tích, list lỗi + overlay Set-of-Marks
       (bbox màu theo severity, liên kết 2 chiều, filter). FastAPI serve `GET /` + `/static`. Spec: `docs/F2.0-web-ui.md`.
-- [x] Cài deps + pytest unit: **111/111 pass** (2026-06-03, +4 test codex reasoning).
 - [x] Pivot VLM→Codex CLI verify end-to-end: ảnh→CV→rule→`codex exec`→findings (mode=codex, lọc FP).
 - [x] **Bộ chuẩn `standard_v1` Tier-1 + đo precision/recall** (kiểm thử đột biến schema-level, backend-agnostic) —
-      `scripts/gen_standard.py` (38 case: 28 positive/rule + 10 negative) + `scripts/score_standard.py`
+      `scripts/gen_standard.py` (42 case: 32 positive 1/rule + 10 negative) + `scripts/score_standard.py`
       (precision/recall/F1 per-rule, cờ `--with-agent` qua `AGENT_BACKEND` để chạy Cline/Codex) +
-      `tests/integration/test_standard.py`. Rule-only **P=R=F1=1.000**, phủ **28/32 rule**. Spec: `docs/F4.0-standard-set.md`.
-- [ ] **Standard Tier-2** (ảnh thật Playwright) — phủ nốt 4 rule cần analyzer extra field
-      (R1-ENV02/03 status/nav-bar, R3-IMG08 placeholder, R3-IMG12 dup-pairs). Cần OCR backend.
-- [ ] Integration test với ảnh thật (cần OCR backend; reasoning cần `codex login`).
+      `tests/integration/test_standard.py`. Rule-only **P=R=F1=1.000**, phủ **32/32 rule**. Spec: `docs/F4.0-standard-set.md`.
+- [x] **Vá gap tích hợp 4 rule chết** (2026-06-04): analyzer A13/A6/A10 sinh field nhưng pipeline không nối
+      vào doc → R1-ENV02/03, R3-IMG08, R3-IMG12 không bao giờ fire. Đã thêm field vào schema
+      (`Screen.status_bar_h`/`nav_bar_h`, `ImageMeta.possible_placeholder`, `CanonicalDoc.duplicate_pairs`)
+      + nối pipeline (A13→screen, A6 conversion, A10→`doc.duplicate_pairs`; gom dedup ảnh về rule R3-IMG12,
+      bỏ rule lạ `IMG-dup-*`). Có 6 unit test (`test_rules_wired.py`).
+- [x] **Backend Cline** (`agents/cline_client.py` + `backends.py` `AGENT_BACKEND=cline`) — cùng giao diện
+      `(prompt,schema)→dict`, cấu hình lệnh qua env `CLINE_*`, schema nhúng prompt + trích JSON. Có 9 unit
+      test mock subprocess. ⚠️ **Chưa chạy thực tế** (máy dev không có Cline binary) — cần verify trên máy công ty.
+- [x] pytest: **142 pass** (2026-06-04, +6 wiring +9 cline).
+- [ ] **Standard Tier-2** (ảnh thật Playwright) — test full pipeline ảnh→CV→OCR→rule end-to-end. Cần OCR backend.
+      (4 rule trước thiếu nay đã phủ Tier-1 sau khi vá wiring.)
+- [ ] Integration test với ảnh thật (cần OCR backend; reasoning cần `codex login` / Cline máy công ty).
 - [ ] Tinh chỉnh skill files `agents/skills/*.md` theo kết quả thực tế.
-- [ ] Cắm backend Cline (máy công ty) vào `agents/backends.py`.

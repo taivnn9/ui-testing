@@ -631,12 +631,56 @@ def mut_r4_typ05_font(doc: CanonicalDoc) -> tuple[CanonicalDoc, list[ExpLabel]]:
     return doc, [_lbl("R4-TYP05", "e7", "low", "high")]
 
 
+# --- Rule cần field từ analyzer (đã nối vào schema 2026-06-04: A13/A6/A10 → doc) ---
+
+def mut_r1_env02_status_bar(doc: CanonicalDoc) -> tuple[CanonicalDoc, list[ExpLabel]]:
+    """R1-ENV02: phần tử chồng status bar (A13 đo status_bar_h → Screen.status_bar_h).
+    Chỉ root container e1 (y=0) lọt dưới status_bar_h+4; element khác bắt đầu ≥80px → không co-fire."""
+    doc.screen.status_bar_h = 72.0  # device px — pipeline thật lấy từ A13.resolve_metadata
+    return doc, [_lbl("R1-ENV02", "e1", "low", "high")]
+
+
+def mut_r1_env03_home_indicator(doc: CanonicalDoc) -> tuple[CanonicalDoc, list[ExpLabel]]:
+    """R1-ENV03: phần tử chồng home indicator (iOS, A13 đo nav_bar_h). Tách e6 khỏi container
+    + safe_area.bottom=0 để cô lập khỏi R1-LAY03 (overflow) và R1-ENV01 (safe-area)."""
+    doc.screen.nav_bar_h = 34.0  # device px
+    doc.screen.safe_area = SafeArea(top=48, bottom=0)
+    e = _find(doc, "e6")  # button ios_safe_area
+    e.parent = None
+    e.bbox = BBox(x=48, y=784, w=296, h=56)  # bottom=840 > (vp_h 844 - nav_bar_h 34)+4 = 814
+    _renorm(doc, e)
+    return doc, [_lbl("R1-ENV03", "e6", "low", "high")]
+
+
+def mut_r3_img08_placeholder(doc: CanonicalDoc) -> tuple[CanonicalDoc, list[ExpLabel]]:
+    """R3-IMG08: ảnh/icon placeholder chưa load (A6 gắn image_meta.possible_placeholder)."""
+    e = _find(doc, "e2")  # image mobile_login
+    e.image_meta.possible_placeholder = True  # type: ignore[union-attr]
+    return doc, [_lbl("R3-IMG08", "e2", "low", "high")]
+
+
+def mut_r3_img12_duplicate(doc: CanonicalDoc) -> tuple[CanonicalDoc, list[ExpLabel]]:
+    """R3-IMG12: 2 ảnh trùng lặp (A10 ghi doc.duplicate_pairs). Thêm ảnh e8 sao y bản chính e3,
+    để top-level (parent=None) → khác parent e3 ⇒ confidence cao, không bị giảm như list-row."""
+    vp = doc.screen.viewport
+    e8 = make_element(vp.w, vp.h, id="e8", role="image", x=16, y=320, w=80, h=80,
+                      contrast_ratio=None, font_size=None,
+                      image_meta=ImageMeta(intrinsic_w=160, intrinsic_h=160,
+                                           displayed_w=80, displayed_h=80,
+                                           scale_mode="fill"))
+    doc.elements.append(e8)
+    doc.duplicate_pairs = [{"a": "e3", "b": "e8", "hamming": 2}]
+    return doc, [_lbl("R3-IMG12", "e3", "trivial", "medium")]
+
+
 # Mapping rule → (base, mutator). Mỗi mutator dùng base phù hợp.
 POSITIVE_CASES: list[tuple[str, str, Mutator]] = [
     # rule_id (cho tên case)        base             mutator
     ("R1-CMP01", "mobile_login", mut_r1_cmp01_touch_target),
     ("R1-CMP16", "mobile_feed",  mut_r1_cmp16_tap_gap),
     ("R1-ENV01", "ios_safe_area", mut_r1_env01_safe_area),
+    ("R1-ENV02", "mobile_login", mut_r1_env02_status_bar),
+    ("R1-ENV03", "ios_safe_area", mut_r1_env03_home_indicator),
     ("R1-LAY01", "mobile_feed",  mut_r1_lay01_overlap),
     ("R1-LAY02", "mobile_login", mut_r1_lay02_offscreen),
     ("R1-LAY03", "mobile_feed",  mut_r1_lay03_overflow),
@@ -652,6 +696,8 @@ POSITIVE_CASES: list[tuple[str, str, Mutator]] = [
     ("R3-IMG03", "mobile_login", mut_r3_img03_blur),
     ("R3-IMG07", "mobile_feed",  mut_r3_img07_icon_offcenter),
     ("R3-IMG09", "mobile_login", mut_r3_img09_scale_mode),
+    ("R3-IMG08", "mobile_login", mut_r3_img08_placeholder),
+    ("R3-IMG12", "mobile_feed",  mut_r3_img12_duplicate),
     ("R4-CNT01", "mobile_login", mut_r4_cnt01_placeholder),
     ("R4-CNT02", "mobile_login", mut_r4_cnt02_i18n),
     ("R4-CNT04", "mobile_login", mut_r4_cnt04_lorem),
@@ -665,17 +711,10 @@ POSITIVE_CASES: list[tuple[str, str, Mutator]] = [
 ]
 
 
-# Rule KHÔNG phủ được ở Tier-1 schema: trigger của chúng đọc thuộc tính EXTRA mà
-# CanonicalDoc/Screen/ImageMeta (Pydantic, extra=forbid) KHÔNG biểu diễn được —
-# các analyzer A6/A10/A13 gắn chúng trên dataclass riêng, rule đọc bằng getattr(..., default).
-# Từ một CanonicalDoc thuần, getattr luôn trả default → rule không bao giờ fire.
-# Liệt kê để báo cáo trung thực (KHÔNG bịa label). Phủ ở Tier-2 (ảnh thật + pipeline đầy đủ).
-UNSUPPORTED_RULES: list[tuple[str, str]] = [
-    ("R1-ENV02", "đọc screen.status_bar_h (A13, extra field) — Screen schema không có"),
-    ("R1-ENV03", "đọc screen.nav_bar_h (A13, extra field) — Screen schema không có"),
-    ("R3-IMG08", "đọc image_meta.possible_placeholder (A6, extra field) — ImageMeta không có"),
-    ("R3-IMG12", "đọc doc.duplicate_pairs (A10, extra field) — CanonicalDoc không có"),
-]
+# Rule chưa phủ được ở Tier-1 schema. (2026-06-04: đã nối field analyzer A13/A6/A10 vào
+# Screen.status_bar_h/nav_bar_h, ImageMeta.possible_placeholder, CanonicalDoc.duplicate_pairs
+# → R1-ENV02/03, R3-IMG08, R3-IMG12 nay biểu diễn & phủ được ở Tier-1. Danh sách rỗng = 32/32.)
+UNSUPPORTED_RULES: list[tuple[str, str]] = []
 
 
 # Near-miss negatives: bản sạch ngay trên ngưỡng, để bắt FP biên.

@@ -1,8 +1,15 @@
-"""Test 3 rule mới wire theo F0.4: R3-IMG02 (méo tỉ lệ), R3-IMG09 (scale-mode), R1-LAY04 (lệch grid)."""
+"""Test rule mới wire theo F0.4: R3-IMG02 (méo tỉ lệ), R3-IMG09 (scale-mode), R1-LAY04 (lệch grid),
+và (2026-06-04) R1-ENV02/03, R3-IMG08, R3-IMG12 — sau khi nối field analyzer A13/A6/A10 vào schema."""
 from __future__ import annotations
 
-from ui_defect.rules.r1_geometry import check_grid_alignment
-from ui_defect.rules.r3_image import check_distortion, check_scale_mode
+from ui_defect.analyzers.a6_icon_detector import IconRegion, icon_regions_to_elements
+from ui_defect.rules.r1_geometry import check_grid_alignment, check_safe_area
+from ui_defect.rules.r3_image import (
+    check_distortion,
+    check_hash_duplicates,
+    check_placeholder_icon,
+    check_scale_mode,
+)
 from ui_defect.schema.models import (
     BBox,
     CanonicalDoc,
@@ -87,3 +94,60 @@ def test_grid_skips_container_role():
     el = Element(id="e1", role="container", source="vision", confidence=1.0,
                  bbox=BBox(x=20, y=20, w=100, h=100), bbox_norm=BBox(x=0, y=0, w=0, h=0))
     assert check_grid_alignment(_doc([el], dpr=2.0)) == []
+
+
+# ── R1-ENV02 status bar overlap (Screen.status_bar_h từ A13) ──────────────────
+def _text_elem(eid, x, y, w, h, role="text"):
+    return Element(id=eid, role=role, source="vision", confidence=1.0,
+                   bbox=BBox(x=x, y=y, w=w, h=h), bbox_norm=BBox(x=0, y=0, w=0, h=0))
+
+
+def test_env02_fires_when_element_under_status_bar():
+    el = _text_elem("e1", 0, 0, 200, 40)  # y=0 < status_bar_h+4
+    d = _doc([el])
+    d.screen.status_bar_h = 72.0
+    out = [i for i in check_safe_area(d) if i.rule == "R1-ENV02"]
+    assert len(out) == 1 and out[0].element == "e1"
+
+
+def test_env02_silent_when_status_bar_h_zero():
+    el = _text_elem("e1", 0, 0, 200, 40)
+    assert [i for i in check_safe_area(_doc([el])) if i.rule == "R1-ENV02"] == []
+
+
+# ── R1-ENV03 home indicator overlap (iOS, Screen.nav_bar_h từ A13) ────────────
+def test_env03_fires_on_ios_home_indicator():
+    screen = Screen(id="scr", platform="ios",
+                    viewport=Viewport(w=390, h=844, dpr=1.0),
+                    safe_area=SafeArea(top=0, bottom=0), nav_bar_h=34.0)
+    el = _text_elem("e1", 48, 784, 296, 56, role="button")  # bottom=840 > (844-34)+4
+    d = CanonicalDoc(screen=screen, image=Image(full="x.png", w=390, h=844), elements=[el])
+    out = [i for i in check_safe_area(d) if i.rule == "R1-ENV03"]
+    assert len(out) == 1 and out[0].element == "e1"
+
+
+# ── R3-IMG08 placeholder (ImageMeta.possible_placeholder từ A6) ───────────────
+def test_img08_fires_when_possible_placeholder():
+    el = _img_elem("e1", 10, 10, 80, 80)
+    el.image_meta.possible_placeholder = True
+    out = check_placeholder_icon(_doc([el]))
+    assert len(out) == 1 and out[0].rule == "R3-IMG08" and out[0].element == "e1"
+
+
+def test_a6_conversion_propagates_placeholder_to_image_meta():
+    region = IconRegion(id="i1", bbox=BBox(x=0, y=0, w=40, h=40),
+                        bbox_norm=BBox(x=0, y=0, w=0, h=0), subtype="icon",
+                        confidence=0.8, color_count_approx=2, edge_density=0.1,
+                        template_match=None, possible_placeholder=True)
+    [el] = icon_regions_to_elements([region], 800, 1600)
+    assert el.image_meta is not None and el.image_meta.possible_placeholder is True
+
+
+# ── R3-IMG12 duplicate images (CanonicalDoc.duplicate_pairs từ A10) ───────────
+def test_img12_fires_from_duplicate_pairs():
+    a = _img_elem("e1", 16, 72, 80, 80)
+    b = _img_elem("e2", 16, 320, 80, 80)
+    d = _doc([a, b])
+    d.duplicate_pairs = [{"a": "e1", "b": "e2", "hamming": 2}]
+    out = check_hash_duplicates(d)
+    assert len(out) == 1 and out[0].rule == "R3-IMG12" and out[0].element == "e1"

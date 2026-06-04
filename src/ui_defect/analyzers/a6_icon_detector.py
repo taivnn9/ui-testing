@@ -12,7 +12,7 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from ..schema.models import BBox, Element, RoleType, Viewport
+from ..schema.models import BBox, Element, ImageMeta, RoleType, Viewport
 from ..utils.geometry import normalize_bbox
 
 # ── Cấu hình ─────────────────────────────────────────────────────────────────
@@ -275,5 +275,7 @@ def icon_regions_to_elements(regions: list[IconRegion], img_w: int, img_h: int) 
             bbox_norm=normalize_bbox(r.bbox, img_w, img_h),
             parent=r.parent,
             visible=True,
+            # R3-IMG08: chuyển cờ placeholder của A6 xuống image_meta để rule đọc
+            image_meta=ImageMeta(possible_placeholder=True) if r.possible_placeholder else None,
         ))
     return elements

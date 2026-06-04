@@ -14,10 +14,10 @@
       "left": 0,
       "right": 0
     },
-    "theme": "dark",
+    "theme": "light",
     "locale": "en-US",
     "font_scale": 1.0,
-    "status_bar_h": 0.0,
+    "status_bar_h": 72.0,
     "nav_bar_h": 0.0
   },
   "image": {
@@ -65,7 +65,7 @@
     },
     {
       "id": "e2",
-      "role": "icon",
+      "role": "image",
       "source": "vision",
       "confidence": 0.95,
       "bbox": {
@@ -88,12 +88,22 @@
         "font_family": "System",
         "color": "#111111",
         "bg_color": "#FFFFFF",
-        "contrast_ratio": 2.0,
         "opacity": 1.0,
         "border_radius": 4.0,
         "sources": {
           "contrast_ratio": "pixel"
         }
+      },
+      "image_meta": {
+        "intrinsic_w": 200,
+        "intrinsic_h": 200,
+        "displayed_w": 104,
+        "displayed_h": 104,
+        "scale_mode": "fit",
+        "is_broken": false,
+        "is_partial_load": false,
+        "intrinsic_unavailable": false,
+        "possible_placeholder": false
       },
       "interactive": false,
       "interactive_confidence": 0.0,
