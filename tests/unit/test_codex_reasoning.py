@@ -51,7 +51,7 @@ def test_build_prompt_has_skills_and_data():
 
 
 def test_run_review_parses_stub_findings(monkeypatch):
-    def fake_backend(prompt, schema=None):
+    def fake_backend(prompt, schema=None, *, backend=None):
         return {"summary": "ok", "findings": [
             {"issue_type": "R1.touch_target_min", "element_id": "e5",
              "verdict": "confirmed", "severity": "high", "confidence": 0.9,
@@ -75,7 +75,7 @@ def test_run_review_parses_stub_findings(monkeypatch):
 
 
 def test_run_review_backend_error_is_graceful(monkeypatch):
-    def boom(prompt, schema=None):
+    def boom(prompt, schema=None, *, backend=None):
         raise RuntimeError("Codex exec exit=1: boom")
     monkeypatch.setattr(runner, "run_backend", boom)
     monkeypatch.setattr(runner, "active_backend", lambda: "codex")

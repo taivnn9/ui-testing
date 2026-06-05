@@ -6,15 +6,17 @@ KHÔNG gửi ảnh — chỉ prompt text (JSON map + candidates + skill).
 
 KHÁC codex: KHÔNG giả định Cline hỗ trợ `--output-schema`. Thay vào đó schema được
 NHÚNG vào prompt (yêu cầu trả JSON đúng shape), rồi trích object JSON cuối trong stdout.
-Lệnh chạy CẤU HÌNH HOÀN TOÀN qua env để khớp cách gọi Cline headless ở máy công ty.
+
+Lệnh mặc định: `cline -y "<prompt>"` (CLINE_ARGS="-y", CLINE_PROMPT_MODE="arg").
+Tuỳ chỉnh qua env để khớp cách gọi Cline headless ở từng máy.
 
 ⚠️  Chưa chạy thực tế (máy dev không có Cline binary). Khi triển khai: đặt env cho khớp
     CLI Cline thật rồi `AGENT_BACKEND=cline`. Logic adapter đã có unit test (mock subprocess).
 
 Cấu hình qua env:
   CLINE_BIN         = binary/đường dẫn (mặc định "cline")
-  CLINE_ARGS        = args phụ, cách nhau bởi khoảng trắng (vd "task --headless --json")
-  CLINE_PROMPT_MODE = "stdin" (mặc định) | "arg"  — đưa prompt qua stdin hay tham số cuối
+  CLINE_ARGS        = args phụ, cách nhau bởi khoảng trắng (mặc định "-y")
+  CLINE_PROMPT_MODE = "arg" (mặc định) | "stdin"  — đưa prompt qua tham số cuối hay stdin
   CLINE_TIMEOUT_SEC = timeout giây (mặc định 300)
   CLINE_CD          = thư mục làm việc (mặc định = repo root)
 """
@@ -100,8 +102,8 @@ def run_cline(
     hoặc output không chứa JSON hợp lệ.
     """
     cline_bin = _env("CLINE_BIN", "cline")
-    extra_args = shlex.split(_env("CLINE_ARGS", ""))
-    prompt_mode = _env("CLINE_PROMPT_MODE", "stdin")
+    extra_args = shlex.split(_env("CLINE_ARGS", "-y"))
+    prompt_mode = _env("CLINE_PROMPT_MODE", "arg")
     _timeout = timeout or int(_env("CLINE_TIMEOUT_SEC", "300"))
     _cwd = cwd or _env("CLINE_CD", str(_REPO_ROOT))
 

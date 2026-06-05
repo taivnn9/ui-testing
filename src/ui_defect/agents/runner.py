@@ -143,18 +143,28 @@ def _relations_to_json(relations, max_items: int = 60) -> str:
     return json.dumps(items, ensure_ascii=False)
 
 
-def load_skills() -> str:
-    """Đọc & nối tất cả file skill (*.md) theo thứ tự tên."""
+def load_skills(skip_system: bool = False) -> str:
+    """Đọc & nối tất cả file skill (*.md) theo thứ tự tên.
+
+    skip_system=True: bỏ qua 00-system.md (đã có trong .clinerules/ với backend Cline).
+    """
     if not _SKILLS_DIR.is_dir():
         return ""
     parts = []
     for f in sorted(_SKILLS_DIR.glob("*.md")):
+        if skip_system and f.name == "00-system.md":
+            continue
         parts.append(f.read_text(encoding="utf-8").strip())
     return "\n\n---\n\n".join(parts)
 
 
-def build_review_prompt(doc: CanonicalDoc) -> str:
-    """Build prompt text-only: skill (tiêu chí) + map (elements/relations) + candidate issues."""
+def build_review_prompt(doc: CanonicalDoc, *, backend: str | None = None) -> str:
+    """Build prompt text-only: skill (tiêu chí) + map (elements/relations) + candidate issues.
+
+    Khi backend=cline, bỏ 00-system.md (đã tự load từ .clinerules/).
+    """
+    _backend = (backend or active_backend()).strip().lower()
+    skip_system = _backend == "cline"
     s = doc.screen
     raw_issues = [
         {"rule": i.rule, "element": i.element, "severity": i.severity,
@@ -168,7 +178,7 @@ def build_review_prompt(doc: CanonicalDoc) -> str:
         "font_scale": s.font_scale,
     }
     return (
-        f"{load_skills()}\n\n"
+        f"{load_skills(skip_system=skip_system)}\n\n"
         "===== DỮ LIỆU MÀN HÌNH (text-only, trích từ ảnh bằng CV/OCR) =====\n\n"
         f"screen = {json.dumps(context, ensure_ascii=False)}\n\n"
         f"elements = {_elements_to_json(doc.elements)}\n\n"
@@ -217,19 +227,26 @@ def _parse_findings(raw: dict, agent_id: str) -> list[AgentFinding]:
     return findings
 
 
-def run_review(doc: CanonicalDoc, *, model: str | None = None) -> list[AgentRunResult]:
+def run_review(
+    doc: CanonicalDoc,
+    *,
+    model: str | None = None,
+    backend: str | None = None,
+) -> list[AgentRunResult]:
     """
     Chạy 1 lượt reasoning qua coding-agent CLI (backend). Trả list[AgentRunResult] (1 phần tử)
     để tương thích critic/summary. Lỗi backend → result.error (degrade graceful, không raise).
+
+    Tham số `backend` ghi đè env AGENT_BACKEND (codex | cline | none).
     """
-    backend = active_backend()
-    prompt = build_review_prompt(doc)
+    _backend = (backend or active_backend()).strip().lower()
+    prompt = build_review_prompt(doc, backend=_backend)
     try:
-        raw = run_backend(prompt, REASONING_SCHEMA)
+        raw = run_backend(prompt, REASONING_SCHEMA, backend=_backend)
     except Exception as exc:
-        return [AgentRunResult(agent_id=backend, error=f"{type(exc).__name__}: {exc}")]
-    findings = _parse_findings(raw, backend)
-    return [AgentRunResult(agent_id=backend, findings=findings, summary=raw.get("summary", ""))]
+        return [AgentRunResult(agent_id=_backend, error=f"{type(exc).__name__}: {exc}")]
+    findings = _parse_findings(raw, _backend)
+    return [AgentRunResult(agent_id=_backend, findings=findings, summary=raw.get("summary", ""))]
 
 
 # Alias tương thích (chữ ký cũ có img — bỏ qua, text-only)

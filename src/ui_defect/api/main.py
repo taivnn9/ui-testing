@@ -93,7 +93,7 @@ async def analyze(
     route: str | None = Form(None),
     min_severity: str = Form("low"),
     min_confidence: float = Form(0.4),
-    run_vlm: bool = Form(True),
+    agent_backend: str = Form("", description="codex | cline | none — trống = dùng env AGENT_BACKEND"),
 ):
     # Đọc ảnh
     raw = await screenshot.read()
@@ -115,6 +115,9 @@ async def analyze(
 
     if platform not in ("android", "ios", "web"):
         raise HTTPException(400, detail="platform phải là android, ios hoặc web")
+    _agent_backend = agent_backend.strip().lower() if agent_backend.strip() else None
+    if _agent_backend and _agent_backend not in ("codex", "cline", "none"):
+        raise HTTPException(400, detail="agent_backend phải là codex, cline hoặc none")
     _platform = platform
 
     # Auto-derive từ ảnh
@@ -125,9 +128,10 @@ async def analyze(
     _locale = locale or "en-US"
 
     # Chạy pipeline
+    _run_agents = (_agent_backend or "codex") != "none"
     logger.info(
-        "Bắt đầu phân tích screen platform=%s vp=%dx%d run_vlm=%s",
-        _platform, _vp_w, _vp_h, run_vlm,
+        "Bắt đầu phân tích screen platform=%s vp=%dx%d agent_backend=%s",
+        _platform, _vp_w, _vp_h, _agent_backend or "env",
     )
     try:
         output = run_pipeline(
@@ -143,7 +147,8 @@ async def analyze(
             safe_area_top=safe_area_top,
             safe_area_bottom=safe_area_bottom,
             min_confidence=min_confidence,
-            run_agents=run_vlm,
+            run_agents=_run_agents,
+            agent_backend=_agent_backend,
         )
     except Exception as exc:
         # Log full traceback ra console server (luôn luôn, dù DEBUG_ERRORS bật/tắt)

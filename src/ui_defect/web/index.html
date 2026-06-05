@@ -36,7 +36,13 @@
       <label>Min confidence
         <input id="minConfidence" type="number" min="0" max="1" step="0.05" value="0.4" style="width:70px">
       </label>
-      <label><input id="runVlm" type="checkbox" checked> Chạy agent reasoning (Codex)</label>
+      <label>Agent reasoning
+        <select id="agentBackend">
+          <option value="codex" selected>Codex (mặc định)</option>
+          <option value="cline">Cline</option>
+          <option value="none">Tắt (rule-only)</option>
+        </select>
+      </label>
     </div>
 
     <div class="controls">

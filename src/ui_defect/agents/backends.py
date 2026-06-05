@@ -18,9 +18,17 @@ def active_backend() -> str:
     return os.environ.get("AGENT_BACKEND", "codex").strip().lower()
 
 
-def run_backend(prompt: str, schema: dict[str, Any] | None = None) -> dict[str, Any]:
-    """Gọi backend đang chọn. Raise RuntimeError nếu backend lỗi (driver tự gói chi tiết)."""
-    backend = active_backend()
+def run_backend(
+    prompt: str,
+    schema: dict[str, Any] | None = None,
+    *,
+    backend: str | None = None,
+) -> dict[str, Any]:
+    """Gọi backend đang chọn. Raise RuntimeError nếu backend lỗi (driver tự gói chi tiết).
+
+    Tham số `backend` ghi đè env AGENT_BACKEND cho lần gọi này (không thay đổi env toàn cục).
+    """
+    backend = (backend or active_backend()).strip().lower()
     if backend == "codex":
         from .codex_client import run_codex
         return run_codex(prompt, schema)
@@ -30,3 +38,6 @@ def run_backend(prompt: str, schema: dict[str, Any] | None = None) -> dict[str, 
     if backend in ("none", "off", ""):
         return {"findings": [], "summary": "agent_backend=none"}
     raise RuntimeError(f"AGENT_BACKEND không hỗ trợ: {backend!r} (dùng: codex | cline | none)")
+
+
+_VALID_BACKENDS = ("codex", "cline", "none")

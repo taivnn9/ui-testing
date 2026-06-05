@@ -37,6 +37,7 @@ def test_build_prompt_embeds_schema():
 
 
 def test_run_cline_parses_stdout(monkeypatch):
+    """Default: cline -y "<prompt>" (CLINE_ARGS="-y", CLINE_PROMPT_MODE="arg")."""
     captured = {}
 
     def fake_run(cmd, input=None, capture_output=None, text=None, timeout=None, cwd=None):
@@ -45,13 +46,34 @@ def test_run_cline_parses_stdout(monkeypatch):
         return _FakeProc(stdout='log line\n{"findings": [], "summary": "done"}')
 
     monkeypatch.setenv("CLINE_BIN", "cline-x")
-    monkeypatch.setenv("CLINE_ARGS", "task --headless")
+    monkeypatch.delenv("CLINE_ARGS", raising=False)
+    monkeypatch.delenv("CLINE_PROMPT_MODE", raising=False)
     monkeypatch.setattr(subprocess, "run", fake_run)
 
     out = cline_client.run_cline("PROMPT", {"type": "object"})
     assert out == {"findings": [], "summary": "done"}
+    assert captured["cmd"][:2] == ["cline-x", "-y"]    # default -y flag
+    assert "PROMPT" in captured["cmd"][-1]              # prompt là arg cuối
+    assert captured["input"] is None                    # KHÔNG qua stdin
+
+
+def test_run_cline_stdin_mode(monkeypatch):
+    """Override: CLINE_PROMPT_MODE=stdin → prompt qua stdin."""
+    captured = {}
+
+    def fake_run(cmd, input=None, **kw):
+        captured["cmd"] = cmd
+        captured["input"] = input
+        return _FakeProc(stdout='{"findings": [], "summary": "ok"}')
+
+    monkeypatch.setenv("CLINE_BIN", "cline-x")
+    monkeypatch.setenv("CLINE_ARGS", "task --headless")
+    monkeypatch.setenv("CLINE_PROMPT_MODE", "stdin")
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    cline_client.run_cline("PROMPT", None)
     assert captured["cmd"][:3] == ["cline-x", "task", "--headless"]
-    assert "PROMPT" in captured["input"]  # prompt qua stdin (mặc định)
+    assert "PROMPT" in captured["input"]
 
 
 def test_run_cline_nonzero_exit_raises(monkeypatch):

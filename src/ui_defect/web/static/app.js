@@ -84,7 +84,7 @@ async function analyze() {
   fd.append("platform", $("#platform").value);
   fd.append("min_severity", $("#minSeverity").value);
   fd.append("min_confidence", $("#minConfidence").value);
-  fd.append("run_vlm", $("#runVlm").checked ? "true" : "false");
+  fd.append("agent_backend", $("#agentBackend").value);
 
   try {
     const resp = await fetch("/analyze", { method: "POST", body: fd });

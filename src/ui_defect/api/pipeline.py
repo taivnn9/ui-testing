@@ -44,6 +44,7 @@ def run_pipeline(
     min_confidence: float = 0.4,
     agent_ids: Optional[list[str]] = None,
     run_agents: bool = True,
+    agent_backend: Optional[str] = None,
     vlm_model: Optional[str] = None,
     screen_id: Optional[str] = None,
 ) -> AnalyzeOutput:
@@ -181,7 +182,7 @@ def run_pipeline(
         from ..agents.critic import run_critic
         from ..agents.runner import run_review
         _backend = active_backend()
-        results = run_review(doc, model=vlm_model)
+        results = run_review(doc, model=vlm_model, backend=agent_backend)
         agents_ran = [r.agent_id for r in results if r.error is None]
         # Gom lỗi (driver gói chi tiết) để surface ra response + log
         agent_errors = [
