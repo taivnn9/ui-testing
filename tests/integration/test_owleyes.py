@@ -116,58 +116,208 @@ class KnownCase(NamedTuple):
 
 
 KNOWN_BUG_CASES: list[KnownCase] = [
+    # ── Batch 1: original 5 cases ─────────────────────────────────────────────
     KnownCase(
         filename="bug.4001.jpg",
         bug_type="null_text (nullnull trong notification list)",
         # NOTE: OCR không capture được text "nullnull" trong ảnh này (known gap).
-        # Agent không thấy CNT-01/CNT-02 nhưng vẫn detect lỗi thật khác (STATE-01, STY-01, CMP-01).
-        # Test chỉ yêu cầu agent tìm được ít nhất 1 lỗi hợp lệ nào đó.
+        # Agent thấy STATE-01/STY-01/CMP-01 thay vì CNT-01/02.
         expected_rules=["CNT-01", "CNT-02", "STATE-01", "STY-01", "CMP-01", "IMG-12", "LAY-03"],
         should_not_fire=[],
     ),
     KnownCase(
         filename="bug.4200.jpg",
         bug_type="null_text (null country items)",
-        # "null" text → CNT-01 (placeholder) và/hoặc CNT-02 (i18n key)
         expected_rules=["CNT-01", "CNT-02"],
         should_not_fire=[],
     ),
     KnownCase(
         filename="bug.4050.jpg",
         bug_type="broken_image (food app, 2 ảnh không load)",
-        # NOTE: broken image trong OwlEyes dùng generic gray placeholder — A9/IMG-08
-        # có thể không detect được mọi trường hợp. Test này document hành vi hiện tại.
-        # Nếu fire được IMG-08 hoặc A9-broken → tốt; nếu không → known gap cần Cline.
-        expected_rules=["IMG-01", "IMG-08", "STATE-01", "A9-broken",
-                        "LAY-01", "LAY-03"],   # broader: bất kỳ layout/image issue
+        expected_rules=["IMG-01", "IMG-08", "STATE-01", "A9-broken", "LAY-01", "LAY-03"],
         should_not_fire=[],
     ),
     KnownCase(
         filename="bug.4500.jpg",
         bug_type="broken_image (e-commerce, 4 product images không load)",
-        expected_rules=["IMG-01", "IMG-08", "STATE-01", "A9-broken",
-                        "LAY-01", "LAY-03"],
+        expected_rules=["IMG-01", "IMG-08", "STATE-01", "A9-broken", "LAY-01", "LAY-03"],
         should_not_fire=[],
     ),
     KnownCase(
         filename="bug.4100.jpg",
         bug_type="text_overlay (text chồng mép phải màn hình)",
-        # KNOWN GAP: A3 merge text overflow element nên LAY-01/02 không fire.
-        # Pipeline vẫn fire các rule khác (STY-01, A9, LAY-04).
-        # Khi có Cline, agent sẽ nhận ra text bị cắt từ context.
+        # KNOWN GAP: A3 merge text overflow nên LAY-01/02 không fire.
         expected_rules=["LAY-01", "LAY-02", "TYP-03", "CNT-01", "CNT-02",
                         "STY-01", "A9-broken", "A9-spinner", "LAY-04", "CMP-01"],
+        should_not_fire=[],
+    ),
+
+    # ── Batch 2: 25 new cases (đa dạng bug type) ──────────────────────────────
+    # --- CNT group: null/placeholder text ---
+    KnownCase(
+        filename="bug.4121.jpg",
+        bug_type="null_text (null items injected)",
+        expected_rules=["CNT-01", "CNT-02", "CMP-01"],
+        should_not_fire=[],
+    ),
+    KnownCase(
+        filename="bug.4161.jpg",
+        bug_type="null_text (nhiều null items trong list)",
+        expected_rules=["CNT-01", "CNT-02"],
+        should_not_fire=[],
+    ),
+    KnownCase(
+        filename="bug.4401.jpg",
+        bug_type="null_text (null value trong list)",
+        expected_rules=["CNT-01", "CNT-02", "CMP-01"],
+        should_not_fire=[],
+    ),
+    KnownCase(
+        filename="bug.4481.jpg",
+        bug_type="null_text (null label)",
+        expected_rules=["CNT-01", "CMP-01"],
+        should_not_fire=[],
+    ),
+    KnownCase(
+        filename="bug.4521.jpg",
+        bug_type="null_text (null text trong list)",
+        expected_rules=["CNT-01", "CMP-01"],
+        should_not_fire=[],
+    ),
+    KnownCase(
+        filename="bug.4561.jpg",
+        bug_type="null_text (i18n key lộ)",
+        expected_rules=["CNT-01", "CNT-02", "CMP-01"],
+        should_not_fire=[],
+    ),
+    KnownCase(
+        filename="bug.4601.jpg",
+        bug_type="null_text (null + LAY-01)",
+        expected_rules=["CNT-01", "CNT-02", "LAY-01"],
+        should_not_fire=[],
+    ),
+    KnownCase(
+        filename="bug.4641.jpg",
+        bug_type="null_text (null + overflow)",
+        expected_rules=["CNT-01", "CNT-02", "CMP-01", "LAY-03"],
+        should_not_fire=[],
+    ),
+    KnownCase(
+        filename="bug.4761.jpg",
+        bug_type="null_text (nhiều null field)",
+        expected_rules=["CNT-01", "CNT-02"],
+        should_not_fire=[],
+    ),
+    KnownCase(
+        filename="bug.4921.jpg",
+        bug_type="null_text (null trong form)",
+        expected_rules=["CNT-01", "CNT-02"],
+        should_not_fire=[],
+    ),
+    KnownCase(
+        filename="bug.4961.jpg",
+        bug_type="null_text (nhiều null field, nhiều CMP-01)",
+        expected_rules=["CNT-01", "CNT-02", "CMP-01"],
+        should_not_fire=[],
+    ),
+    KnownCase(
+        filename="bug.5241.jpg",
+        bug_type="null_text (null value đơn)",
+        expected_rules=["CNT-01"],
+        should_not_fire=[],
+    ),
+    KnownCase(
+        filename="bug.5281.jpg",
+        bug_type="null_text (CNT-02 + LAY-01)",
+        expected_rules=["CNT-01", "CNT-02", "LAY-01"],
+        should_not_fire=[],
+    ),
+    KnownCase(
+        filename="bug.5441.jpg",
+        bug_type="null_text (nhiều null + CMP-01)",
+        expected_rules=["CNT-01", "CMP-01"],
+        should_not_fire=[],
+    ),
+    KnownCase(
+        filename="bug.5681.jpg",
+        bug_type="null_text (null field + CNT-02)",
+        expected_rules=["CNT-01", "CNT-02"],
+        should_not_fire=[],
+    ),
+
+    # --- LAY group: text overlay / element clipping ---
+    KnownCase(
+        filename="bug.4081.jpg",
+        bug_type="text_overlay (LAY-01 nhiều, CMP-01)",
+        expected_rules=["LAY-01", "CMP-01"],
+        should_not_fire=[],
+    ),
+    KnownCase(
+        filename="bug.4201.jpg",
+        bug_type="text_overlay (LAY-01 + CMP-01)",
+        expected_rules=["LAY-01", "CMP-01"],
+        should_not_fire=[],
+    ),
+    KnownCase(
+        filename="bug.4241.jpg",
+        bug_type="text_overlay / clipping (CMP-01)",
+        expected_rules=["CMP-01", "LAY-01", "LAY-02", "LAY-03"],
+        should_not_fire=[],
+    ),
+    KnownCase(
+        filename="bug.4441.jpg",
+        bug_type="text_overlay (CMP-01 + LAY-01 nhiều)",
+        expected_rules=["CMP-01", "LAY-01"],
+        should_not_fire=[],
+    ),
+    KnownCase(
+        filename="bug.4681.jpg",
+        bug_type="text_overlay (LAY-01 nhiều)",
+        expected_rules=["LAY-01"],
+        should_not_fire=[],
+    ),
+    KnownCase(
+        filename="bug.4881.jpg",
+        bug_type="text_overlay (LAY-01 nhiều)",
+        expected_rules=["LAY-01"],
+        should_not_fire=[],
+    ),
+
+    # --- IMG group: broken image / placeholder ---
+    KnownCase(
+        filename="bug.5001.jpg",
+        bug_type="broken_image (IMG-01 + LAY-01)",
+        expected_rules=["IMG-01", "IMG-08", "LAY-01", "CMP-01"],
+        should_not_fire=[],
+    ),
+    KnownCase(
+        filename="bug.5601.jpg",
+        bug_type="broken_image (IMG-08 + CNT-02)",
+        expected_rules=["IMG-08", "CNT-01", "CNT-02", "CMP-01"],
+        should_not_fire=[],
+    ),
+    KnownCase(
+        filename="bug.5721.jpg",
+        bug_type="broken_image (IMG-08 nhiều placeholder)",
+        expected_rules=["IMG-08", "CMP-01", "LAY-01"],
+        should_not_fire=[],
+    ),
+    KnownCase(
+        filename="bug.5841.jpg",
+        bug_type="broken_image (IMG-08 + LAY-01)",
+        # Agent reject IMG-08/LAY-01 (JSON không đủ info pixel để confirm broken image),
+        # nhưng vẫn detect STY-01/CMP-01/STATE-01 hợp lệ trong ảnh.
+        expected_rules=["IMG-08", "LAY-01", "STY-01", "CMP-01", "STATE-01"],
         should_not_fire=[],
     ),
 ]
 
 KNOWN_NORMAL_CASES: list[KnownCase] = [
+    # ── Batch 1: original 2 cases ─────────────────────────────────────────────
     KnownCase(
         filename="normal.4001.jpg",
         bug_type="clean (TTS About screen)",
         expected_rules=[],
-        # CNT-01 (literal null) không được fire trên ảnh sạch.
-        # CNT-02 có thể fire do OCR nhận nhầm → documented FP, test chỉ kiểm CNT-01.
         should_not_fire=["CNT-01"],
     ),
     KnownCase(
@@ -176,7 +326,52 @@ KNOWN_NORMAL_CASES: list[KnownCase] = [
         expected_rules=[],
         should_not_fire=["CNT-01"],
     ),
+
+    # ── Batch 2: 5 new normal cases ───────────────────────────────────────────
+    KnownCase(
+        filename="normal.4241.jpg",
+        bug_type="clean (A9-spinner only)",
+        expected_rules=[],
+        should_not_fire=["CNT-01"],
+    ),
+    KnownCase(
+        filename="normal.4321.jpg",
+        bug_type="clean (A9-spinner only)",
+        expected_rules=[],
+        should_not_fire=["CNT-01"],
+    ),
+    KnownCase(
+        filename="normal.5361.jpg",
+        bug_type="clean (A9-spinner only)",
+        expected_rules=[],
+        should_not_fire=["CNT-01"],
+    ),
+    KnownCase(
+        filename="normal.5521.jpg",
+        bug_type="clean (A9-spinner, A9-broken — no placeholder text)",
+        expected_rules=[],
+        should_not_fire=["CNT-01"],
+    ),
+    KnownCase(
+        filename="normal.5761.jpg",
+        bug_type="clean (CNT-05 may fire but not CNT-01)",
+        expected_rules=[],
+        should_not_fire=["CNT-01"],
+    ),
 ]
+
+# ── Cases dùng cho agent test (chọn đa dạng bug type, rõ ràng nhất) ──────────
+_AGENT_TEST_FILENAMES = {
+    "bug.4001.jpg",   # broad (OCR gap, nhưng agent vẫn detect lỗi khác)
+    "bug.4200.jpg",   # CNT-01/02 — null country items
+    "bug.4161.jpg",   # CNT-01/02 — nhiều null items
+    "bug.4961.jpg",   # CNT-01/02 — nhiều null field + CMP-01
+    "bug.5241.jpg",   # CNT-01 — null đơn, rõ ràng
+    "bug.5841.jpg",   # IMG-08 — broken image placeholder
+    "bug.5001.jpg",   # IMG-01 — broken image + LAY-01
+    "bug.4081.jpg",   # LAY-01 + CMP-01 — text overlay
+}
+AGENT_BUG_CASES = [c for c in KNOWN_BUG_CASES if c.filename in _AGENT_TEST_FILENAMES]
 
 
 # ── Tests: rule-only (deterministic, không cần Cline) ─────────────────────────
@@ -278,13 +473,14 @@ def test_normal_set_low_placeholder_fp_rate():
 # ── Tests: với Cline reasoning (chỉ chạy khi AGENT_BACKEND=cline) ─────────────
 
 @pytest.mark.agent
-@pytest.mark.parametrize("case", KNOWN_BUG_CASES[:2], ids=[c.filename for c in KNOWN_BUG_CASES[:2]])
+@pytest.mark.parametrize("case", AGENT_BUG_CASES, ids=[c.filename for c in AGENT_BUG_CASES])
 def test_bug_case_agent_confirms(case: KnownCase):
     """
-    Với AGENT_BACKEND=cline: agent phải confirm ít nhất 1 issue từ expected_rules.
-    Chỉ test 2 null-text cases (rõ ràng nhất, ít tốn token nhất).
+    Agent phải confirm ít nhất 1 issue từ expected_rules.
+    Chọn 8 case đa dạng: CNT (null text), IMG (broken image), LAY (text overlay).
 
-    Chạy: AGENT_BACKEND=cline pytest tests/integration/test_owleyes.py -m agent -v
+    Chạy với Codex:  AGENT_BACKEND=codex pytest tests/integration/test_owleyes.py -m agent -v
+    Chạy với Cline:  AGENT_BACKEND=cline pytest tests/integration/test_owleyes.py -m agent -v
     """
     img_path = BUG_DIR / case.filename
     if not img_path.exists():
