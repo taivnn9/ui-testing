@@ -1,8 +1,10 @@
 # Skill: Text & Semantics (nội dung chữ)
 
 Dựa trên `text` của các element (OCR). Bắt:
-- **Biến chưa render**: `undefined`, `null`, `NaN`, `%s`, `%@`, `{{var}}`, `${x}`, i18n key
-  dạng dot-notation (`home.title`, `btn_submit` — không phải từ thật).
+- **Biến chưa render** (→ `CNT-01`): `undefined`, `null`, `NaN`, `%s`, `%@`, `{{var}}`, `${x}`,
+  và các biến thể nối chuỗi như `"nullnull"`, `"nullNull"`, `"undefinedundefined"`.
+  Nếu text chứa chuỗi "null" lặp lại hoặc nối liền → chắc chắn là CNT-01.
+- **i18n key lòi ra** (→ `CNT-02`): dot-notation (`home.title`, `btn_submit`) — không phải từ thật.
 - **Chưa dịch / sai ngôn ngữ**: text khác ngôn ngữ với `locale` màn hình.
 - **Placeholder/debug lọt ra**: `lorem ipsum`, `TODO`, `asdf`, `TEST`, `xxx`.
 - **Mojibake**: ký tự lỗi mã hoá ("Ã©" thay vì "é").

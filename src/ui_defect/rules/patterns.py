@@ -24,6 +24,9 @@ PLACEHOLDER_PATTERNS: list[re.Pattern] = [
     re.compile(r"\bnull\b", re.IGNORECASE),
     re.compile(r"\bNaN\b"),
     re.compile(r"\bNone\b"),
+    # Concatenated null: "nullnull", "undefinedundefined" (biến nối chuỗi chưa render)
+    re.compile(r"null(?:null)+", re.IGNORECASE),
+    re.compile(r"undefined(?:undefined)+", re.IGNORECASE),
     # Double-underscore placeholders: __PLACEHOLDER__, __NAME__
     re.compile(r"__\w+__"),
     # Square bracket templates: [[var]]
@@ -43,8 +46,8 @@ PLACEHOLDER_PATTERNS: list[re.Pattern] = [
 I18N_KEY_PATTERNS: list[re.Pattern] = [
     # Dot-notation: home.title, btn.submit, error.network.timeout (2-5 segments)
     re.compile(r"^[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*){1,4}$"),
-    # SCREAMING_SNAKE_CASE: BTN_SUBMIT, HOME_TITLE (tối thiểu 4 ký tự sau chữ đầu)
-    re.compile(r"^[A-Z][A-Z0-9_]{3,}$"),
+    # SCREAMING_SNAKE_CASE: BTN_SUBMIT, HOME_TITLE — phải có underscore (SKIP/DONE không phải key)
+    re.compile(r"^[A-Z][A-Z0-9]*_[A-Z0-9_]+$"),
     # snake_case thuần (không có space, không phải word): home_title, btn_submit (≥4 ký tự)
     re.compile(r"^[a-z][a-z_]{3,}$"),
 ]

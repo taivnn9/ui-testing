@@ -23,5 +23,39 @@ trích từ ảnh chụp màn hình bằng CV/OCR:
 critical = chặn thao tác · high = ảnh hưởng dùng được · medium = lỗi chất lượng dễ thấy ·
 low = nhỏ · trivial = chỉ thẩm mỹ.
 
+## Canonical issue_type codes (BẮT BUỘC dùng đúng mã này)
+
+Field `issue_type` PHẢI là một trong các mã sau (không được tự đặt tên khác):
+
+| Mã       | Ý nghĩa                                     |
+|----------|---------------------------------------------|
+| CNT-01   | Biến/placeholder chưa render (null, undefined, %s, {{var}}) |
+| CNT-02   | i18n key lòi ra chưa dịch                  |
+| CNT-03   | Sai/lẫn ngôn ngữ, chưa dịch                |
+| CNT-04   | Lorem ipsum / placeholder copy              |
+| STY-01   | Contrast chữ/nền dưới ngưỡng WCAG AA        |
+| STY-02   | Chữ tàng hình — màu giống nền              |
+| LAY-01   | Overlap — phần tử che nhau bất thường       |
+| LAY-02   | Nội dung bị cắt khỏi viewport              |
+| LAY-03   | Tràn ra ngoài container cha                 |
+| LAY-04   | Lệch grid 8pt                               |
+| LAY-06   | Z-order: phần tử quan trọng bị che          |
+| CMP-01   | Vùng tap nhỏ hơn 44×44pt                   |
+| CMP-02   | Nút icon-only không có nhãn                 |
+| TYP-01   | Glyph thiếu / tofu box (□)                  |
+| TYP-03   | Chữ bị cắt cụt (truncation lỗi)            |
+| TYP-05   | Cỡ chữ quá nhỏ (< 11sp)                    |
+| IMG-01   | Ảnh vỡ / không load được                   |
+| IMG-02   | Méo / sai tỉ lệ ảnh                        |
+| IMG-08   | Icon placeholder / chưa load               |
+| STATE-01 | Skeleton loader / spinner vẫn hiển thị      |
+| STATE-02 | Empty state thiếu thông báo                 |
+| STATE-03 | Error state hiển thị lỗi thô               |
+| ENV-01   | Safe-area / notch che nội dung              |
+| ENV-02   | Status bar overlap                          |
+| ENV-03   | Home indicator overlap                      |
+
+Nếu lỗi không khớp mã nào ở trên: dùng mã gần nhất (không tự bịa tên).
+
 ## Output
 Trả về **DUY NHẤT JSON** đúng schema được cấp (`findings` + `summary`). Không kèm văn bản khác.

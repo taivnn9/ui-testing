@@ -193,6 +193,47 @@ def build_review_prompt(doc: CanonicalDoc, *, backend: str | None = None) -> str
     )
 
 
+_ISSUE_TYPE_ALIASES: dict[str, str] = {
+    # placeholder / null text
+    "raw_placeholder_text": "CNT-01", "placeholder_text": "CNT-01",
+    "null_text": "CNT-01", "undefined_variable": "CNT-01", "unrendered_variable": "CNT-01",
+    # i18n
+    "i18n_key": "CNT-02", "localization": "CNT-03", "missing_translation": "CNT-03",
+    "lorem_ipsum": "CNT-04",
+    # contrast
+    "contrast": "STY-01", "contrast_ratio": "STY-01", "low_contrast": "STY-01",
+    "invisible_text": "STY-02",
+    # layout
+    "overlap": "LAY-01", "element_overlap": "LAY-01",
+    "clipping": "LAY-02", "content_clipped": "LAY-02", "off_screen": "LAY-02",
+    "overflow": "LAY-03",
+    "grid_misalignment": "LAY-04",
+    # components
+    "touch_target": "CMP-01", "small_touch_target": "CMP-01", "tap_target": "CMP-01",
+    # typography
+    "tofu": "TYP-01", "replacement_character": "TYP-01",
+    "truncation": "TYP-03", "text_truncated": "TYP-03", "text_cutoff": "TYP-03",
+    "font_too_small": "TYP-05", "small_font": "TYP-05",
+    # images
+    "broken_image": "IMG-01", "image_not_loaded": "IMG-01", "missing_image": "IMG-01",
+    "image_distortion": "IMG-02", "aspect_ratio": "IMG-02",
+    "placeholder_image": "IMG-08", "image_placeholder": "IMG-08",
+    # states
+    "loading_state": "STATE-01", "skeleton_loader": "STATE-01", "spinner": "STATE-01",
+    "empty_state": "STATE-02",
+    "error_state": "STATE-03",
+    # env
+    "safe_area": "ENV-01", "notch": "ENV-01",
+    "status_bar_overlap": "ENV-02",
+}
+
+
+def _normalize_issue_type(raw_type: str) -> str:
+    """Map alias/free-form tên → canonical code (CNT-01, LAY-01…). Giữ nguyên nếu đã đúng."""
+    normalized = raw_type.strip().lower().replace(" ", "_").replace("-", "_")
+    return _ISSUE_TYPE_ALIASES.get(normalized, raw_type)
+
+
 def _parse_findings(raw: dict, agent_id: str) -> list[AgentFinding]:
     findings = []
     raw_findings = raw.get("findings", [])
@@ -213,7 +254,7 @@ def _parse_findings(raw: dict, agent_id: str) -> list[AgentFinding]:
 
         findings.append(AgentFinding(
             agent_id=agent_id,
-            issue_type=f.get("issue_type", "UNKNOWN"),
+            issue_type=_normalize_issue_type(f.get("issue_type", "UNKNOWN")),
             element_id=f.get("element_id"),
             severity=f.get("severity", "medium"),
             confidence=float(confidence),
