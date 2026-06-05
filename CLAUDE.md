@@ -2,6 +2,7 @@
 
 > File này là bối cảnh dự án cho mọi phiên Claude Code / agent làm việc trong repo này.
 > Trao đổi với chủ dự án **bằng tiếng Việt** (user là kỹ sư QA mobile).
+> User có thể nhắn bằng tiếng Anh hoặc tiếng Việt — agent **luôn trả lời bằng tiếng Việt**.
 
 ## 0. Quy tắc làm việc (agent — QUAN TRỌNG)
 - **Luôn ghi phân tích/thiết kế/quyết định ra file trong `docs/` NGAY khi trao đổi**, cập nhật
