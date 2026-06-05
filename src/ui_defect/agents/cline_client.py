@@ -26,6 +26,8 @@ import json
 import os
 import shlex
 import subprocess
+import sys
+import threading
 from pathlib import Path
 from typing import Any
 
@@ -114,28 +116,48 @@ def run_cline(
         cmd.append(full_prompt)
         stdin_data = None
 
+    verbose = _env("CLINE_VERBOSE", "1") not in ("0", "false", "no")
+
     try:
-        proc = subprocess.run(
+        proc = subprocess.Popen(
             cmd,
-            input=stdin_data,
-            capture_output=True,
+            stdin=subprocess.PIPE if stdin_data else None,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             text=True,
-            timeout=_timeout,
             cwd=_cwd,
         )
     except FileNotFoundError as exc:
         raise RuntimeError(
             f"Không tìm thấy Cline CLI '{cline_bin}'. Cài Cline hoặc đặt env CLINE_BIN/CLINE_ARGS. ({exc})"
         ) from exc
-    except subprocess.TimeoutExpired as exc:
-        raise RuntimeError(
-            f"Cline quá {_timeout}s (timeout). cmd={' '.join(cmd)}"
-        ) from exc
+
+    # Stream stderr ra terminal trong khi chờ (để thấy progress)
+    stderr_lines: list[str] = []
+
+    def _drain_stderr() -> None:
+        for line in proc.stderr:  # type: ignore[union-attr]
+            stderr_lines.append(line)
+            if verbose:
+                sys.stderr.write("[cline] " + line)
+                sys.stderr.flush()
+
+    t = threading.Thread(target=_drain_stderr, daemon=True)
+    t.start()
+
+    try:
+        stdout, _ = proc.communicate(input=stdin_data, timeout=_timeout)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        proc.communicate()
+        raise RuntimeError(f"Cline quá {_timeout}s (timeout). cmd={' '.join(cmd)}")
+    finally:
+        t.join(timeout=5)
 
     if proc.returncode != 0:
-        tail = (proc.stderr or proc.stdout or "")[-600:]
+        tail = ("".join(stderr_lines) or stdout or "")[-600:]
         raise RuntimeError(
             f"Cline exit={proc.returncode}. cmd={' '.join(cmd[:4])}… stderr: {tail}"
         )
 
-    return _extract_json(proc.stdout or "")
+    return _extract_json(stdout or "")

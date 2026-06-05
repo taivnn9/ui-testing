@@ -9,9 +9,19 @@ import pytest
 from ui_defect.agents import backends, cline_client
 
 
-class _FakeProc:
+class _FakePopen:
+    """Mock subprocess.Popen cho Popen-based cline_client."""
+
     def __init__(self, stdout="", stderr="", returncode=0):
-        self.stdout, self.stderr, self.returncode = stdout, stderr, returncode
+        self._stdout = stdout
+        self.stderr = iter(stderr.splitlines(keepends=True)) if stderr else iter([])
+        self.returncode = returncode
+
+    def communicate(self, input=None, timeout=None):
+        return self._stdout, ""
+
+    def kill(self):
+        pass
 
 
 def test_extract_json_plain():
@@ -40,45 +50,50 @@ def test_run_cline_parses_stdout(monkeypatch):
     """Default: cline -y "<prompt>" (CLINE_ARGS="-y", CLINE_PROMPT_MODE="arg")."""
     captured = {}
 
-    def fake_run(cmd, input=None, capture_output=None, text=None, timeout=None, cwd=None):
+    def fake_popen(cmd, stdin=None, stdout=None, stderr=None, text=None, cwd=None):
         captured["cmd"] = cmd
-        captured["input"] = input
-        return _FakeProc(stdout='log line\n{"findings": [], "summary": "done"}')
+        captured["stdin"] = stdin
+        return _FakePopen(stdout='log line\n{"findings": [], "summary": "done"}')
 
     monkeypatch.setenv("CLINE_BIN", "cline-x")
+    monkeypatch.setenv("CLINE_VERBOSE", "0")
     monkeypatch.delenv("CLINE_ARGS", raising=False)
     monkeypatch.delenv("CLINE_PROMPT_MODE", raising=False)
-    monkeypatch.setattr(subprocess, "run", fake_run)
+    monkeypatch.setattr(subprocess, "Popen", fake_popen)
 
     out = cline_client.run_cline("PROMPT", {"type": "object"})
     assert out == {"findings": [], "summary": "done"}
     assert captured["cmd"][:2] == ["cline-x", "-y"]    # default -y flag
     assert "PROMPT" in captured["cmd"][-1]              # prompt là arg cuối
-    assert captured["input"] is None                    # KHÔNG qua stdin
+    assert captured["stdin"] is None                    # KHÔNG qua stdin
 
 
 def test_run_cline_stdin_mode(monkeypatch):
     """Override: CLINE_PROMPT_MODE=stdin → prompt qua stdin."""
     captured = {}
 
-    def fake_run(cmd, input=None, **kw):
+    def fake_popen(cmd, stdin=None, **kw):
         captured["cmd"] = cmd
-        captured["input"] = input
-        return _FakeProc(stdout='{"findings": [], "summary": "ok"}')
+        captured["stdin"] = stdin
+        return _FakePopen(stdout='{"findings": [], "summary": "ok"}')
 
     monkeypatch.setenv("CLINE_BIN", "cline-x")
     monkeypatch.setenv("CLINE_ARGS", "task --headless")
     monkeypatch.setenv("CLINE_PROMPT_MODE", "stdin")
-    monkeypatch.setattr(subprocess, "run", fake_run)
+    monkeypatch.setenv("CLINE_VERBOSE", "0")
+    monkeypatch.setattr(subprocess, "Popen", fake_popen)
 
     cline_client.run_cline("PROMPT", None)
     assert captured["cmd"][:3] == ["cline-x", "task", "--headless"]
-    assert "PROMPT" in captured["input"]
+    assert captured["stdin"] == subprocess.PIPE
 
 
 def test_run_cline_nonzero_exit_raises(monkeypatch):
-    monkeypatch.setattr(subprocess, "run",
-                        lambda *a, **k: _FakeProc(stderr="boom", returncode=2))
+    monkeypatch.setenv("CLINE_VERBOSE", "0")
+    monkeypatch.setattr(
+        subprocess, "Popen",
+        lambda *a, **k: _FakePopen(stderr="boom", returncode=2),
+    )
     with pytest.raises(RuntimeError, match="exit=2"):
         cline_client.run_cline("p", None)
 
@@ -86,7 +101,7 @@ def test_run_cline_nonzero_exit_raises(monkeypatch):
 def test_run_cline_missing_binary_raises(monkeypatch):
     def boom(*a, **k):
         raise FileNotFoundError("nope")
-    monkeypatch.setattr(subprocess, "run", boom)
+    monkeypatch.setattr(subprocess, "Popen", boom)
     with pytest.raises(RuntimeError, match="Không tìm thấy Cline"):
         cline_client.run_cline("p", None)
 
