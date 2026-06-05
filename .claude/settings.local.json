@@ -43,7 +43,11 @@
       "Bash(codex exec *)",
       "Bash(codex login *)",
       "Bash(timeout 20 codex doctor)",
-      "Bash(grep -vE \"^All|^$\")"
+      "Bash(grep -vE \"^All|^$\")",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:dl.acm.org)",
+      "WebSearch",
+      "WebFetch(domain:docs.cline.bot)"
     ]
   },
   "enabledPlugins": {

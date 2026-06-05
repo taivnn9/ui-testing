@@ -165,13 +165,6 @@ def _fuse_text_segments(
     - Text box orphan (không trong candidate nào) → thêm vào danh sách.
     Trả: (updated_candidates, orphan_texts).
     """
-    assigned = [False] * len(text_segments)
-    for seg in text_segments:
-        for cand in candidates:
-            if contains(cand, seg.bbox, cfg.text_contains_threshold):
-                assigned[seg.__hash__() % len(assigned)] = True
-                break
-
     orphans = []
     for i, seg in enumerate(text_segments):
         # Kiểm tra xem bbox seg có nằm trong candidate nào không
