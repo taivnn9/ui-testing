@@ -153,9 +153,33 @@ candidate) · 1 lần `codex exec`/ảnh (rẻ). Backend chọn qua env `AGENT_B
       bỏ rule lạ `IMG-dup-*`). Có 6 unit test (`test_rules_wired.py`).
 - [x] **Backend Cline** (`agents/cline_client.py` + `backends.py` `AGENT_BACKEND=cline`) — cùng giao diện
       `(prompt,schema)→dict`, cấu hình lệnh qua env `CLINE_*`, schema nhúng prompt + trích JSON. Có 9 unit
-      test mock subprocess. ⚠️ **Chưa chạy thực tế** (máy dev không có Cline binary) — cần verify trên máy công ty.
-- [x] pytest: **142 pass** (2026-06-04, +6 wiring +9 cline).
+      test mock subprocess. Default `CLINE_PROMPT_MODE=stdin` (an toàn trên Windows).
+- [x] pytest: **151 pass** (2026-06-05, +30 owleyes rule-only, +8 agent, fix CNT-02 FP SCREAMING_SNAKE).
+- [x] **OwlEyes dataset integration** (2026-06-05):
+      - `data/owleyes_samples/`: 30 bug + 8 normal ảnh mẫu xem tay (commit vào repo).
+      - `tests/integration/test_owleyes.py`: 30 rule-only cases + 8 agent cases (`AGENT_BUG_CASES`).
+      - `scripts/owleyes_hitrate.py`: benchmark hit rate / FP rate trên toàn bộ dataset.
+      - Fix CNT-02 FP: SCREAMING_SNAKE pattern giờ require underscore (SKIP/DONE không phải key).
+      - Fix `issue_type` normalization: `_normalize_issue_type()` map alias → canonical ID.
+      - Fix skill `00-system.md`: bảng canonical codes bắt buộc cho `issue_type` field.
+      - **Kết quả Codex**: 8/8 agent tests pass, 37/37 rule-only pass.
+      - ⚠️ **Cline máy công ty (Windows): 8/8 agent tests FAIL** — "Agent không confirm rule nào trong [...]".
+        Cline chạy được (không RuntimeError), nhưng trả `issue_type` tên khác chưa rõ.
+        **Việc cần làm phiên tới**: chạy debug script để thấy Cline trả gì, rồi thêm alias vào
+        `_normalize_issue_type()` hoặc tune skill. Debug script:
+        ```
+        $env:AGENT_BACKEND="cline"
+        .venv\Scripts\python -c "
+        import sys; sys.path.insert(0, 'src')
+        from PIL import Image; from ui_defect.api.pipeline import run_pipeline
+        img = Image.open('data/owleyes_samples/bug/bug.4200.jpg').convert('RGB')
+        w, h = img.size
+        out = run_pipeline(img=img, platform='android', viewport_w=w, viewport_h=h, dpr=2.0, run_agents=True)
+        print('issue_types:', [i.issue_type for i in out.issues])
+        print('errors:', out.pipeline_meta.get('agent_errors'))
+        "
+        ```
+- [ ] **Fix Cline issue_type mismatch** — xem debug output trên Windows, thêm alias vào
+      `_normalize_issue_type()` trong `runner.py`. Sau đó re-run 8 agent tests trên máy công ty.
 - [ ] **Standard Tier-2** (ảnh thật Playwright) — test full pipeline ảnh→CV→OCR→rule end-to-end. Cần OCR backend.
-      (4 rule trước thiếu nay đã phủ Tier-1 sau khi vá wiring.)
-- [ ] Integration test với ảnh thật (cần OCR backend; reasoning cần `codex login` / Cline máy công ty).
-- [ ] Tinh chỉnh skill files `agents/skills/*.md` theo kết quả thực tế.
+- [ ] Tinh chỉnh skill files `agents/skills/*.md` theo kết quả thực tế với Cline.
