@@ -47,7 +47,9 @@ def run_pipeline(
     agent_backend: Optional[str] = None,
     vlm_model: Optional[str] = None,
     screen_id: Optional[str] = None,
+    log_callback=None,
 ) -> AnalyzeOutput:
+    _log = log_callback or (lambda _: None)
     t0 = time.monotonic()
     _screen_id = screen_id or ("scr_" + uuid.uuid4().hex[:8])
     analyzers_ran: list[str] = []
@@ -68,6 +70,7 @@ def run_pipeline(
     )
 
     # ── A13 — Device metadata ────────────────────────────────────────────────
+    _log("[A13] Xác định metadata thiết bị (DPR, safe area)...")
     tester_meta = {}
     if safe_area_top is not None:
         tester_meta["safe_area"] = {"top": safe_area_top, "bottom": safe_area_bottom or 0}
@@ -85,26 +88,34 @@ def run_pipeline(
         nav_bar_h=float(meta.nav_bar_h),          # R1-ENV03
     )
     analyzers_ran.append("A13")
+    _log(f"[A13] DPR={screen.viewport.dpr}, safe_area top={screen.safe_area.top} bottom={screen.safe_area.bottom}")
 
     # dpr sau khi A13 resolve (có thể khác với dpr user cấp)
     _dpr = screen.viewport.dpr
 
     # ── A5 — OCR ─────────────────────────────────────────────────────────────
+    _log("[A5] OCR trích xuất văn bản...")
     text_segments = extract_text(img, screen.viewport, lang=locale[:2].lower())
     analyzers_ran.append("A5")
+    _log(f"[A5] Tìm thấy {len(text_segments)} text segment")
 
     # ── A3 — Box/Layout Detector ─────────────────────────────────────────────
+    _log("[A3] Phát hiện bố cục (box layout)...")
     elements = detect_layout(img, screen.viewport, text_segments=text_segments)
     analyzers_ran.append("A3")
+    _log(f"[A3] Tìm thấy {len(elements)} element")
 
     # ── A6 — Icon Detector ────────────────────────────────────────────────────
+    _log("[A6] Phát hiện icon...")
     text_bboxes = [s.bbox for s in text_segments if s.level == "line"]
     icon_regions = detect_icons(img, screen.viewport, elements=elements, text_bboxes=text_bboxes)
     icon_elems = icon_regions_to_elements(icon_regions, img.width, img.height)
     elements = elements + icon_elems
     analyzers_ran.append("A6")
+    _log(f"[A6] Tìm thấy {len(icon_regions)} icon region")
 
     # ── A12 — Interactivity Classifier ────────────────────────────────────────
+    _log("[A12] Phân loại element tương tác...")
     icon_ids = {r.id for r in icon_regions}
     elements = classify_interactivity(
         img, elements, text_segments=text_segments,
@@ -113,15 +124,20 @@ def run_pipeline(
     analyzers_ran.append("A12")
 
     # ── A4 — Pixel Color Sampler ─────────────────────────────────────────────
+    _log("[A4] Phân tích màu pixel...")
     color_results, color_issues = sample_colors(img, elements, theme=screen.theme)
     elements = enrich_elements(elements, color_results)
     analyzers_ran.append("A4")
+    _log(f"[A4] {len(color_issues)} color issue candidate")
 
     # ── A7 — Image Meta Reader ────────────────────────────────────────────────
+    _log("[A7] Phân tích metadata ảnh (tỉ lệ, scale mode)...")
     elements, img_issues = analyze_images(img, elements, dpr=_dpr)
     analyzers_ran.append("A7")
+    _log(f"[A7] {len(img_issues)} image issue candidate")
 
     # ── A8 — Glyph Inspector ─────────────────────────────────────────────────
+    _log("[A8] Kiểm tra glyph / replacement character...")
     from ..utils.image_io import crop_bbox
     glyph_crops = []
     for seg in text_segments:
@@ -137,23 +153,27 @@ def run_pipeline(
         glyph_issues_raw = inspect_batch(glyph_crops)
     glyph_candidates = glyph_issues_to_candidates(glyph_issues_raw)
     analyzers_ran.append("A8")
+    _log(f"[A8] {len(glyph_candidates)} glyph issue candidate")
 
     # ── A9 — Pixel Pattern Detector ───────────────────────────────────────────
+    _log("[A9] Phát hiện pattern pixel (loading skeleton, broken image)...")
     pattern_detections = detect_patterns(img, screen.viewport)
     pattern_issues = patterns_to_candidates(pattern_detections)
     analyzers_ran.append("A9")
+    _log(f"[A9] {len(pattern_issues)} pattern issue candidate")
 
     # ── A10 — Perceptual Hash ─────────────────────────────────────────────────
+    _log("[A10] Tính perceptual hash, phát hiện element trùng lặp...")
     hash_results = compute_hashes(img, elements)
     dup_pairs = find_duplicates(hash_results)
-    # R3-IMG12: A10 chỉ sinh DỮ LIỆU (duplicate_pairs); rule check_hash_duplicates phát issue
-    # (gom logic phán đoán về rule engine — nguyên tắc #3, tránh emit rule lạ IMG-dup-*)
     duplicate_pairs_data = [
         {"a": p.id_a, "b": p.id_b, "hamming": p.hamming_distance} for p in dup_pairs
     ]
     analyzers_ran.append("A10")
+    _log(f"[A10] {len(dup_pairs)} cặp element trùng lặp")
 
     # ── A0 — Normalize ────────────────────────────────────────────────────────
+    _log("[A0] Chuẩn hóa canonical doc...")
     all_issues: list[CandidateIssue] = (
         color_issues + img_issues + glyph_candidates + pattern_issues
     )
@@ -169,8 +189,10 @@ def run_pipeline(
     analyzers_ran.append("A0")
 
     # ── Rule Engine R1–R4 ────────────────────────────────────────────────────
+    _log(f"[R1-R4] Chạy rule engine trên {len(doc.elements)} element, {len(doc.candidate_issues)} candidate...")
     doc = run_rule_engine(doc)
     rules_ran = ["R1", "R2", "R3", "R4"]
+    _log(f"[R1-R4] Rule engine xong: {len(doc.candidate_issues)} candidate issue")
 
     # ── Reasoning: coding-agent CLI headless (Codex/Cline), text-only — xem F1.1 ──
     agents_ran: list[str] = []
@@ -181,15 +203,16 @@ def run_pipeline(
         from ..agents.backends import active_backend
         from ..agents.critic import run_critic
         from ..agents.runner import run_review
-        _backend = active_backend()
-        results = run_review(doc, model=vlm_model, backend=agent_backend)
+        _backend = agent_backend or active_backend()
+        _log(f"[Agent] Gọi {_backend} reasoning ({len(doc.candidate_issues)} candidate)...")
+        results = run_review(doc, model=vlm_model, backend=agent_backend, log_callback=log_callback)
         agents_ran = [r.agent_id for r in results if r.error is None]
-        # Gom lỗi (driver gói chi tiết) để surface ra response + log
         agent_errors = [
             {"agent_id": r.agent_id, "error": r.error}
             for r in results if r.error is not None
         ]
         findings = run_critic(results, min_confidence=min_confidence)
+        _log(f"[Agent] Xong: {len(findings)} finding sau critic/filter")
 
     # ── S1 — Summary ──────────────────────────────────────────────────────────
     t1 = time.monotonic()

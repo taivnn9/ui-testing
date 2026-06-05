@@ -75,6 +75,8 @@ function onFile(file) {
 async function analyze() {
   if (!state.file) { showBanner("Hãy chọn ảnh trước."); return; }
   clearBanner();
+  clearLog();
+  showLogPanel();
   const btn = $("#analyzeBtn");
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Đang phân tích…';
@@ -87,27 +89,38 @@ async function analyze() {
   fd.append("agent_backend", $("#agentBackend").value);
 
   try {
-    const resp = await fetch("/analyze", { method: "POST", body: fd });
+    const resp = await fetch("/analyze/stream", { method: "POST", body: fd });
     if (!resp.ok) {
       const detail = await safeDetail(resp);
       showError(resp.status, detail);
       return;
     }
-    const data = await resp.json();
-    state.issues = data.issues.map((it, i) => ({ ...it, _num: i + 1 }));
-    state.issues.sort((a, b) =>
-      (SEV[b.severity]?.rank || 0) - (SEV[a.severity]?.rank || 0) ||
-      b.confidence - a.confidence);
-    state.issues.forEach((it, i) => { it._num = i + 1; });
-    // Mặc định xem "theo lỗi", tự chọn lỗi đầu tiên (ưu tiên lỗi có bbox) để thấy ngay 1 khung sạch
-    state.activeId = (state.issues.find((it) => it.element_bbox) || state.issues[0] || {}).id || null;
-    setViewMode("issue");
-    renderSummary(data.summary);
-    renderResults();
-    renderOverlays();
-    // Cảnh báo nếu agent VLM lỗi nhưng pipeline vẫn chạy (HTTP 200)
-    const agentErrors = (data.pipeline_meta && data.pipeline_meta.agent_errors) || [];
-    if (agentErrors.length) showAgentErrors(agentErrors);
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const parts = buffer.split("\n\n");
+      buffer = parts.pop();
+      for (const part of parts) {
+        const dataLine = part.split("\n").find((l) => l.startsWith("data: "));
+        if (!dataLine) continue;
+        try {
+          const evt = JSON.parse(dataLine.slice(6));
+          if (evt.type === "log") {
+            appendLog(evt.msg);
+          } else if (evt.type === "result") {
+            handleResult(evt.data);
+          } else if (evt.type === "error") {
+            showError(500, evt.detail);
+          }
+        } catch { /* ignore parse errors on partial chunks */ }
+      }
+    }
   } catch (e) {
     showBannerHtml("warn",
       `<strong>Không kết nối được server.</strong>` +
@@ -116,6 +129,22 @@ async function analyze() {
     btn.disabled = false;
     btn.textContent = "Phân tích";
   }
+}
+
+function handleResult(data) {
+  state.issues = data.issues.map((it, i) => ({ ...it, _num: i + 1 }));
+  state.issues.sort((a, b) =>
+    (SEV[b.severity]?.rank || 0) - (SEV[a.severity]?.rank || 0) ||
+    b.confidence - a.confidence);
+  state.issues.forEach((it, i) => { it._num = i + 1; });
+  state.activeId = (state.issues.find((it) => it.element_bbox) || state.issues[0] || {}).id || null;
+  setViewMode("issue");
+  renderSummary(data.summary);
+  renderResults();
+  renderOverlays();
+  appendLog(`[Done] Phân tích xong: ${data.summary.total_issues} lỗi`);
+  const agentErrors = (data.pipeline_meta && data.pipeline_meta.agent_errors) || [];
+  if (agentErrors.length) showAgentErrors(agentErrors);
 }
 
 async function safeDetail(resp) {
@@ -326,4 +355,40 @@ function esc(s) {
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
-document.addEventListener("DOMContentLoaded", init);
+// ── Log panel ────────────────────────────────────────────────────────────────
+function appendLog(msg) {
+  const body = $("#logBody");
+  const line = document.createElement("div");
+  line.className = "log-line";
+  const ts = new Date().toLocaleTimeString("en-GB", { hour12: false });
+  let cls = "log-default";
+  if (/^\[A\d/.test(msg))                          cls = "log-analyzer";
+  else if (msg.startsWith("[R"))                    cls = "log-rule";
+  else if (msg.startsWith("[Agent]"))               cls = "log-agent";
+  else if (msg.startsWith("[cline]"))               cls = "log-cline";
+  else if (msg.startsWith("[Done]"))                cls = "log-done";
+  else if (/error|lỗi|fail/i.test(msg))            cls = "log-error";
+  line.innerHTML = `<span class="log-ts">${ts}</span><span class="${cls}">${esc(msg)}</span>`;
+  body.appendChild(line);
+  body.scrollTop = body.scrollHeight;
+}
+
+function clearLog() { $("#logBody").innerHTML = ""; }
+
+function showLogPanel() {
+  const panel = $("#logPanel");
+  panel.classList.remove("hidden");
+  $("#logBody").classList.remove("collapsed");
+  $("#logToggle").textContent = "▼";
+}
+
+function initLogPanel() {
+  $("#logClear").addEventListener("click", clearLog);
+  $("#logToggle").addEventListener("click", () => {
+    const body = $("#logBody");
+    const collapsed = body.classList.toggle("collapsed");
+    $("#logToggle").textContent = collapsed ? "▲" : "▼";
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => { init(); initLogPanel(); });

@@ -13,7 +13,7 @@
 * { box-sizing: border-box; }
 body {
   margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  background: var(--bg); color: var(--text);
+  background: var(--bg); color: var(--text); padding-bottom: 250px;
 }
 header {
   display: flex; align-items: center; justify-content: space-between;
@@ -118,4 +118,34 @@ header h1 { font-size: 18px; margin: 0; }
   border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: -2px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-.hidden { display: none; }
+.hidden { display: none !important; }
+
+/* ── Log panel ── */
+.log-panel {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: #1a1a2e; color: #cdd6f4; font-family: "Fira Mono", "Cascadia Code", monospace; font-size: 12px;
+  border-top: 2px solid #45475a; display: flex; flex-direction: column; max-height: 240px;
+}
+.log-header {
+  display: flex; align-items: center; gap: 8px; padding: 4px 12px;
+  background: #181825; border-bottom: 1px solid #313244; flex-shrink: 0; user-select: none;
+}
+.log-header > span { flex: 1; font-weight: 600; font-size: 11px; letter-spacing: .06em; color: #a6adc8; text-transform: uppercase; }
+.log-btn {
+  background: transparent; border: 1px solid #45475a; color: #a6adc8;
+  border-radius: 4px; font-size: 11px; padding: 2px 8px; cursor: pointer; line-height: 1.6;
+}
+.log-btn:hover { background: #313244; }
+.log-body {
+  overflow-y: auto; flex: 1; padding: 6px 12px; max-height: 190px;
+}
+.log-body.collapsed { display: none; }
+.log-line { display: flex; gap: 12px; line-height: 1.65; padding: 1px 0; }
+.log-ts { color: #585b70; flex-shrink: 0; font-size: 11px; padding-top: 1px; }
+.log-analyzer { color: #89b4fa; }   /* blue — CV stages */
+.log-rule     { color: #a6e3a1; }   /* green — rule engine */
+.log-agent    { color: #f5c2e7; }   /* pink — agent call */
+.log-cline    { color: #94e2d5; }   /* teal — cline output */
+.log-done     { color: #a6e3a1; font-weight: 600; }
+.log-error    { color: #f38ba8; }
+.log-default  { color: #cdd6f4; }

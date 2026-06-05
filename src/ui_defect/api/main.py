@@ -1,14 +1,18 @@
 """FastAPI application — POST /analyze endpoint."""
 from __future__ import annotations
 
+import asyncio
+import json
 import logging
 import os
+import threading
 import traceback
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from PIL import Image, UnidentifiedImageError
 
@@ -151,8 +155,7 @@ async def analyze(
             agent_backend=_agent_backend,
         )
     except Exception as exc:
-        # Log full traceback ra console server (luôn luôn, dù DEBUG_ERRORS bật/tắt)
-        logger.exception("Pipeline thất bại (platform=%s, run_vlm=%s)", _platform, run_vlm)
+        logger.exception("Pipeline thất bại (platform=%s, run_agents=%s)", _platform, _run_agents)
         raise HTTPException(500, detail=_error_detail(exc, "pipeline")) from exc
 
     # Cảnh báo nếu agent VLM lỗi nhưng pipeline vẫn chạy (không 500) — để debug cấu hình LLM
@@ -165,19 +168,26 @@ async def analyze(
         )
 
     # Filter theo min_severity
+    return _build_analyze_response(output, _platform, _vp_w, _vp_h, dpr, _locale, _theme, route, min_severity)
+
+
+def _build_analyze_response(
+    output: Any,
+    platform: str, vp_w: int, vp_h: int, dpr: float,
+    locale: str, theme: str, route: Any, min_severity: str,
+) -> AnalyzeResponse:
     _sev_order = ["trivial", "low", "medium", "high", "critical"]
     min_idx = _sev_order.index(min_severity) if min_severity in _sev_order else 0
     filtered = [i for i in output.issues if _sev_order.index(i.severity) >= min_idx]
-
     now = datetime.now(UTC).isoformat()
     return AnalyzeResponse(
         screen_id=output.screen_id,
         analyzed_at=now,
         screen={
-            "platform": _platform,  # android mặc định
-            "viewport": {"w": _vp_w, "h": _vp_h, "dpr": dpr},
-            "locale": _locale,
-            "theme": _theme,
+            "platform": platform,
+            "viewport": {"w": vp_w, "h": vp_h, "dpr": dpr},
+            "locale": locale,
+            "theme": theme,
             "route": route,
         },
         summary=SummaryOut(
@@ -206,4 +216,98 @@ async def analyze(
             for i in filtered
         ],
         pipeline_meta=output.pipeline_meta,
+    )
+
+
+@app.post("/analyze/stream", include_in_schema=False)
+async def analyze_stream(
+    screenshot: UploadFile = File(...),  # noqa: B008
+    platform: str = Form("android"),
+    viewport_w: int | None = Form(None),
+    viewport_h: int | None = Form(None),
+    theme: str | None = Form(None),
+    dpr: float = Form(1.0),
+    locale: str | None = Form(None),
+    safe_area_top: int | None = Form(None),
+    safe_area_bottom: int | None = Form(None),
+    font_scale: float = Form(1.0),
+    route: str | None = Form(None),
+    min_severity: str = Form("low"),
+    min_confidence: float = Form(0.4),
+    agent_backend: str = Form(""),
+):
+    """Giống /analyze nhưng trả text/event-stream, mỗi dòng là 1 SSE event log hoặc kết quả cuối."""
+    raw = await screenshot.read()
+    if len(raw) > _MAX_IMAGE_BYTES:
+        raise HTTPException(413, detail="file_too_large")
+
+    try:
+        from io import BytesIO
+        img = Image.open(BytesIO(raw))
+        img.load()
+        if img.mode not in ("RGB", "RGBA"):
+            img = img.convert("RGB")
+    except UnidentifiedImageError as exc:
+        raise HTTPException(400, detail={"error": "invalid_image", "message": str(exc)}) from exc
+    except Exception as exc:
+        raise HTTPException(400, detail=_error_detail(exc, "image_decode")) from exc
+
+    _agent_backend = agent_backend.strip().lower() if agent_backend.strip() else None
+    if _agent_backend and _agent_backend not in ("codex", "cline", "none"):
+        raise HTTPException(400, detail="agent_backend phải là codex, cline hoặc none")
+
+    import numpy as np
+    _platform = platform
+    _vp_w = viewport_w or img.width
+    _vp_h = viewport_h or img.height
+    _theme = theme or ("dark" if np.array(img.convert("L")).mean() / 255.0 < 0.35 else "light")
+    _locale = locale or "en-US"
+    _run_agents = (_agent_backend or "cline") != "none"
+
+    loop = asyncio.get_event_loop()
+    log_queue: asyncio.Queue = asyncio.Queue()
+
+    def _log_cb(msg: str):
+        loop.call_soon_threadsafe(log_queue.put_nowait, ("log", msg))
+
+    def _run():
+        try:
+            out = run_pipeline(
+                img=img, platform=_platform,
+                viewport_w=_vp_w, viewport_h=_vp_h, dpr=dpr,
+                locale=_locale, theme=_theme, font_scale=font_scale, route=route,
+                safe_area_top=safe_area_top, safe_area_bottom=safe_area_bottom,
+                min_confidence=min_confidence, run_agents=_run_agents,
+                agent_backend=_agent_backend, log_callback=_log_cb,
+            )
+            loop.call_soon_threadsafe(log_queue.put_nowait, ("result", out))
+        except Exception as exc:
+            logger.exception("Stream pipeline lỗi")
+            loop.call_soon_threadsafe(log_queue.put_nowait, ("error", exc))
+
+    threading.Thread(target=_run, daemon=True).start()
+
+    def _sse(obj: dict) -> str:
+        return f"data: {json.dumps(obj, ensure_ascii=False)}\n\n"
+
+    async def _event_stream():
+        while True:
+            kind, payload = await log_queue.get()
+            if kind == "log":
+                yield _sse({"type": "log", "msg": payload})
+            elif kind == "result":
+                resp = _build_analyze_response(
+                    payload, _platform, _vp_w, _vp_h, dpr,
+                    _locale, _theme, route, min_severity,
+                )
+                yield _sse({"type": "result", "data": resp.model_dump()})
+                break
+            elif kind == "error":
+                yield _sse({"type": "error", "detail": _error_detail(payload, "pipeline")})
+                break
+
+    return StreamingResponse(
+        _event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )

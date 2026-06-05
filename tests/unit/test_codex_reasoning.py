@@ -51,7 +51,7 @@ def test_build_prompt_has_skills_and_data():
 
 
 def test_run_review_parses_stub_findings(monkeypatch):
-    def fake_backend(prompt, schema=None, *, backend=None):
+    def fake_backend(prompt, schema=None, *, backend=None, log_callback=None):
         return {"summary": "ok", "findings": [
             {"issue_type": "R1.touch_target_min", "element_id": "e5",
              "verdict": "confirmed", "severity": "high", "confidence": 0.9,

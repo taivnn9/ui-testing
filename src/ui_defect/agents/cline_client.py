@@ -96,6 +96,7 @@ def run_cline(
     *,
     timeout: int | None = None,
     cwd: str | None = None,
+    log_callback=None,
 ) -> dict[str, Any]:
     """
     Chạy Cline headless với prompt, trả dict JSON đã parse.
@@ -138,9 +139,12 @@ def run_cline(
     def _drain_stderr() -> None:
         for line in proc.stderr:  # type: ignore[union-attr]
             stderr_lines.append(line)
+            stripped = line.rstrip()
             if verbose:
                 sys.stderr.write("[cline] " + line)
                 sys.stderr.flush()
+            if log_callback and stripped:
+                log_callback("[cline] " + stripped)
 
     t = threading.Thread(target=_drain_stderr, daemon=True)
     t.start()

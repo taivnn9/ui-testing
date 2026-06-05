@@ -109,7 +109,7 @@ def test_run_cline_missing_binary_raises(monkeypatch):
 def test_backend_routes_to_cline(monkeypatch):
     monkeypatch.setenv("AGENT_BACKEND", "cline")
     monkeypatch.setattr(cline_client, "run_cline",
-                        lambda prompt, schema: {"routed": "cline"})
+                        lambda prompt, schema, **kw: {"routed": "cline"})
     assert backends.active_backend() == "cline"
     assert backends.run_backend("p", None) == {"routed": "cline"}
 

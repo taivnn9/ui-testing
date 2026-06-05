@@ -232,6 +232,7 @@ def run_review(
     *,
     model: str | None = None,
     backend: str | None = None,
+    log_callback=None,
 ) -> list[AgentRunResult]:
     """
     Chạy 1 lượt reasoning qua coding-agent CLI (backend). Trả list[AgentRunResult] (1 phần tử)
@@ -242,7 +243,7 @@ def run_review(
     _backend = (backend or active_backend()).strip().lower()
     prompt = build_review_prompt(doc, backend=_backend)
     try:
-        raw = run_backend(prompt, REASONING_SCHEMA, backend=_backend)
+        raw = run_backend(prompt, REASONING_SCHEMA, backend=_backend, log_callback=log_callback)
     except Exception as exc:
         return [AgentRunResult(agent_id=_backend, error=f"{type(exc).__name__}: {exc}")]
     findings = _parse_findings(raw, _backend)

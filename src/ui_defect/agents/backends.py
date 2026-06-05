@@ -23,6 +23,7 @@ def run_backend(
     schema: dict[str, Any] | None = None,
     *,
     backend: str | None = None,
+    log_callback=None,
 ) -> dict[str, Any]:
     """Gọi backend đang chọn. Raise RuntimeError nếu backend lỗi (driver tự gói chi tiết).
 
@@ -34,7 +35,7 @@ def run_backend(
         return run_codex(prompt, schema)
     if backend == "cline":
         from .cline_client import run_cline
-        return run_cline(prompt, schema)
+        return run_cline(prompt, schema, log_callback=log_callback)
     if backend in ("none", "off", ""):
         return {"findings": [], "summary": "agent_backend=none"}
     raise RuntimeError(f"AGENT_BACKEND không hỗ trợ: {backend!r} (dùng: codex | cline | none)")
