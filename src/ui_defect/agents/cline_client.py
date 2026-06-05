@@ -16,7 +16,8 @@ Tuỳ chỉnh qua env để khớp cách gọi Cline headless ở từng máy.
 Cấu hình qua env:
   CLINE_BIN         = binary/đường dẫn (mặc định "cline")
   CLINE_ARGS        = args phụ, cách nhau bởi khoảng trắng (mặc định "-y")
-  CLINE_PROMPT_MODE = "arg" (mặc định) | "stdin"  — đưa prompt qua tham số cuối hay stdin
+  CLINE_PROMPT_MODE = "stdin" (mặc định) | "arg"  — đưa prompt qua stdin hay tham số cuối
+                      stdin an toàn hơn trên Windows (arg có thể vỡ khi prompt dài >8KB)
   CLINE_TIMEOUT_SEC = timeout giây (mặc định 300)
   CLINE_CD          = thư mục làm việc (mặc định = repo root)
 """
@@ -109,7 +110,7 @@ def run_cline(
     """
     cline_bin = _env("CLINE_BIN", "cline")
     extra_args = shlex.split(_env("CLINE_ARGS", "-y"))
-    prompt_mode = _env("CLINE_PROMPT_MODE", "arg")
+    prompt_mode = _env("CLINE_PROMPT_MODE", "stdin")
     _timeout = timeout or int(_env("CLINE_TIMEOUT_SEC", "300"))
     _cwd = cwd or _env("CLINE_CD", str(_REPO_ROOT))
 

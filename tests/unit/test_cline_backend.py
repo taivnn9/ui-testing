@@ -47,7 +47,7 @@ def test_build_prompt_embeds_schema():
 
 
 def test_run_cline_parses_stdout(monkeypatch):
-    """Default: cline -y "<prompt>" (CLINE_ARGS="-y", CLINE_PROMPT_MODE="arg")."""
+    """Default: CLINE_PROMPT_MODE=stdin → prompt qua stdin (an toàn hơn trên Windows)."""
     captured = {}
 
     def fake_popen(cmd, stdin=None, stdout=None, stderr=None, text=None, cwd=None):
@@ -64,8 +64,7 @@ def test_run_cline_parses_stdout(monkeypatch):
     out = cline_client.run_cline("PROMPT", {"type": "object"})
     assert out == {"findings": [], "summary": "done"}
     assert captured["cmd"][:2] == ["cline-x", "-y"]    # default -y flag
-    assert "PROMPT" in captured["cmd"][-1]              # prompt là arg cuối
-    assert captured["stdin"] is None                    # KHÔNG qua stdin
+    assert captured["stdin"] == subprocess.PIPE         # prompt qua stdin (default mới)
 
 
 def test_run_cline_stdin_mode(monkeypatch):
