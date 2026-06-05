@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import logging.handlers
 import os
 import threading
 import traceback
@@ -20,10 +21,28 @@ from .pipeline import run_pipeline
 from .schemas import AnalyzeResponse, IssueOut, SummaryOut
 
 # ── Logging ───────────────────────────────────────────────────────────────────
-logging.basicConfig(
-    level=os.environ.get("LOG_LEVEL", "INFO"),
-    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-)
+_LOG_LEVEL = os.environ.get("LOG_LEVEL", "DEBUG").upper()
+_LOG_FILE  = os.environ.get("LOG_FILE", "logs/ui_defect.log")
+
+_LOG_FMT_TERMINAL = "%(asctime)s %(levelname)-8s %(name)s: %(message)s"
+_LOG_FMT_FILE     = "%(asctime)s %(levelname)-8s %(name)s:%(lineno)d — %(message)s"
+
+logging.basicConfig(level=_LOG_LEVEL, format=_LOG_FMT_TERMINAL)
+
+def _setup_file_logging() -> None:
+    """Thêm RotatingFileHandler vào root logger — ghi cả terminal lẫn file."""
+    try:
+        Path(_LOG_FILE).parent.mkdir(parents=True, exist_ok=True)
+        fh = logging.handlers.RotatingFileHandler(
+            _LOG_FILE, maxBytes=10 * 1024 * 1024, backupCount=3, encoding="utf-8",
+        )
+        fh.setLevel(_LOG_LEVEL)
+        fh.setFormatter(logging.Formatter(_LOG_FMT_FILE, datefmt="%Y-%m-%d %H:%M:%S"))
+        logging.getLogger().addHandler(fh)
+    except OSError:
+        pass  # quyền ghi bị chặn hoặc đường dẫn không hợp lệ → log terminal vẫn hoạt động
+
+_setup_file_logging()
 logger = logging.getLogger("ui_defect")
 
 # Verbose error detail trong HTTP response — BẬT ở giai đoạn dev (mặc định "1").

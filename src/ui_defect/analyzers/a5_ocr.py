@@ -7,7 +7,10 @@ from __future__ import annotations
 
 import base64
 import io
+import logging
 import os
+
+logger = logging.getLogger(__name__)
 import unicodedata
 from dataclasses import dataclass, field
 from typing import Optional
@@ -299,28 +302,36 @@ def extract_text(
     """
     base_url = os.environ.get("OCR_BASE_URL")
     if base_url:
+        logger.info("OCR: gọi remote sidecar %s (lang=%s)", base_url, lang)
         try:
             segments = _run_ocr_remote(img, viewport, lang, base_url)
             _fill_bbox_norm(segments, img.width, img.height)
+            lines = [s for s in segments if s.level == "line"]
+            logger.info("OCR remote: %d line, %d segment tổng", len(lines), len(segments))
             return segments
-        except Exception:
-            # Remote lỗi → thử backend local (nếu máy app có cài)
-            pass
+        except Exception as exc:
+            logger.warning("OCR remote lỗi (%s) → thử local", exc)
 
+    engine = "none"
     try:
         segments = _run_paddle(img, viewport, lang=lang)
         engine = "paddle"
     except (ImportError, Exception):
         try:
             segments = _run_tesseract(img, viewport)
-            # Tesseract trả words → gom thành lines
             words = [s for s in segments if s.level == "word"]
             segments = _group_into_lines(words)
             engine = "tesseract"
         except (ImportError, Exception):
+            logger.info("OCR: không có backend khả dụng (paddle/tesseract) → trả rỗng")
             return []
 
     _fill_bbox_norm(segments, img.width, img.height)
+    lines = [s for s in segments if s.level == "line"]
+    logger.info("OCR (%s): %d line, %d segment — lang=%s", engine, len(lines), len(segments), lang)
+    if lines:
+        sample = [s.text[:40] for s in lines[:5]]
+        logger.debug("OCR sample text: %s", sample)
     return segments
 
 

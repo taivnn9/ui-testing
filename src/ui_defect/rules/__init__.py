@@ -15,7 +15,20 @@ Thứ tự chạy:
 """
 from __future__ import annotations
 
+import logging
+
 from ..schema.models import CandidateIssue, CanonicalDoc
+
+logger = logging.getLogger(__name__)
+
+
+def _apply(issues: list[CandidateIssue], fn, doc: CanonicalDoc) -> list[CandidateIssue]:
+    """Chạy 1 rule, log kết quả nếu có issue."""
+    found = fn(doc)
+    if found:
+        logger.debug("  %-30s → %d candidate", fn.__name__, len(found))
+    issues.extend(found)
+    return issues
 from .r1_geometry import (
     check_grid_alignment,
     check_near_duplicate_position,
@@ -71,47 +84,60 @@ def run_rule_engine(doc: CanonicalDoc) -> CanonicalDoc:
     Returns: CanonicalDoc mới với candidate_issues đầy đủ.
     """
     new_issues: list[CandidateIssue] = []
+    n = len(doc.elements)
+    logger.info("Rule engine: %d element, %d candidate trước đó", n, len(doc.candidate_issues))
 
-    # R1 — Geometry (thứ tự theo spec)
-    new_issues.extend(check_offscreen(doc))
-    new_issues.extend(check_safe_area(doc))
-    new_issues.extend(check_overlap(doc))
-    new_issues.extend(check_near_duplicate_position(doc))
-    new_issues.extend(check_overflow(doc))
-    new_issues.extend(check_touch_target(doc))
-    new_issues.extend(check_tap_gap(doc))
-    new_issues.extend(check_grid_alignment(doc))
+    # R1 — Geometry
+    logger.debug("R1 Geometry...")
+    _apply(new_issues, check_offscreen, doc)
+    _apply(new_issues, check_safe_area, doc)
+    _apply(new_issues, check_overlap, doc)
+    _apply(new_issues, check_near_duplicate_position, doc)
+    _apply(new_issues, check_overflow, doc)
+    _apply(new_issues, check_touch_target, doc)
+    _apply(new_issues, check_tap_gap, doc)
+    _apply(new_issues, check_grid_alignment, doc)
+    logger.info("R1-Geometry: %d issue mới", len(new_issues))
 
     # R2 — Color/contrast
-    new_issues.extend(check_contrast(doc))
-    new_issues.extend(check_dark_mode(doc))
-    new_issues.extend(check_opacity(doc))
+    before = len(new_issues)
+    logger.debug("R2 Color/contrast...")
+    _apply(new_issues, check_contrast, doc)
+    _apply(new_issues, check_dark_mode, doc)
+    _apply(new_issues, check_opacity, doc)
+    logger.info("R2-Color: %d issue mới", len(new_issues) - before)
 
     # R3 — Image
-    new_issues.extend(check_blur(doc))
-    new_issues.extend(check_distortion(doc))
-    new_issues.extend(check_scale_mode(doc))
-    new_issues.extend(check_icon_centering(doc))
-    new_issues.extend(check_placeholder_icon(doc))
-    new_issues.extend(check_hash_duplicates(doc))
+    before = len(new_issues)
+    logger.debug("R3 Image...")
+    _apply(new_issues, check_blur, doc)
+    _apply(new_issues, check_distortion, doc)
+    _apply(new_issues, check_scale_mode, doc)
+    _apply(new_issues, check_icon_centering, doc)
+    _apply(new_issues, check_placeholder_icon, doc)
+    _apply(new_issues, check_hash_duplicates, doc)
+    logger.info("R3-Image: %d issue mới", len(new_issues) - before)
 
     # R4 — Text
-    new_issues.extend(check_placeholders(doc))
-    new_issues.extend(check_i18n_keys(doc))
-    new_issues.extend(check_lorem_ipsum(doc))
-    new_issues.extend(check_debug_text(doc))
-    new_issues.extend(check_mojibake(doc))
-    new_issues.extend(check_escape_literals(doc))
-    new_issues.extend(check_epoch(doc))
-    new_issues.extend(check_stacktrace(doc))
-    new_issues.extend(check_truncation(doc))
-    new_issues.extend(check_font_size(doc))
+    before = len(new_issues)
+    logger.debug("R4 Text...")
+    _apply(new_issues, check_placeholders, doc)
+    _apply(new_issues, check_i18n_keys, doc)
+    _apply(new_issues, check_lorem_ipsum, doc)
+    _apply(new_issues, check_debug_text, doc)
+    _apply(new_issues, check_mojibake, doc)
+    _apply(new_issues, check_escape_literals, doc)
+    _apply(new_issues, check_epoch, doc)
+    _apply(new_issues, check_stacktrace, doc)
+    _apply(new_issues, check_truncation, doc)
+    _apply(new_issues, check_font_size, doc)
+    logger.info("R4-Text: %d issue mới", len(new_issues) - before)
 
     # Gộp với existing issues (từ analyzers A4, A9, A10, ...)
     all_issues = list(doc.candidate_issues) + new_issues
 
     # Dedup toàn bộ
     deduped = _deduplicate(all_issues)
+    logger.info("Rule engine xong: %d issue sau dedup (trước: %d)", len(deduped), len(all_issues))
 
-    # Trả về doc mới (Pydantic v2: model_copy)
     return doc.model_copy(update={"candidate_issues": deduped})

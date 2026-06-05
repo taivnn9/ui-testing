@@ -4,9 +4,12 @@ rule engine, agents, critic, summary → trả AnalyzeOutput.
 """
 from __future__ import annotations
 
+import logging
 import time
 import uuid
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 from PIL import Image
 
@@ -49,7 +52,10 @@ def run_pipeline(
     screen_id: Optional[str] = None,
     log_callback=None,
 ) -> AnalyzeOutput:
-    _log = log_callback or (lambda _: None)
+    def _log(msg: str) -> None:
+        logger.info(msg)          # → terminal + file
+        if log_callback:
+            log_callback(msg)     # → SSE web UI
     t0 = time.monotonic()
     _screen_id = screen_id or ("scr_" + uuid.uuid4().hex[:8])
     analyzers_ran: list[str] = []

@@ -23,6 +23,7 @@ Cấu hình qua env:
 from __future__ import annotations
 
 import json
+import logging
 import os
 import shlex
 import subprocess
@@ -30,6 +31,8 @@ import sys
 import threading
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 # repo root: agents → ui_defect → src → root
 _REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -140,11 +143,13 @@ def run_cline(
         for line in proc.stderr:  # type: ignore[union-attr]
             stderr_lines.append(line)
             stripped = line.rstrip()
+            if stripped:
+                logger.debug("[cline] %s", stripped)  # → terminal + file
             if verbose:
                 sys.stderr.write("[cline] " + line)
                 sys.stderr.flush()
             if log_callback and stripped:
-                log_callback("[cline] " + stripped)
+                log_callback("[cline] " + stripped)    # → SSE
 
     t = threading.Thread(target=_drain_stderr, daemon=True)
     t.start()

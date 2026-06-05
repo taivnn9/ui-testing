@@ -6,8 +6,11 @@ Spec: docs/analyzers/A3-box-layout-detector.md
 from __future__ import annotations
 
 import itertools
+import logging
 import uuid
 from dataclasses import dataclass, field
+
+logger = logging.getLogger(__name__)
 from typing import Optional
 
 import cv2
@@ -311,15 +314,19 @@ def detect_layout(
         text_segments = []
 
     img_w, img_h = img.width, img.height
+    logger.info("A3 detect_layout: ảnh %dx%d, %d text segment đầu vào", img_w, img_h, len(text_segments))
 
     # 1. Detect non-text regions bằng CV
     cv_bboxes = _detect_non_text_regions(img, cfg)
+    logger.debug("A3 CV non-text detect: %d region", len(cv_bboxes))
 
     # 2. Fuse: lấy thêm orphan text box (text không nằm trong CV region nào)
     cv_bboxes, orphan_texts = _fuse_text_segments(cv_bboxes, text_segments, cfg)
+    logger.debug("A3 sau fuse: %d box, %d orphan text", len(cv_bboxes), len(orphan_texts))
 
     # 3. Merge overlapping CV boxes
     cv_bboxes = _merge_overlapping(cv_bboxes, threshold=cfg.iou_merge_threshold)
+    logger.debug("A3 sau merge: %d box", len(cv_bboxes))
 
     # Chuẩn bị ảnh xám để heuristic role
     arr = np.array(img.convert("RGB"))
@@ -376,4 +383,9 @@ def detect_layout(
     # 8. Group alignment → list containers ảo
     elements = _add_grouping(elements)
 
+    roles = {}
+    for e in elements:
+        roles[e.role] = roles.get(e.role, 0) + 1
+    logger.info("A3 kết quả: %d element — %s", len(elements),
+                ", ".join(f"{r}:{n}" for r, n in sorted(roles.items())))
     return elements
