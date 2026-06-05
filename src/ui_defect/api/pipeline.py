@@ -216,6 +216,7 @@ def run_pipeline(
 
     # ── S1 — Summary ──────────────────────────────────────────────────────────
     t1 = time.monotonic()
+    duration_ms = round((t1 - t0) * 1000)
     output = build_summary(
         findings=findings,
         doc=doc,
@@ -229,7 +230,9 @@ def run_pipeline(
             "total_candidates_pre_filter": len(doc.candidate_issues),
             "final_issues": len(findings) if run_agents else len(doc.candidate_issues),
             "mode": _backend if run_agents else "rule-only",
-            "pipeline_duration_ms": round((t1 - t0) * 1000),
+            "pipeline_duration_ms": duration_ms,
         },
     )
+    n_issues = len(findings) if run_agents else len(doc.candidate_issues)
+    _log(f"[Done] Pipeline xong {duration_ms}ms — {n_issues} issue")
     return output

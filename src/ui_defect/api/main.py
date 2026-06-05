@@ -264,7 +264,7 @@ async def analyze_stream(
     _locale = locale or "en-US"
     _run_agents = (_agent_backend or "cline") != "none"
 
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     log_queue: asyncio.Queue = asyncio.Queue()
 
     def _log_cb(msg: str):
