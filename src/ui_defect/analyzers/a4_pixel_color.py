@@ -48,16 +48,33 @@ DARK_MODE_BG_THRESHOLD = 80     # L < 80/255 → dark bg  (TUNE)
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
-def _crop_element(img: Image.Image, bbox: BBox) -> Optional[np.ndarray]:
-    """Crop element bbox → numpy RGB array. None nếu crop quá nhỏ."""
+_A4_MAX_CROP_DIM = 80  # max chiều crop trước K-means (giữ latency thấp)
+
+
+def _crop_from_array(arr_rgb: np.ndarray, bbox: BBox, img_w: int, img_h: int) -> Optional[np.ndarray]:
+    """Crop element bbox từ numpy array đã có sẵn (không convert lại). None nếu quá nhỏ.
+    Resize về tối đa _A4_MAX_CROP_DIM×_A4_MAX_CROP_DIM để K-means nhanh.
+    """
     x1 = max(0, int(bbox.x))
     y1 = max(0, int(bbox.y))
-    x2 = min(img.width, int(bbox.x + bbox.w))
-    y2 = min(img.height, int(bbox.y + bbox.h))
+    x2 = min(img_w, int(bbox.x + bbox.w))
+    y2 = min(img_h, int(bbox.y + bbox.h))
     if (x2 - x1) < MIN_CROP_SIZE_PX or (y2 - y1) < MIN_CROP_SIZE_PX:
         return None
+    crop = arr_rgb[y1:y2, x1:x2]
+    h, w = crop.shape[:2]
+    if h > _A4_MAX_CROP_DIM or w > _A4_MAX_CROP_DIM:
+        scale = _A4_MAX_CROP_DIM / max(h, w)
+        new_h = max(MIN_CROP_SIZE_PX, int(h * scale))
+        new_w = max(MIN_CROP_SIZE_PX, int(w * scale))
+        crop = cv2.resize(crop, (new_w, new_h), interpolation=cv2.INTER_AREA)
+    return crop
+
+
+def _crop_element(img: Image.Image, bbox: BBox) -> Optional[np.ndarray]:
+    """Legacy: convert image → array rồi crop (dùng nếu gọi độc lập ngoài sample_colors)."""
     arr = np.array(img.convert("RGB"))
-    return arr[y1:y2, x1:x2]
+    return _crop_from_array(arr, bbox, img.width, img.height)
 
 
 def _bg_is_solid(crop_rgb: np.ndarray, bg_pixels: np.ndarray) -> bool:
@@ -142,6 +159,12 @@ def _severity_for_contrast(
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
+import os as _os
+_A4_MAX_ELEMENTS = int(_os.environ.get("A4_MAX_ELEMENTS", "20"))  # set 0 để skip A4
+_A4_MIN_AREA_PX2 = 100    # bỏ element quá nhỏ (<10×10 px)
+_A4_MAX_AREA_PX2 = 150_000  # bỏ background full-screen (không cần contrast)
+
+
 def sample_colors(
     img: Image.Image,
     elements: list[Element],
@@ -151,6 +174,8 @@ def sample_colors(
 ) -> tuple[list[PixelColorResult], list[CandidateIssue]]:
     """
     Đo màu/contrast cho mọi element có role text/button/icon/toggle.
+    Giới hạn MAX_ELEMENTS để giữ latency thấp — ưu tiên element lớn nhất
+    (most visible) và bỏ background full-screen.
     Trả về: (results[], candidate_issues[]).
     """
     _img_w = img_w or img.width
@@ -158,13 +183,24 @@ def sample_colors(
     results: list[PixelColorResult] = []
     issues: list[CandidateIssue] = []
 
-    for elem in elements:
-        if not elem.visible:
-            continue
-        if elem.role not in ("text", "button", "icon", "input", "toggle", "nav", "tab"):
-            continue
+    _TARGET_ROLES = ("text", "button", "icon", "input", "toggle", "nav", "tab")
 
-        crop_rgb = _crop_element(img, elem.bbox)
+    # Convert ảnh 1 lần duy nhất (tránh bottleneck convert × N element)
+    arr_rgb = np.array(img.convert("RGB"))
+    img_w_px, img_h_px = img.width, img.height
+
+    # Lọc và sắp xếp: chỉ lấy element đủ lớn, ưu tiên element diện tích lớn nhất
+    eligible = [
+        e for e in elements
+        if e.visible
+        and e.role in _TARGET_ROLES
+        and _A4_MIN_AREA_PX2 <= (e.bbox.w * e.bbox.h) <= _A4_MAX_AREA_PX2
+    ]
+    eligible.sort(key=lambda e: e.bbox.w * e.bbox.h, reverse=True)
+    eligible = eligible[:_A4_MAX_ELEMENTS]
+
+    for elem in eligible:
+        crop_rgb = _crop_from_array(arr_rgb, elem.bbox, img_w_px, img_h_px)
         res = PixelColorResult(
             element_id=elem.id,
             crop_confidence=elem.confidence,

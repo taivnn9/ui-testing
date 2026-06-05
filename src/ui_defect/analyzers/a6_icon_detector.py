@@ -239,9 +239,11 @@ def detect_icons(
         if use_template_match and conf >= 0.5:
             tmatch = _template_match(crop_gray, cfg.template_match_threshold)
 
-        # Placeholder detection: màu đồng nhất + có outline
+        # Placeholder detection: màu đồng nhất + kích thước đủ lớn để là ảnh bị vỡ
+        # Phải đủ lớn (≥50px) vì icon nav nhỏ cũng có ít màu nhưng không phải placeholder.
         placeholder = False
-        if n_colors <= 3 and edge_d < 0.15:
+        min_dim = min(bbox.w, bbox.h)
+        if n_colors <= 2 and edge_d < 0.12 and min_dim >= 50:
             placeholder = True
 
         import uuid

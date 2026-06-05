@@ -43,16 +43,34 @@ def _elem_map(doc: CanonicalDoc) -> dict:
 # R1-LAY01 — Overlap sibling (IoU > 0.05)
 # ---------------------------------------------------------------------------
 
+def _is_ancestor_or_descendant(id_a: str, id_b: str, elems: dict) -> bool:
+    """True nếu id_a là tổ tiên/con cháu của id_b (không chỉ direct parent-child)."""
+    def _ancestor_ids(eid: str) -> set:
+        chain: set[str] = set()
+        e = elems.get(eid)
+        while e and e.parent and e.parent not in chain:
+            chain.add(e.parent)
+            e = elems.get(e.parent)
+        return chain
+    return id_b in _ancestor_ids(id_a) or id_a in _ancestor_ids(id_b)
+
+
 def check_overlap(doc: CanonicalDoc) -> list[CandidateIssue]:
     """
-    R1-LAY01: IoU > OVERLAP_IOU_MIN (0.05) giữa các sibling không phải parent-child.
-    Bỏ qua cặp có role modal/tooltip/skeleton, hoặc badge nhỏ trên icon.
+    R1-LAY01: IoU > OVERLAP_IOU_MIN (0.05) giữa các sibling không phải ancestor-descendant.
+    Bỏ qua cặp có role container/list/divider (overlap là thiết kế), modal/skeleton,
+    badge nhỏ trên icon. Yêu cầu overlap area thực tế đủ lớn để tránh nhiễu rounding.
     """
     issues: list[CandidateIssue] = []
     elems = _elem_map(doc)
 
     _SKIP_ROLES = {"modal", "skeleton", "spinner"}
+    # Container/structural roles: overlap là chủ ý (phần tử con đè lên container cha)
+    _STRUCTURAL_ROLES = {"container", "list", "divider", "background"}
     _INTERACTIVE_ROLES = {"button", "input", "nav"}
+
+    # Overlap area tối thiểu (px²) để fire — tránh nhiễu từ bbox rounding của CV
+    _MIN_OVERLAP_AREA_PX2 = 200.0
 
     for rel in doc.relations:
         if rel.rel != "overlaps":
@@ -67,12 +85,24 @@ def check_overlap(doc: CanonicalDoc) -> list[CandidateIssue]:
         if not _visible(elem_a) or not _visible(elem_b):
             continue
 
-        # Bỏ qua parent-child
+        # Bỏ qua ancestor-descendant (bất kỳ độ sâu, không chỉ direct parent-child)
         if elem_a.parent == elem_b.id or elem_b.parent == elem_a.id:
             continue
+        if _is_ancestor_or_descendant(rel.a, rel.b, elems):
+            continue
 
-        # Bỏ qua nếu một trong 2 là modal/tooltip/skeleton
+        # Bỏ qua nếu một trong 2 là structural/modal/skeleton
         if elem_a.role in _SKIP_ROLES or elem_b.role in _SKIP_ROLES:
+            continue
+        if elem_a.role in _STRUCTURAL_ROLES or elem_b.role in _STRUCTURAL_ROLES:
+            continue
+
+        # Tính actual overlap area để lọc nhiễu rounding của CV detector
+        area_a = elem_a.bbox.w * elem_a.bbox.h
+        area_b = elem_b.bbox.w * elem_b.bbox.h
+        min_area = min(area_a, area_b)
+        overlap_area = rel.iou * min_area  # xấp xỉ
+        if overlap_area < _MIN_OVERLAP_AREA_PX2:
             continue
 
         # Bỏ qua badge nhỏ (icon nhỏ đè lên icon khác là chủ ý)

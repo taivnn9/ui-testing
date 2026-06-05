@@ -37,6 +37,9 @@ def compute_hashes(
     elements: list[Element],
 ) -> list[HashResult]:
     """Tính perceptual hash (pHash) cho mỗi element có role=image."""
+    import os
+    if os.environ.get("A10_SKIP") == "1":
+        return []
     import imagehash  # type: ignore[import]
 
     results = []

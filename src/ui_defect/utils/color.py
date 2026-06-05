@@ -134,7 +134,7 @@ def dominant_colors_kmeans(
     try:
         from sklearn.cluster import KMeans       # type: ignore[import]
         from sklearn.metrics import pairwise_distances  # type: ignore[import]
-        km = KMeans(n_clusters=k_actual, n_init=10, random_state=42)
+        km = KMeans(n_clusters=k_actual, n_init=2, random_state=42)
         km.fit(lab_sample)
         lab_all = rgb_to_lab(pixels)
         dists = pairwise_distances(lab_all, km.cluster_centers_)
