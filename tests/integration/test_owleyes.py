@@ -5,12 +5,13 @@ Chạy rule-only (mặc định) hoặc với Cline reasoning (AGENT_BACKEND=cli
 Bỏ qua nếu ảnh OwlEyes chưa được extract về máy.
 
 Setup:
-  Bug dir:    /tmp/owleye_extract/bug/bug-aug/    (giải nén bug-aug.rar)
-  Normal dir: /tmp/owleye_extract/normal/         (giải nén normal-aug.rar)
+  Mặc định dùng ảnh mẫu trong repo:
+    data/owleyes_samples/bug/    (5 ảnh bug đã xem tay)
+    data/owleyes_samples/normal/ (3 ảnh normal đã xem tay)
 
-  Hoặc set env:
-    OWLEYES_BUG_DIR=/path/to/bug
-    OWLEYES_NORMAL_DIR=/path/to/normal
+  Để chạy trên bộ đầy đủ (2000 ảnh/set), set env:
+    OWLEYES_BUG_DIR=/path/to/bug-aug
+    OWLEYES_NORMAL_DIR=/path/to/normal-aug
 
 Chạy rule-only:
   pytest tests/integration/test_owleyes.py -v
@@ -45,8 +46,9 @@ sys.path.insert(0, str(_REPO_ROOT / "src"))
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 
-_DEFAULT_BUG_DIR = Path("/tmp/owleye_extract/bug/bug-aug")
-_DEFAULT_NORMAL_DIR = Path("/tmp/owleye_extract/normal")
+_FIXTURE_DIR = _REPO_ROOT / "data" / "owleyes_samples"
+_DEFAULT_BUG_DIR = _FIXTURE_DIR / "bug"
+_DEFAULT_NORMAL_DIR = _FIXTURE_DIR / "normal"
 
 BUG_DIR = Path(os.environ.get("OWLEYES_BUG_DIR", str(_DEFAULT_BUG_DIR)))
 NORMAL_DIR = Path(os.environ.get("OWLEYES_NORMAL_DIR", str(_DEFAULT_NORMAL_DIR)))
