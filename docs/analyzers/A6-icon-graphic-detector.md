@@ -3,7 +3,7 @@
 > Bóc tách chi tiết. Phase 1, nhóm "dựng cấu trúc". Tech: **Python + CV**.
 > Phân biệt icon/đồ hoạ nhỏ (non-text, ít màu) khỏi ảnh-photo (nhiều màu) và text (A5).
 > Là **feed** cho A3 Box Detector (A3 gọi A6 để classify vùng icon) + cấp crop cho A8 (emoji/glyph).
-> Liên quan: [`A3-box-layout-detector.md`](A3-box-layout-detector.md) · [`A5-ocr-text-extractor.md`](A5-ocr-text-extractor.md) · [`A7-image-region-meta-reader.md`](A7-image-region-meta-reader.md) · [`A8`](#) · [`../development-plan.md`](../development-plan.md)
+> Liên quan: [`A3-box-layout-detector.md`](A3-box-layout-detector.md) · [`A5-ocr-text-extractor.md`](A5-ocr-text-extractor.md) · [`A7-image-region-meta-reader.md`](A7-image-region-meta-reader.md) · [`A8`](#)
 
 ## 1. Trách nhiệm
 

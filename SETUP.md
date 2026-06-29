@@ -4,7 +4,7 @@
 - Python 3.11+
 - RAM ≥ 4GB (8GB nếu dùng PaddleOCR)
 - **Codex CLI** đã đăng nhập (`codex login`) — dùng cho tầng reasoning (xem mục 3).
-  Không dùng thì vẫn chạy được ở chế độ rule-only (`run_vlm=false`).
+  Không dùng thì vẫn chạy được ở chế độ rule-only (`agent_backend=none`).
 
 ---
 
@@ -111,7 +111,7 @@ curl -X POST http://localhost:8000/analyze \
 # Rule-only — không gọi LLM (nhanh, dùng để debug)
 curl -X POST http://localhost:8000/analyze \
   -F "screenshot=@screen.png" \
-  -F "run_vlm=false"
+  -F "agent_backend=none"
 
 # iOS, tiếng Việt, retina
 curl -X POST http://localhost:8000/analyze \
@@ -137,7 +137,7 @@ pytest
 Đặt `DEBUG_ERRORS=1` (mặc định) để thấy chi tiết lỗi trong console server và response.
 Hướng dẫn đọc lỗi & phân biệt lỗi cấu hình vs lỗi code: [docs/go-loi.md](docs/go-loi.md).
 
-Mẹo: thêm `-F "run_vlm=false"` (hoặc tắt *"Chạy agent reasoning"* trên web) để chạy thuần rule, không gọi Codex.
+Mẹo: thêm `-F "agent_backend=none"` (hoặc tắt *"Chạy agent reasoning"* trên web) để chạy thuần rule, không gọi Codex.
 
 ---
 
@@ -145,6 +145,6 @@ Mẹo: thêm `-F "run_vlm=false"` (hoặc tắt *"Chạy agent reasoning"* trên
 
 | Chế độ | Cần gì | Kết quả |
 |---|---|---|
-| **Rule-only** (`run_vlm=false`) | pip install + OpenCV | Layout, color, text regex rules |
+| **Rule-only** (`agent_backend=none`) | pip install + OpenCV | Layout, color, text regex rules |
 | **Rule + OCR** | + Tesseract hoặc PaddleOCR | Thêm text detection, CNT/TYP rules |
 | **Full** (default) | + Codex CLI đã `codex login` | Tất cả + agent reasoning xác nhận/lọc (text-only) |

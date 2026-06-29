@@ -3,7 +3,7 @@
 > Bóc tách chi tiết. Phase 1, nhóm "dựng cấu trúc". Tech: **Python + CV**.
 > ⚠ **Giới hạn quan trọng:** không có DOM → không biết `intrinsic_w/h` (kích thước file gốc).
 > Chỉ thấy `displayed` (bbox từ A3). Méo tỉ lệ tuyệt đối KHÔNG tính được — chỉ đo blur/sharpness.
-> Liên quan: [`A3-box-layout-detector.md`](A3-box-layout-detector.md) · [`A6-icon-graphic-detector.md`](A6-icon-graphic-detector.md) · [`A8`](#) · [`A9`](#) · [`A11-face-text-in-image-detector.md`](A11-face-text-in-image-detector.md) · [`../development-plan.md`](../development-plan.md)
+> Liên quan: [`A3-box-layout-detector.md`](A3-box-layout-detector.md) · [`A6-icon-graphic-detector.md`](A6-icon-graphic-detector.md) · [`A8`](#) · [`A9`](#) · [`A11-face-text-in-image-detector.md`](A11-face-text-in-image-detector.md)
 
 ## 1. Trách nhiệm
 

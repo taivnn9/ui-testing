@@ -2,7 +2,7 @@
 
 > Bóc tách chi tiết. Phase 1 (in-screen only). Tech: **Python + imagehash/OpenCV**.
 > Phase 1: **chỉ so trong cùng một màn**. Cross-screen (so nhiều màn) → **Phase 2** (cần nhóm ảnh, A14 Cross-screen Matcher).
-> Liên quan: [`A3-box-layout-detector.md`](A3-box-layout-detector.md) · [`A7`](#) Image Region Meta Reader · [`../development-plan.md`](../development-plan.md)
+> Liên quan: [`A3-box-layout-detector.md`](A3-box-layout-detector.md) · [`A7`](#) Image Region Meta Reader
 
 ## 1. Trách nhiệm
 Từ crop của **mọi element có role `image | icon | avatar`** trong cùng một màn,

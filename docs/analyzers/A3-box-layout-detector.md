@@ -2,7 +2,7 @@
 
 > Bóc tách chi tiết. Phase 1, nhóm "dựng cấu trúc". Tech: **Python + CV**.
 > Đây là **xương sống của hệ thống** — quyết định có chạy được nhóm LAY hay không.
-> Liên quan: [`A5`](#) OCR · [`A6`](#) Icon · [`../development-plan.md`](../development-plan.md)
+> Liên quan: [`A5`](#) OCR · [`A6`](#) Icon
 
 ## 1. Trách nhiệm
 Từ screenshot dựng `elements[]`: **bbox + role thô + containment

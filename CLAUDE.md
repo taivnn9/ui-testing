@@ -123,7 +123,7 @@ Input (ảnh PNG)
   →  Verify/Critic pass (dedup + filter low-confidence)
   →  Aggregate + dedupe → trả về API
 ```
-**Prompt:** structured output khóa bằng `--output-schema` (Codex) · "skill" = file `agents/skills/*.md`
+**Prompt:** structured output khóa bằng `--output-schema` (Codex) · "skill" = file `src/ui_defect/agents/skills/*.md`
 theo nhóm tiêu chí · KHÔNG gửi ảnh (số pixel đã có trong JSON) · ưu tiên precision (confirm/reject
 candidate) · 1 lần `codex exec`/ảnh (rẻ). Backend chọn qua env `AGENT_BACKEND` (codex|none).
 
@@ -132,8 +132,8 @@ candidate) · 1 lần `codex exec`/ảnh (rẻ). Backend chọn qua env `AGENT_B
 - [x] Vision adapter: A0, A3–A10, A12, A13 analyzers (`src/ui_defect/analyzers/`) — CV+OCR+pixel.
       (A1/A2 đã bỏ — DOM/XML; **A11** face/text-in-image: **hoãn Phase 2**, chỉ có spec.)
 - [x] Rule engine R1–R4 (`src/ui_defect/rules/`) — geometry, color, image, text.
-- [x] **Reasoning: Codex CLI headless** (`agents/codex_client.py` + `backends.py` + `runner.run_review`)
-      — text-only, skill files `agents/skills/*.md`, output khóa `--output-schema`. **Thay VLM** (F1.1).
+- [x] **Reasoning: Codex CLI headless** (`src/ui_defect/agents/codex_client.py` + `backends.py` + `runner.run_review`)
+      — text-only, skill files `src/ui_defect/agents/skills/*.md`, output khóa `--output-schema`. **Thay VLM** (F1.1).
       (Code VLM cũ `g0_framework.py`/`llm_client.py`/`prompts.py` + docs G0–G6/F1.0 **đã xóa**.)
 - [x] Tài liệu tiêu chí: tổng hợp + 1 file/tiêu chí ở `docs/tieu-chi/` (sinh bởi `scripts/gen_criteria.py`).
       **Độ phủ thực tế (đối chiếu code):** 🟦 43 có rule tất định · 🟥 52 chỉ agent Codex · ⏳ 26 chưa xử lý / 121.
@@ -151,7 +151,7 @@ candidate) · 1 lần `codex exec`/ảnh (rẻ). Backend chọn qua env `AGENT_B
       (`Screen.status_bar_h`/`nav_bar_h`, `ImageMeta.possible_placeholder`, `CanonicalDoc.duplicate_pairs`)
       + nối pipeline (A13→screen, A6 conversion, A10→`doc.duplicate_pairs`; gom dedup ảnh về rule R3-IMG12,
       bỏ rule lạ `IMG-dup-*`). Có 6 unit test (`test_rules_wired.py`).
-- [x] **Backend Cline** (`agents/cline_client.py` + `backends.py` `AGENT_BACKEND=cline`) — cùng giao diện
+- [x] **Backend Cline** (`src/ui_defect/agents/cline_client.py` + `backends.py` `AGENT_BACKEND=cline`) — cùng giao diện
       `(prompt,schema)→dict`, cấu hình lệnh qua env `CLINE_*`, schema nhúng prompt + trích JSON. Có 9 unit
       test mock subprocess. Default `CLINE_PROMPT_MODE=stdin` (an toàn trên Windows).
 - [x] pytest: **151 pass** (2026-06-05, +30 owleyes rule-only, +8 agent, fix CNT-02 FP SCREAMING_SNAKE).
@@ -182,4 +182,4 @@ candidate) · 1 lần `codex exec`/ảnh (rẻ). Backend chọn qua env `AGENT_B
 - [ ] **Fix Cline issue_type mismatch** — xem debug output trên Windows, thêm alias vào
       `_normalize_issue_type()` trong `runner.py`. Sau đó re-run 8 agent tests trên máy công ty.
 - [ ] **Standard Tier-2** (ảnh thật Playwright) — test full pipeline ảnh→CV→OCR→rule end-to-end. Cần OCR backend.
-- [ ] Tinh chỉnh skill files `agents/skills/*.md` theo kết quả thực tế với Cline.
+- [ ] Tinh chỉnh skill files `src/ui_defect/agents/skills/*.md` theo kết quả thực tế với Cline.

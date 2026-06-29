@@ -4,7 +4,7 @@
 > A5 OCR chỉ NGHI, A8 dùng pixel để KHẲNG ĐỊNH.
 > Liên quan: [`A5-ocr-text-extractor.md`](A5-ocr-text-extractor.md) (cờ `has_replacement`) ·
 > [`A3-box-layout-detector.md`](A3-box-layout-detector.md) (cấp crop) ·
-> [`A4-pixel-color-sampler.md`](A4-pixel-color-sampler.md) · [`../development-plan.md`](../development-plan.md)
+> [`A4-pixel-color-sampler.md`](A4-pixel-color-sampler.md)
 
 ## 1. Trách nhiệm
 

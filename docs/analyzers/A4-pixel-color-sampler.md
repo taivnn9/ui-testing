@@ -4,7 +4,7 @@
 > Đây là **analyzer màu/contrast chủ lực** — nguồn duy nhất cho màu/contrast vì hệ thống
 > chỉ nhận ảnh, không có computed-style.
 > Liên quan: [`A3-box-layout-detector.md`](A3-box-layout-detector.md) (cấp crop element) ·
-> [`A8-pixel-glyph-inspector.md`](A8-pixel-glyph-inspector.md) · [`../development-plan.md`](../development-plan.md)
+> [`A8-pixel-glyph-inspector.md`](A8-pixel-glyph-inspector.md)
 
 ## 1. Trách nhiệm
 

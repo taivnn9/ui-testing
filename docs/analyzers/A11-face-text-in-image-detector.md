@@ -2,7 +2,7 @@
 
 > Bóc tách chi tiết. Phase 1, nhóm "đo diện mạo". Tech: **Python + pretrained model nhẹ**.
 > ⚠ **Ưu tiên thấp** — có thể để sau standard set nếu cần tiết kiệm effort Phase 1.
-> Liên quan: [`A5-ocr-text-extractor.md`](A5-ocr-text-extractor.md) · [`A7-image-region-meta-reader.md`](A7-image-region-meta-reader.md) · [`A6-icon-graphic-detector.md`](A6-icon-graphic-detector.md) · [`../development-plan.md`](../development-plan.md)
+> Liên quan: [`A5-ocr-text-extractor.md`](A5-ocr-text-extractor.md) · [`A7-image-region-meta-reader.md`](A7-image-region-meta-reader.md) · [`A6-icon-graphic-detector.md`](A6-icon-graphic-detector.md)
 
 ## 1. Trách nhiệm
 

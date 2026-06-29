@@ -4,7 +4,7 @@
 > Tech: **Python + OpenCV + heuristic**.
 > Vì hệ thống chỉ nhận ảnh, **không có `clickable`/`enabled`/`role` ground-truth** từ DOM/XML.
 > A12 đoán tất cả từ pixel.
-> Liên quan: [`A3-box-layout-detector.md`](A3-box-layout-detector.md) · [`A5-ocr-text-extractor.md`](A5-ocr-text-extractor.md) · [`A6`](#) Icon/Graphic Detector · [`../development-plan.md`](../development-plan.md)
+> Liên quan: [`A3-box-layout-detector.md`](A3-box-layout-detector.md) · [`A5-ocr-text-extractor.md`](A5-ocr-text-extractor.md) · [`A6`](#) Icon/Graphic Detector
 
 ## 1. Trách nhiệm
 Hệ thống **không có thuộc tính `clickable`/`enabled`/`role` ground-truth** từ cây. A12 đoán

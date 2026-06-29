@@ -34,7 +34,7 @@ RuntimeError: Không tìm thấy Codex CLI 'codex'. Cài Codex hoặc đặt env
 | HTTP 500 + `traceback` | **Lỗi code** |
 
 ## Mẹo
-- Loại trừ Codex khi debug: gửi `run_vlm=false` (hoặc tắt *"Chạy agent reasoning"* trên web) →
+- Loại trừ Codex khi debug: gửi `agent_backend=none` (hoặc tắt *"Chạy agent reasoning"* trên web) →
   chạy thuần rule.
 - Kiểm tra Codex độc lập: `echo 'hi' | codex exec --ephemeral -s read-only -` và `codex login status`.
 - **Production**: đặt `DEBUG_ERRORS=0` để response không lộ traceback (console vẫn log đầy đủ).

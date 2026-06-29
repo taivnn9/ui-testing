@@ -5,7 +5,7 @@
 > Liên quan: [`A3-box-layout-detector.md`](A3-box-layout-detector.md) (cấp vùng candidate) ·
 > [`A5-ocr-text-extractor.md`](A5-ocr-text-extractor.md) (xác nhận/loại text thật vs placeholder) ·
 > [`A4-pixel-color-sampler.md`](A4-pixel-color-sampler.md) (màu/contrast vùng) ·
-> [`A6`](A6-icon-graphic-detector.md) (icon broken) · [`../development-plan.md`](../development-plan.md)
+> [`A6`](A6-icon-graphic-detector.md) (icon broken)
 
 ## 1. Trách nhiệm
 

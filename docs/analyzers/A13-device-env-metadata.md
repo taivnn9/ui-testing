@@ -4,7 +4,7 @@
 > Tech: **Python + OpenCV + bảng device profile tĩnh**.
 > Cấp **metadata nền** cho `screen{}` trong schema; không phát hiện lỗi trực tiếp — nhưng thiếu
 > dữ liệu này thì **ENV-01/02/03** (safe-area, bar đè) KHÔNG thể check được.
-> Liên quan: [`A5-ocr-text-extractor.md`](A5-ocr-text-extractor.md) · [`A9`](#) Pixel Pattern Detector · [`../development-plan.md`](../development-plan.md)
+> Liên quan: [`A5-ocr-text-extractor.md`](A5-ocr-text-extractor.md) · [`A9`](#) Pixel Pattern Detector
 
 ## 1. Trách nhiệm
 Điền đầy đủ field `screen.safe_area`, `screen.viewport.dpr`, `screen.safe_area` (top/bottom/left/right),

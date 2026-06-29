@@ -28,14 +28,14 @@ Content-Type: multipart/form-data
 | `viewport_h` | `int` | ❌ | `img.height` | Tự lấy từ kích thước ảnh |
 | `dpr` | `float` | ❌ | `1.0` | Để 1.0 nếu ảnh đã ở device px; 2.0/3.0 nếu retina |
 | `theme` | `string` | ❌ | auto | Tự detect từ mean luminance; override: `light`\|`dark` |
-| `locale` | `string` | ❌ | `en-US` | vd `vi-VN` — ảnh hưởng G1 text agent |
+| `locale` | `string` | ❌ | `en-US` | vd `vi-VN` — ảnh hưởng agent reasoning text |
 | `font_scale` | `float` | ❌ | `1.0` | Trợ năng font scale |
 | `route` | `string` | ❌ | `null` | Tên màn / route để tracking |
 | `safe_area_top` | `int` | ❌ | A13 auto | Device px — override A13 device inference |
 | `safe_area_bottom` | `int` | ❌ | A13 auto | Device px |
 | `min_severity` | `string` | ❌ | `low` | Filter output: `critical`\|`high`\|`medium`\|`low`\|`trivial` |
 | `min_confidence` | `float` | ❌ | `0.4` | Filter output: chỉ trả issue ≥ ngưỡng này |
-| `run_vlm` | `bool` | ❌ | `true` | `false` = chỉ rule engine, bỏ qua tầng agent reasoning (Codex) (nhanh hơn). *Tên giữ cho tương thích; nay điều khiển Codex CLI, không phải VLM.* |
+| `agent_backend` | `string` | ❌ | `""` (dùng env `AGENT_BACKEND`) | `codex` \| `cline` \| `none`. `none` = chỉ rule engine, bỏ qua tầng agent reasoning (nhanh hơn). Trống = lấy theo env `AGENT_BACKEND`. |
 
 ### 2.2 Ví dụ curl
 
@@ -54,10 +54,10 @@ curl -X POST http://localhost:8000/analyze \
   -F "safe_area_bottom=34" \
   -F "route=checkout"
 
-# Rule-only (không gọi agent Codex — nhanh, dùng để debug)
+# Rule-only (không gọi agent — nhanh, dùng để debug)
 curl -X POST http://localhost:8000/analyze \
   -F "screenshot=@screen.png" \
-  -F "run_vlm=false"
+  -F "agent_backend=none"
 ```
 
 ---
@@ -100,13 +100,13 @@ curl -X POST http://localhost:8000/analyze \
         "description": "Nút 'Thanh toán' có contrast 2.8:1 — thấp hơn WCAG AA 4.5:1"
       },
       "description": "Nút CTA chính 'Thanh toán' có contrast màu chữ/nền 2.8:1.",
-      "sources": ["R2-STY01", "G3-confirmed"]
+      "sources": ["R2-STY01", "agent-confirmed"]
     }
   ],
   "pipeline_meta": {
     "analyzers_ran": ["A13","A5","A3","A6","A12","A4","A7","A8","A9","A10","A0"],
     "rules_ran": ["R1","R2","R3","R4"],
-    "agents_ran": ["G1","G3","G4","G6"],
+    "agents_ran": ["codex"],
     "total_candidates_pre_filter": 18,
     "final_issues": 5,
     "pipeline_duration_ms": 4200

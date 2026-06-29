@@ -3,7 +3,7 @@
 > Bóc tách chi tiết. Phase 1, nhóm "dựng cấu trúc". Tech: **Python + OCR**.
 > Là **nguồn `text` duy nhất** vì hệ thống chỉ nhận ảnh.
 > Liên quan: [`A3-box-layout-detector.md`](A3-box-layout-detector.md) (fuse text-box) ·
-> [`A8`](#) glyph inspector · [`../development-plan.md`](../development-plan.md)
+> [`A8`](#) glyph inspector
 
 ## 1. Trách nhiệm
 Trích **mọi cụm text nhìn thấy trên ảnh** thành segment có `text + bbox + confidence + script`,

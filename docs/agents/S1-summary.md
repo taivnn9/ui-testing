@@ -107,7 +107,7 @@ def final_dedup(findings: list) -> list:
         "expected_value": ">= 4.5 (WCAG AA)"
       },
       "description": "Label 'Giỏ hàng' trên navigation bar có contrast 2.8:1 — thấp hơn ngưỡng WCAG AA 4.5:1.",
-      "sources": ["R2-STY01", "G3-confirmed"],
+      "sources": ["R2-STY01", "agent-confirmed"],
       "tags": ["a11y"],
       "temporal": false
     }
@@ -115,7 +115,7 @@ def final_dedup(findings: list) -> list:
   "pipeline_meta": {
     "analyzers_ran": ["A5", "A3", "A4", "A6", "A8", "A9", "A10", "A13"],
     "rules_ran": ["R1", "R2", "R3", "R4"],
-    "agents_ran": ["G1", "G2", "G3", "G4", "G5", "G6"],
+    "agents_ran": ["codex"],
     "total_candidates_pre_filter": 23,
     "removed_by_critic": 5,
     "final_issues": 7
