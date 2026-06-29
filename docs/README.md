@@ -1,29 +1,48 @@
-# Tài liệu dự án — Phân tích lỗi UI bằng AI
+# Tài liệu dự án — Phát hiện lỗi UI bằng AI
 
-Thư mục `docs/` lưu lại toàn bộ phân tích & trao đổi của dự án (theo thứ tự thời gian).
-Bản **quyết định kiến trúc gọn** dùng để tham chiếu nhanh: `../CLAUDE.md`.
+> **Bắt đầu ở đây:** [OVERVIEW.md](OVERVIEW.md) — 1 trang nắm toàn cảnh (dự án là gì · pipeline · tiêu chí · trạng thái).
+> Quyết định kiến trúc gọn (đọc tự động mỗi phiên): [../CLAUDE.md](../CLAUDE.md).
 
-> ⚠️ **Lưu ý thuật ngữ (2026-06-03):** tầng reasoning đã đổi từ **VLM** sang
-> **coding-agent CLI headless (Codex), text-only** — xem [`F1.1-codex-cli-architecture.md`](F1.1-codex-cli-architecture.md).
-> Trong các tài liệu cũ (rules/analyzers/agents), chữ **"VLM"** = **tầng agent reasoning** hiện tại;
-> mọi đề cập "gửi ảnh cho model / llama.cpp / LLM_BASE_URL" đã **lỗi thời**.
+`docs/` là **nguồn sự thật chi tiết** (tài liệu sống). Mục lục theo mục đích:
 
+## 🚀 Bắt đầu & sử dụng
 | File | Nội dung |
 |---|---|
-| [`phan-tich-ban-dau.md`](phan-tich-ban-dau.md) | Phân tích mở đầu: tiêu chí đủ chưa, lấy dữ liệu gì & thế nào, tổ chức dữ liệu, cách prompt/Skill/Rule/workflow cho Agent. |
-| [`../CLAUDE.md`](../CLAUDE.md) | Bản quyết định kiến trúc gọn (đọc tự động mỗi phiên): mục tiêu, schema chung, pipeline, bộ tiêu chí, checklist việc tiếp theo. |
+| [OVERVIEW.md](OVERVIEW.md) | Tổng quan toàn dự án — đọc đầu tiên. |
+| [../SETUP.md](../SETUP.md) | Cài đặt & chạy. |
+| [huong-dan-su-dung.md](huong-dan-su-dung.md) | Dùng web UI + API · cài Tesseract (Windows) · đọc & gỡ lỗi. |
 
-**Hướng dẫn người dùng:**
-
+## 🧱 Kiến trúc & thiết kế
 | File | Nội dung |
 |---|---|
-| [`../SETUP.md`](../SETUP.md) | Cài đặt & chạy (file đọc đầu tiên). |
-| [`cai-tesseract-windows.md`](cai-tesseract-windows.md) | Cài Tesseract OCR trên Windows (PATH, language data). |
-| [`huong-dan-web-ui.md`](huong-dan-web-ui.md) | Cách dùng giao diện web: upload → phân tích → đọc overlay lỗi. |
-| [`go-loi.md`](go-loi.md) | Đọc lỗi & phân biệt lỗi cấu hình vs lỗi code (DEBUG_ERRORS, agent_errors). |
-| [`F2.0-web-ui.md`](F2.0-web-ui.md) | Thiết kế & kiến trúc Web UI (spec). |
-| [`catalog-tieu-chi-loi-ui.md`](catalog-tieu-chi-loi-ui.md) | Liệt kê đầy đủ 121 tiêu chí lỗi UI (9 nhóm) + severity. |
-| [`tieu-chi/`](tieu-chi/README.md) | **Tổng hợp + 1 file/tiêu chí: dữ liệu · kỹ thuật · đạt/không đạt · ai đánh giá** (sinh bởi `scripts/gen_criteria.py`). |
-| [`F0.4-thresholds.md`](F0.4-thresholds.md) | Đơn vị & ngưỡng số chuẩn (touch target, contrast, blur, pHash...). |
+| [F0.2-canonical-schema.md](F0.2-canonical-schema.md) | Schema dữ liệu chung (screen/elements/relations/candidate_issues). |
+| [F0.4-thresholds.md](F0.4-thresholds.md) | Đơn vị & ngưỡng chuẩn (touch target, contrast, blur, pHash, grid…). |
+| [F1.1-codex-cli-architecture.md](F1.1-codex-cli-architecture.md) | Tầng reasoning = coding-agent CLI (Codex/Cline), text-only. |
+| [F2.0-web-ui.md](F2.0-web-ui.md) | Thiết kế & kiến trúc Web UI. |
+| [api-contract.md](api-contract.md) | Hợp đồng API: request/response, error codes. |
 
-> Phiên 2026-05-21. Trao đổi bằng tiếng Việt.
+## 🔍 Thành phần xử lý
+| Thư mục | Nội dung |
+|---|---|
+| [analyzers/](analyzers/A3-box-layout-detector.md) | Vision adapter A0, A3–A13 (CV + OCR + pixel). |
+| [rules/](rules/README.md) | Rule engine R1–R5 (geometry, color, image, text, severity). |
+| [agents/](agents/S1-summary.md) | Tầng agent: S1 summary, V1 critic. |
+
+## 📋 Bộ tiêu chí lỗi UI (121 / 9 nhóm)
+| File | Nội dung |
+|---|---|
+| [catalog-tieu-chi-loi-ui.md](catalog-tieu-chi-loi-ui.md) | Danh sách đầy đủ 121 tiêu chí + severity. |
+| [tieu-chi/](tieu-chi/README.md) | 1 file/tiêu chí: dữ liệu · kỹ thuật · đạt/không đạt · ai đánh giá (sinh bởi `scripts/gen_criteria.py`). |
+
+## ✅ Đo lường & chất lượng
+| File | Nội dung |
+|---|---|
+| [F4.0-standard-set.md](F4.0-standard-set.md) | Bộ chuẩn `standard_v1` + đo precision/recall (kiểm thử đột biến). |
+| [F4.1-fp-audit.md](F4.1-fp-audit.md) | Audit & xử lý false-positive rule engine trên ảnh thật. |
+
+## 🗄️ Lịch sử
+| File | Nội dung |
+|---|---|
+| [phan-tich-ban-dau.md](phan-tich-ban-dau.md) | Phân tích mở đầu (tài liệu lịch sử). |
+
+> Trao đổi bằng tiếng Việt. Thuật ngữ "VLM" trong tài liệu cũ = tầng **agent reasoning (Codex/Cline)** hiện tại.

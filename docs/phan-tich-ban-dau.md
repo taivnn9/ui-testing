@@ -1,178 +1,83 @@
 # Phân tích ban đầu: Giải pháp tự động phân tích lỗi UI bằng AI
 
-> Bản phân tích mở đầu (phiên 2026-05-21), trả lời 4 câu hỏi: (1) tiêu chí đã đủ chưa,
-> (2) lấy dữ liệu gì & lấy thế nào, (3) tổ chức dữ liệu thế nào, (4) làm sao Agent/Model
-> làm đúng (prompt/Skill/Rule/workflow). Quyết định chốt sau đó nằm trong `../CLAUDE.md`.
+> **Lưu ý:** tài liệu lịch sử (phân tích mở đầu). Trạng thái & quyết định hiện tại xem ../CLAUDE.md và OVERVIEW.md.
 
-> ⚠️ **Ghi chú lịch sử:** ví dụ trong file dùng **4 mức severity cũ**
-> (`blocker/major/minor/cosmetic`). Schema hiện hành đã đổi sang **5 mức**
-> `critical/high/medium/low/trivial` (xem `../CLAUDE.md` §5, `F0.2-canonical-schema.md`).
+> **TL;DR:** Phân tích mở đầu (phiên 2026-05-21) trả lời 4 câu hỏi gốc: tiêu chí đủ chưa, lấy dữ liệu gì/thế nào, tổ chức dữ liệu ra sao, làm sao AI làm đúng. Nhiều đề xuất ở đây (multimodal, dùng view hierarchy/DOM) **đã bị đảo ngược** về sau — chốt cuối: vision-only + reasoning text-only (xem ../CLAUDE.md).
+
+> ⚠️ Ví dụ trong file dùng **4 mức severity cũ** (`blocker/major/minor/cosmetic`); schema hiện hành đã đổi sang **5 mức** `critical/high/medium/low/trivial`.
 
 ---
 
-## 0. Vấn đề cốt lõi cần sửa ngay trong ý tưởng gốc
+## Bối cảnh & ý tưởng gốc
 
-> Pipeline gốc: "Trích xuất → JSON map → đưa **JSON** cho AI suy luận."
+Pipeline gốc: "Trích xuất → JSON map → đưa **JSON** cho AI suy luận." Phân tích này chỉ ra 4 vấn đề và đề xuất hướng đi.
 
-**Đưa JSON thôi là vứt mất pixel.** Hơn một nửa tiêu chí liệt kê *không thể* phán đoán từ
-bounding box + text:
+## 1. Bộ tiêu chí đã đủ chưa? — Chưa
 
-| Tiêu chí | Phán đoán được từ JSON (toạ độ/text)? | Bắt buộc cần pixel? |
-|---|---|---|
-| Chữ tràn/cắt cụt khỏi container | ✅ (so box text vs box cha) | một phần |
-| Độ tương phản / readability | ❌ | ✅ (màu pixel thực tế) |
-| Ảnh méo / kéo giãn (distortion) | ❌ | ✅ (so tỉ lệ render vs gốc) |
-| Icon lệch tâm trong nút | ✅ (toạ độ) | một phần |
-| Overlap vô lý | ✅ | để xác nhận "vô lý" thì cần ảnh |
-| Font chưa load (□ tofu), ảnh vỡ | ❌ | ✅ |
-| Nội dung sai ngữ cảnh | ❌ | ✅ (cần nhìn cả màn hình) |
+Bộ 4 nhóm gốc (Text · Images · Spatial · Components) thiên về *layout tĩnh*, thiếu các nhóm lỗi hay gặp & rẻ nhất trong QA mobile:
 
-→ **Kết luận #1: kiến trúc phải đa phương thức (multimodal).** Đưa cho VLM **cả ảnh
-screenshot + JSON map**. JSON cho hình học chính xác (VLM rất dở đoán toạ độ pixel, hay bịa);
-ảnh cho diện mạo (JSON không nắm được). Hai cái bù nhau.
+- **Placeholder/biến chưa render:** `undefined`, `NaN`, `%s`, `{{user.name}}`, `lorem ipsum`, i18n key lòi ra.
+- **i18n/localization:** sai ngôn ngữ, chưa dịch, text nở dài vỡ layout, RTL.
+- **Safe area / notch / system bars / bàn phím che input.**
+- **States:** skeleton kẹt, empty/error state, ảnh vỡ.
+- **Dark mode / font scale** làm vỡ layout.
+- **Nhất quán xuyên màn** (cùng nút khác cỡ, lệch màu/font) — *cần so nhiều ảnh*.
+- **Truncation chủ ý vs lỗi · Z-order/occlusion · trùng lặp/thiếu · lệch grid/optical alignment.**
 
-→ **Kết luận #2 (quan trọng hơn nữa): đừng chỉ OCR ảnh để lấy JSON.** Môi trường
-*instrumented* (Playwright/Appium) có sẵn **view hierarchy / DOM / accessibility tree** — đó
-là "ground truth" của toạ độ + role + text + style, chính xác tuyệt đối và miễn phí. Lấy OCR
-từ pixel là tự nguyện làm việc với dữ liệu nhiễu trong khi vàng đang nằm sẵn. Đây là khác
-biệt lớn nhất giữa "đồ chơi demo" và "hệ thống chạy nghìn case".
+Và 2 thứ sống còn (thuộc tính mỗi phát hiện, không phải tiêu chí):
 
----
+1. **Severity + Confidence + Evidence** trên mọi lỗi (mức độ, độ tin cậy 0–1, bằng chứng: element_id/bbox/crop/rule). Thiếu → QA chết chìm trong noise; **false positive giết hệ thống**.
+2. **"Nội dung hợp lý" là khó nhất** — bản chất *cần reference*; zero-reference rất yếu ở nhóm này → phải hạ kỳ vọng hoặc cấp thêm ngữ cảnh (tên màn, intent test).
 
-## 1. Bộ tiêu chí đã đủ chưa? — Chưa, thiếu ~10 nhóm lỗi phổ biến nhất
+→ Bộ tiêu chí đầy đủ về sau thành **catalog 121 tiêu chí / 9 nhóm** (`catalog-tieu-chi-loi-ui.md`).
 
-Bộ 4 nhóm hiện tại tốt nhưng thiên về *layout tĩnh*. Trong thực tế QA mobile, những lỗi
-**bắt được nhiều nhất và rẻ nhất** lại đang thiếu:
+## 2. Lấy dữ liệu gì & thế nào? *(đề xuất gốc — sau bị đảo)*
 
-| Nhóm còn thiếu | Ví dụ cụ thể (rất hay gặp) |
-|---|---|
-| **Placeholder/biến chưa render** | `undefined`, `null`, `NaN`, `%s`, `{0}`, `{{user.name}}`, `lorem ipsum`, `home.title` (i18n key lòi ra) |
-| **i18n / localization** | Text sai ngôn ngữ, key dịch chưa dịch, text tiếng Đức/Việt nở dài làm vỡ layout, lỗi RTL |
-| **Safe area / notch / system bars** | Nội dung chui dưới tai thỏ, status bar, home indicator, bàn phím che ô input |
-| **Trạng thái (states)** | Skeleton/loading kẹt, empty state trống trơn, error state, ảnh vỡ (broken image icon) |
-| **Dark mode / font scale** | Chữ trắng nền trắng ở dark mode, layout vỡ khi bật cỡ chữ trợ năng |
-| **Tính nhất quán xuyên màn hình** | Cùng 1 nút mà 3 kích cỡ khác nhau, lệch bảng màu, lệch font — *cần so nhiều ảnh, không chỉ 1* |
-| **Truncation chủ ý vs lỗi** | Phân biệt "…" do design vs cắt cụt do bug |
-| **Z-order / occlusion** | Phần tử bị che sau modal/overlay |
-| **Trùng lặp / thiếu** | Nút bị nhân đôi, ảnh/icon biến mất |
-| **Alignment theo lưới** | Lệch grid, lệch optical alignment (khác với padding/margin đã có) |
+Phân tích gốc lập luận: hơn nửa tiêu chí **không thể** phán đoán chỉ từ bounding box + text (contrast, ảnh méo, tofu, nội dung ngữ cảnh đều cần pixel). Từ đó đề xuất:
 
-Và **2 thứ thiếu mang tính sống còn của cả hệ thống** — không phải tiêu chí lỗi mà là
-*thuộc tính của mỗi phát hiện*:
+- **Đa phương thức (multimodal):** đưa cho AI cả ảnh screenshot + JSON map.
+- **Ưu tiên môi trường instrumented** (Playwright/Appium) để lấy thẳng view hierarchy/DOM làm "ground truth" toạ độ + role + text + style, thay vì OCR pixel nhiễu.
 
-1. **Severity + Confidence + Evidence.** Mỗi lỗi phải kèm: mức độ
-   (blocker/major/minor/cosmetic), độ tin cậy (0–1), và *bằng chứng* (element_id, bbox, ảnh
-   crop, rule vi phạm). Thiếu cái này → QA chết chìm trong noise và **false positive sẽ giết
-   hệ thống** (lý do #1 các tool kiểu này bị bỏ).
-2. **Tiêu chí "nội dung hợp lý" là khó & chủ quan nhất** — về bản chất nó *cần reference*
-   (màn này đáng lẽ hiện gì). Zero-reference làm cái này rất yếu. Cần thành thật: hạ kỳ vọng
-   nhóm này hoặc cấp cho AI thêm ngữ cảnh (tên màn, intent của test case).
+> ⚠️ **Đã đảo ngược.** Chốt cuối: **vision-only** (CV+OCR trích map, không DOM/XML) + **reasoning text-only** (pixel cần thiết được CV tính sẵn thành số/flag trong JSON, không gửi ảnh cho model). Lý do: user không có model multimodal; tầng lý luận chuyển sang **agent reasoning (Codex/Cline)** chạy CLI headless text-only. Xem ../CLAUDE.md §2–3.
 
----
+Mô hình 4 tầng dữ liệu đề xuất gốc (vẫn còn giá trị tham khảo): A cây phần tử (ground truth) · B đặc trưng hình học tính bằng code (rule engine tất định) · C đặc trưng pixel per-element (crop) · D ảnh gốc.
 
-## 2. Lấy dữ liệu gì & lấy như thế nào? — Phân tầng theo "có view hierarchy hay không"
+## 3. Tổ chức dữ liệu — schema chuẩn hoá + quan hệ tiền-tính
 
-Đây là chỗ rẽ nhánh lớn nhất. Có 2 thế giới:
+Mấu chốt **vẫn đúng tới nay**: đừng bắt LLM tự suy quan hệ không gian từ toạ độ thô (suy kém, hay sai) → **tiền-tính** rồi đưa vào JSON.
 
-**Thế giới A — Black-box (chỉ có ảnh PNG):** phải OCR (text + box), detect icon/ảnh bằng CV,
-dò edge/contour. Nhiễu, tốn, kém chính xác. Chỉ dùng khi *bắt buộc* không truy cập được app.
+- Phân cấp: `parent/children` + `z`.
+- Quan hệ tương đối (`left_of`/`above`/`contains`/`overlaps`) tiền-tính trong `relations`.
+- `candidate_issues` = output rule engine, đưa kèm để tầng lý luận *xác nhận/bác bỏ* thay vì tự mò.
 
-**Thế giới B — Instrumented (Playwright/Appium):** lấy thẳng cây phần tử. **Đây là hướng nên đi.**
-- **Web (Playwright):** DOM + `getBoundingClientRect()` + `getComputedStyle()` → có
-  font-size, color, background, z-index, overflow… → tính được **contrast ratio chuẩn WCAG**
-  bằng code, không cần đoán.
-- **Android:** `uiautomator` dump / accessibility tree (bounds, text, class, clickable…).
-- **iOS:** XCUITest element tree.
+> Schema canonical đầy đủ (đã cập nhật) ở ../CLAUDE.md §5 và `F0.2-canonical-schema.md`.
 
-**Mô hình dữ liệu 4 tầng nên thu thập đồng thời cho mỗi screenshot:**
+## 4. Làm sao Agent/Model làm ĐÚNG?
 
-- **Tầng A — Cây phần tử (ground truth):** role, bbox, text, style, parent/child, z-order. *Từ hierarchy/DOM.*
-- **Tầng B — Đặc trưng hình học suy ra (tính bằng code):** overlap, khoảng cách/đều lề, lệch
-  grid, off-screen, vượt safe-area, touch-target < ngưỡng. *Đây là phần "rule engine tất định".*
-- **Tầng C — Đặc trưng pixel per-element (crop từng phần tử):** thực sự có bị clip không,
-  contrast màu render thực, blur, tỉ lệ ảnh render vs intrinsic (bắt distortion), có □ tofu không.
-- **Tầng D — Ảnh screenshot gốc** (full + crop) để đưa cho VLM nhìn.
-
-→ Hierarchy lo phần "chính xác", pixel lo phần "diện mạo". Kết hợp mới đủ bộ tiêu chí.
-
----
-
-## 3. Tổ chức dữ liệu thế nào? — Schema chuẩn hóa + quan hệ tiền-tính
-
-Mấu chốt: **đừng bắt LLM tự suy quan hệ không gian từ toạ độ thô** — nó suy kém và hay sai.
-Hãy *tiền-tính* quan hệ rồi đưa vào JSON. Đề xuất schema canonical:
-
-```jsonc
-{
-  "screen": { "id", "platform":"android|ios|web", "route",
-              "viewport":{w,h,dpr}, "safe_area":{top,bottom,left,right},
-              "theme":"light|dark", "locale", "font_scale", "ts" },
-  "image":   { "full":"path.png", "w","h" },
-  "elements":[{
-     "id":"e12", "role":"button|text|image|icon|input|toggle|...",
-     "bbox":{x,y,w,h}, "bbox_norm":{...},            // tuyệt đối + chuẩn hoá 0–1
-     "parent":"e3", "children":["e13"], "z":2,
-     "text":"Đăng nhập", "text_truncated":false,
-     "style":{ font_size, font_family, color, bg_color,
-               contrast_ratio, opacity, border_radius },
-     "image_meta":{ intrinsic_w, intrinsic_h, displayed_w, displayed_h, scale_mode },
-     "interactive":true, "touch_target":{w,h},
-     "visible":true, "clipped":false, "offscreen":false,
-     "crop":"crops/e12.png"
-  }],
-  "relations":[ {"a":"e12","rel":"overlaps","b":"e15","iou":0.34},
-                {"a":"e7","rel":"left_of","b":"e8","gap":4} ],   // tiền-tính
-  "candidate_issues":[ {"rule":"touch_target_min","element":"e12",
-                        "severity":"major","detail":"40x40 < 44x44"} ]
-}
-```
-
-Ý chính: **phân cấp** lưu bằng `parent/children` + `z`; **quan hệ tương đối** (left_of /
-above / contains / overlaps) tiền-tính sẵn trong `relations`; và `candidate_issues` là output
-của rule engine (mục 4) — đưa kèm để VLM *xác nhận/bác bỏ* thay vì tự mò.
-
----
-
-## 4. Làm sao Agent/Model làm ĐÚNG yêu cầu? (prompt / Skill / Rule / workflow)
-
-Nguyên tắc xương sống:
+Nguyên tắc xương sống (**vẫn là kim chỉ nam**):
 
 > **Cái gì tính được thì để code tính (tất định). Chỉ hỏi AI cái cần phán đoán.**
 
-LLM dở số học trên toạ độ → đừng bắt nó tự phát hiện overlap, touch-target nhỏ, contrast thấp
-(những cái này có công thức). Để rule engine làm, rồi VLM chỉ: (a) xác nhận lỗi candidate có
-*thật sự vô lý* không, (b) bắt lỗi cần *thẩm mỹ/ngữ cảnh*, (c) gán severity + giải thích.
+LLM dở số học toạ độ → rule engine lo overlap, touch-target nhỏ, contrast thấp (có công thức). Tầng lý luận chỉ: (a) xác nhận candidate có *thật sự vô lý* không, (b) bắt lỗi cần thẩm mỹ/ngữ cảnh, (c) gán severity + giải thích.
 
-**Pipeline (workflow) tổng:**
+**Pipeline gốc** (cấu trúc còn nguyên, riêng "VLM reasoning ảnh+JSON" → nay là **agent reasoning text-only**):
 ```
-Capture (ảnh + hierarchy)  →  Normalize (schema mục 3)
-   →  Rule Engine (checks tất định → candidate_issues)
-   →  VLM Reasoning (ảnh + JSON + candidates → confirm/reject + lỗi phán đoán + severity)
-   →  Verify/Critic pass (giảm false positive)
-   →  Aggregate + dedupe + report
+Capture → Normalize (schema) → Rule Engine (candidate_issues)
+   → Reasoning (confirm/reject + lỗi phán đoán + severity)
+   → Verify/Critic (giảm false positive) → Aggregate + dedupe + report
 ```
 
-**Chiến lược prompt (rất cụ thể):**
-1. **Structured output bắt buộc** (tool-use/JSON schema), không bao giờ free text. Mỗi issue =
-   `{category, element_id, bbox, severity, confidence, evidence, rule_id, explanation}`.
-2. **Decompose theo nhóm tiêu chí** — đừng hỏi "tìm hết bug" 1 phát (cho kết quả nông). Walk
-   theo *checklist* từng nhóm, hoặc 1 lượt/nhóm. Chạy song song được.
-3. **Set-of-Marks prompting** — vẽ số ID lên từng phần tử trên ảnh để VLM *trỏ theo ID* thay
-   vì đoán toạ độ. Kỹ thuật chuẩn để tăng grounding không gian cho VLM, cực hợp bài này.
-4. **Few-shot có nhãn** (cặp good/bad) để calibrate severity.
-5. **Self-critique pass**: detect → tự phản biện → chỉ giữ confidence cao. Giảm false positive.
+**Chiến lược prompt:**
+1. **Structured output bắt buộc** (JSON schema), không free text.
+2. **Decompose theo nhóm tiêu chí** (checklist/nhóm), không hỏi "tìm hết bug" 1 phát.
+3. **Set-of-Marks** — gắn ID lên phần tử để model trỏ theo ID thay vì đoán toạ độ.
+4. **Few-shot có nhãn** để calibrate severity.
+5. **Self-critique pass** — chỉ giữ confidence cao, giảm false positive.
 
-**Skill / Rule / Workflow ánh xạ thế nào (trong ngữ cảnh agent):**
-- **Rule** = bộ tiêu chí + ngưỡng *máy đọc được*: touch target ≥ 44pt (iOS) / 48dp (Android),
-  contrast ≥ 4.5:1, max line length, gap grid 8pt… Chia 2 loại: *rule tất định* (code chạy)
-  và *soft rule* (đưa VLM làm guidance).
-- **Skill** = playbook tái dùng cho 1 screenshot: chứa rubric, schema JSON, template prompt,
-  few-shot, định nghĩa các deterministic check. Mỗi ảnh gọi skill này.
-- **Workflow** = orchestration cả pipeline + chạy batch nghìn case: agent điều phối, spawn
-  subagent song song (mỗi ảnh / mỗi nhóm tiêu chí).
+**Rule / Skill / Workflow:**
+- **Rule** = tiêu chí + ngưỡng máy đọc (touch ≥44pt/48dp, contrast ≥4.5:1, grid 8pt…); chia *tất định* (code) và *soft* (guidance cho model).
+- **Skill** = playbook tái dùng / 1 screenshot (rubric, schema, template prompt, few-shot, định nghĩa check).
+- **Workflow** = orchestration cả pipeline + chạy batch (spawn subagent song song).
 
-**Phần META mà 90% dự án kiểu này quên → và rồi sập:**
-> **Phải có Standard Set** — tập screenshot có nhãn lỗi sẵn (ground truth) để đo
-> **precision/recall**. Không có nó thì không tune được ngưỡng, không biết hệ thống đáng tin
-> hay không. Mẹo tạo positive nhanh: **mutation testing UI** — cố tình inject lỗi (đổi
-> font-size, bóp ảnh, thêm text dài, đổi màu) vào app rồi chụp → có ngay tập lỗi đã biết.
+**Phần META 90% dự án quên → rồi sập:**
+> **Phải có Standard Set** — tập screenshot có nhãn lỗi sẵn để đo **precision/recall**, tune ngưỡng. Mẹo tạo positive nhanh: **mutation testing UI** (inject lỗi: đổi font-size, bóp ảnh, nhồi text dài, đổi màu). → Về sau thành bộ chuẩn `standard_v1`.

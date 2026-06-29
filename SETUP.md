@@ -51,7 +51,7 @@ brew install tesseract
 pip install pytesseract
 ```
 
-> Windows: cần thêm Tesseract vào PATH — xem [docs/cai-tesseract-windows.md](docs/cai-tesseract-windows.md).
+> Windows: cần thêm Tesseract vào PATH — xem [docs/huong-dan-su-dung.md](docs/huong-dan-su-dung.md) (mục 3).
 
 ### Option B — PaddleOCR (chính xác hơn, nặng hơn ~1GB)
 
@@ -96,7 +96,7 @@ uvicorn src.ui_defect.api.main:app --reload --port 8000
 ```
 
 - **Giao diện web:** http://localhost:8000/ — upload ảnh, ấn Phân tích, xem lỗi trực quan.
-  Cách dùng: [docs/huong-dan-web-ui.md](docs/huong-dan-web-ui.md).
+  Cách dùng: [docs/huong-dan-su-dung.md](docs/huong-dan-su-dung.md).
 - **Swagger UI (API docs):** http://localhost:8000/docs
 
 ---
@@ -135,7 +135,7 @@ pytest
 ## 7. Gặp lỗi?
 
 Đặt `DEBUG_ERRORS=1` (mặc định) để thấy chi tiết lỗi trong console server và response.
-Hướng dẫn đọc lỗi & phân biệt lỗi cấu hình vs lỗi code: [docs/go-loi.md](docs/go-loi.md).
+Hướng dẫn đọc lỗi & phân biệt lỗi cấu hình vs lỗi code: [docs/huong-dan-su-dung.md](docs/huong-dan-su-dung.md) (mục 4).
 
 Mẹo: thêm `-F "agent_backend=none"` (hoặc tắt *"Chạy agent reasoning"* trên web) để chạy thuần rule, không gọi Codex.
 

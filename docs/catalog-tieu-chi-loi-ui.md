@@ -1,97 +1,49 @@
-# Catalog tiêu chí lỗi UI (bước 1: liệt kê đầy đủ)
+# Catalog tiêu chí lỗi UI
 
-> **Mục đích:** liệt kê ĐẦY ĐỦ vũ trụ tiêu chí test giao diện (UI/UX) cho hệ thống
-> zero-reference. Đây là **bước 1** trong kế hoạch 2 bước của chủ dự án:
-> 1. *(file này)* Biết có những tiêu chí test giao diện nào.
-> 2. *(làm sau)* Với mỗi tiêu chí: cần **input** gì, **xử lý** ra sao, **output** thế nào.
->
-> Tài liệu sống — cập nhật tăng dần. Bản tóm tắt quyết định gọn ở `../CLAUDE.md`.
-> Phiên bắt đầu: 2026-05-22. Trao đổi bằng tiếng Việt.
-
----
-
-## 0. Các quyết định đã chốt (định hình catalog này)
-
-| Quyết định | Chốt |
-|---|---|
-| Phạm vi | **Toàn bộ vũ trụ tiêu chí** — kể cả thứ zero-reference khó/không bắt được (bước 2 mới đánh dấu khả thi & cắt). |
-| Cấu trúc | **Taxonomy MECE theo domain lỗi** (9 nhóm) + trục **tag trực giao** cho khía cạnh cắt ngang. |
-| Accessibility | Là **tag** rải vào các nhóm (contrast→STY, touch target→CMP), KHÔNG tạo nhóm riêng. |
-| Motion/Animation | Tạm để trong `STATE`; tách nhóm `MOT` riêng nếu sau này nhiều. |
-| Branding (logo) | Để trong `IMG`. |
-| Thang severity | **5 mức:** `critical / high / medium / low / trivial`. |
-| Cách ghi severity | **baseline + range + modifier ngữ cảnh** (runtime chốt mức cuối trong range). |
-
-> Ghi chú: schema/CLAUDE.md trước đây dùng 4 mức (blocker/major/minor/cosmetic).
-> Cần **cập nhật lại** cho khớp 5 mức sau khi catalog hoàn tất.
-
----
+> **TL;DR:** Danh mục đầy đủ **121 tiêu chí** lỗi UI/UX (9 nhóm domain) cho hệ thống zero-reference, kèm thang **severity 5 mức** và bộ **tag trực giao**. Bản tóm tắt quyết định gọn ở `../CLAUDE.md`.
 
 ## 1. Thang severity (5 mức)
 
 | Mức | Nghĩa |
 |---|---|
-| `critical` | Chặn hoàn toàn: không hoàn thành được tác vụ / mất chức năng chính / màn không dùng được. |
-| `high` | Nặng: ảnh hưởng rõ tới thao tác & đọc hiểu, nhưng vẫn xoay sở được. |
-| `medium` | Rõ ràng gây khó chịu / giảm tin cậy, không cản trở tác vụ. |
+| `critical` | Chặn hoàn toàn: mất chức năng chính / màn không dùng được. |
+| `high` | Nặng: ảnh hưởng rõ tới thao tác & đọc hiểu, vẫn xoay sở được. |
+| `medium` | Gây khó chịu / giảm tin cậy, không cản trở tác vụ. |
 | `low` | Nhỏ, phải để ý mới thấy. |
 | `trivial` | Thẩm mỹ cực nhỏ, gần như bỏ qua được. |
 
-**Cách dùng trong catalog:** mỗi tiêu chí ghi **severity nền** (mức điển hình) + **range**
-(khoảng dao động) + **modifier** (luật ngữ cảnh đẩy mức lên ↑ / xuống ↓ theo phần tử bị dính).
-Lý do: cùng một lỗi, mức nghiêm trọng phụ thuộc nó dính vào đâu (vd chữ cắt cụt ở tagline =
-trivial, ở nút CTA "Thanh toán" = critical).
+Mỗi tiêu chí ghi **severity nền** (mức điển hình) + **range** (khoảng dao động). Mức cuối phụ thuộc phần tử bị dính (vd chữ cắt cụt ở tagline = trivial, ở nút "Thanh toán" = critical).
 
----
-
-## 2. Tag trực giao (gắn lên tiêu chí)
+## 2. Tag trực giao
 
 | Tag | Nghĩa |
 |---|---|
-| `a11y` | Liên quan trợ năng (contrast, touch target, color-only, focus...). |
-| `i18n` | Liên quan đa ngôn ngữ/localization (dịch, định dạng, RTL, glyph). |
-| `dark` | Liên quan dark-mode / chuyển theme. |
-| `resp` | Liên quan responsive / kích thước màn / breakpoint. |
-| `mob` | Chủ yếu mobile-only. |
-| `web` | Chủ yếu web-only. |
-| `multi` | Cần **so nhiều ảnh** mới phát hiện được (không bắt từ 1 ảnh đơn). |
+| `a11y` | Trợ năng (contrast, touch target, color-only, focus...). |
+| `i18n` | Đa ngôn ngữ/localization (dịch, định dạng, RTL, glyph). |
+| `dark` | Dark-mode / chuyển theme. |
+| `resp` | Responsive / kích thước màn / breakpoint. |
+| `mob` | Chủ yếu mobile. |
+| `web` | Chủ yếu web. |
+| `multi` | Cần **so nhiều ảnh** mới phát hiện (không bắt từ 1 ảnh). |
 | `ctx` | Cần **ngữ cảnh / intent** màn hình (khó nhất với zero-reference). |
-
----
 
 ## 3. Khung 9 nhóm domain
 
-| # | Nhóm (ID) | Bản chất |
-|---|---|---|
-| A | **Content & Semantics** (`CNT`) | Nội dung text *nói gì* — đúng/sai, đã render chưa. |
-| B | **Typography & Text Rendering** (`TYP`) | Text *trông thế nào* — cách vẽ chữ. |
-| C | **Color, Contrast & Visual Style** (`STY`) | Màu sắc, tương phản, style. |
-| D | **Layout & Spatial Geometry** (`LAY`) | Hình học / bố cục. |
-| E | **Images, Icons & Media** (`IMG`) | Ảnh / icon / media / branding. |
-| F | **UI Components & Controls** (`CMP`) | Phần tử tương tác. |
-| G | **State & Lifecycle** (`STATE`) | Trạng thái màn theo thời gian (gồm motion tạm thời). |
-| H | **Platform & Environment** (`ENV`) | Phụ thuộc thiết bị / môi trường. |
-| I | **Consistency (xuyên màn)** (`CONS`) | Nhất quán giữa nhiều phần tử / màn — đều cần `multi`. |
+| Nhóm (ID) | Bản chất |
+|---|---|
+| **Content & Semantics** (`CNT`) | Nội dung text *nói gì* — đúng/sai, đã render chưa. |
+| **Typography & Text Rendering** (`TYP`) | Text *trông thế nào* — cách vẽ chữ. |
+| **Color, Contrast & Visual Style** (`STY`) | Màu sắc, tương phản, style. |
+| **Layout & Spatial Geometry** (`LAY`) | Hình học / bố cục. |
+| **Images, Icons & Media** (`IMG`) | Ảnh / icon / media / branding. |
+| **UI Components & Controls** (`CMP`) | Phần tử tương tác. |
+| **State & Lifecycle** (`STATE`) | Trạng thái màn theo thời gian (gồm motion). |
+| **Platform & Environment** (`ENV`) | Phụ thuộc thiết bị / môi trường. |
+| **Consistency xuyên màn** (`CONS`) | Nhất quán giữa nhiều phần tử / màn (đều cần `multi`). |
 
-**Định dạng bản ghi đầy đủ mỗi tiêu chí** (sẽ chi tiết hoá ở pass sau / bước 2):
-```
-ID: TYP-03
-Tên: Chữ tràn/cắt cụt khỏi container (unintended)
-Định nghĩa: 1 câu — ranh giới lỗi vs chủ ý
-Ví dụ điển hình: ...
-Severity nền: medium   (range: trivial → critical)
-Modifier ↑: dính CTA chính / số tiền / phủ định ("không") bị mất → high–critical
-Modifier ↓: dính nội dung trang trí, có "…" rõ ràng → trivial
-Tags: [i18n, ctx]
-```
-> Bảng bên dưới là **chỉ mục gọn** (ID · tên+ví dụ · severity nền+range · tags).
-> Modifier chi tiết & input/xử-lý/output sẽ bổ sung ở các pass tiếp theo.
+## 4. Catalog 121 tiêu chí
 
----
-
-## 4. Catalog chi tiết
-
-### A — Content & Semantics (`CNT`) — *nội dung text nói gì*  ✅ đã duyệt
+### A — Content & Semantics (`CNT`)
 
 | ID | Tiêu chí (ví dụ) | Sev nền (range) | Tags |
 |---|---|---|---|
@@ -110,7 +62,7 @@ Tags: [i18n, ctx]
 | CNT-13 | Giá trị vô lý ("0 sản phẩm" nhưng list có item, số âm sai chỗ) | medium (low–high) | ctx |
 | CNT-14 | Văn bản pháp lý/cảnh báo thiếu hoặc sai (disclaimer) | high (med–crit) | ctx |
 
-### B — Typography & Text Rendering (`TYP`) — *text trông thế nào*  ✅ đã duyệt
+### B — Typography & Text Rendering (`TYP`)
 
 | ID | Tiêu chí (ví dụ) | Sev nền (range) | Tags |
 |---|---|---|---|
@@ -129,7 +81,7 @@ Tags: [i18n, ctx]
 | TYP-13 | Trộn nhiều font không chủ ý trong cùng cụm | low (triv–med) | multi |
 | TYP-14 | Emoji/icon-font render sai (emoji thành box, mất màu) | low (triv–med) | i18n |
 
-### C — Color, Contrast & Visual Style (`STY`) — *màu sắc, tương phản, style*  ✅ đã duyệt
+### C — Color, Contrast & Visual Style (`STY`)
 
 | ID | Tiêu chí (ví dụ) | Sev nền (range) | Tags |
 |---|---|---|---|
@@ -147,7 +99,7 @@ Tags: [i18n, ctx]
 | STY-12 | Màu nền sai vùng (vùng đáng trong suốt lại nền đặc) | medium (low–high) | |
 | STY-13 | Tương phản icon/đồ hoạ chức năng < 3:1 | medium (low–high) | a11y |
 
-### D — Layout & Spatial Geometry (`LAY`)  ✅ đã duyệt
+### D — Layout & Spatial Geometry (`LAY`)
 
 | ID | Tiêu chí (ví dụ) | Sev nền (range) | Tags |
 |---|---|---|---|
@@ -167,7 +119,7 @@ Tags: [i18n, ctx]
 | LAY-14 | Phần tử chồng vị trí (2 cái cùng toạ độ) | medium (low–high) | |
 | LAY-15 | Thứ tự / trật tự sắp xếp sai (list lộn xộn, thứ tự đảo) | medium (low–high) | ctx |
 
-### E — Images, Icons & Media (`IMG`)  ✅ đã duyệt
+### E — Images, Icons & Media (`IMG`)
 
 | ID | Tiêu chí (ví dụ) | Sev nền (range) | Tags |
 |---|---|---|---|
@@ -187,7 +139,7 @@ Tags: [i18n, ctx]
 | IMG-14 | Ảnh load dở (chỉ 1 phần, progressive kẹt) | medium (low–med) | |
 | IMG-15 | Ảnh không khớp nội dung (sai ảnh sản phẩm) | high (med–crit) | ctx |
 
-### F — UI Components & Controls (`CMP`)  ✅ đã duyệt
+### F — UI Components & Controls (`CMP`)
 
 | ID | Tiêu chí (ví dụ) | Sev nền (range) | Tags |
 |---|---|---|---|
@@ -209,7 +161,7 @@ Tags: [i18n, ctx]
 | CMP-16 | Khoảng tap chồng nhau (2 control quá sát) | medium (low–high) | a11y, mob |
 | CMP-17 | Scroll / swipe affordance thiếu (không biết cuộn được) | low (triv–med) | ctx |
 
-### G — State & Lifecycle (`STATE`)  ✅ đã duyệt
+### G — State & Lifecycle (`STATE`)
 
 | ID | Tiêu chí (ví dụ) | Sev nền (range) | Tags |
 |---|---|---|---|
@@ -225,7 +177,7 @@ Tags: [i18n, ctx]
 | STATE-10 | Trạng thái không khớp dữ liệu (badge "3" nhưng list rỗng) | medium (low–high) | ctx, multi |
 | STATE-11 | Offline / no-network không xử lý (màn trắng) | high (med–crit) | ctx |
 
-### H — Platform & Environment (`ENV`)  ✅ đã duyệt
+### H — Platform & Environment (`ENV`)
 
 | ID | Tiêu chí (ví dụ) | Sev nền (range) | Tags |
 |---|---|---|---|
@@ -243,7 +195,7 @@ Tags: [i18n, ctx]
 | ENV-12 | Hover/cursor lỗi (web) / hover-only không tap được (mobile) | low (triv–med) | web |
 | ENV-13 | Splash / launch screen kẹt hoặc sai tỉ lệ | medium (low–high) | mob |
 
-### I — Consistency xuyên màn (`CONS`)  ✅ đã duyệt  *(toàn bộ cần `multi`)*
+### I — Consistency xuyên màn (`CONS`) — *toàn bộ cần `multi`*
 
 | ID | Tiêu chí (ví dụ) | Sev nền (range) | Tags |
 |---|---|---|---|
@@ -259,12 +211,5 @@ Tags: [i18n, ctx]
 
 ---
 
-## 5. Tiến độ
-
-- [x] Chốt phạm vi, cấu trúc, thang severity, cách ghi severity.
-- [x] Nhóm A/B/C (41 tiêu chí) — đã duyệt đợt 1.
-- [x] Nhóm D/E/F (47 tiêu chí) — đã duyệt đợt 2.
-- [x] Nhóm G/H/I (33 tiêu chí) — đã duyệt đợt 3. **→ BƯỚC 1 XONG: 121 tiêu chí / 9 nhóm.**
-- [ ] Bổ sung modifier chi tiết cho từng tiêu chí.
-- [x] **Bước 2: dữ liệu · kỹ thuật · đạt/không đạt cho từng tiêu chí → [`tieu-chi/`](tieu-chi/README.md)** (tổng hợp + 1 file/tiêu chí, sinh bởi `scripts/gen_criteria.py`).
-- [ ] Cập nhật CLAUDE.md + schema sang thang 5 mức severity.
+**Tổng: 121 tiêu chí / 9 nhóm** (A/B/C: 41 · D/E/F: 47 · G/H/I: 33).
+Chi tiết dữ liệu · kỹ thuật · điều kiện đạt/không đạt cho từng tiêu chí: [`tieu-chi/`](tieu-chi/README.md) (sinh bởi `scripts/gen_criteria.py`).
