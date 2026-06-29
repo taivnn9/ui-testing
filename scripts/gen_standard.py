@@ -434,9 +434,14 @@ def mut_r1_lay03_overflow(doc: CanonicalDoc) -> tuple[CanonicalDoc, list[ExpLabe
 
 
 def mut_r1_lay04_grid(doc: CanonicalDoc) -> tuple[CanonicalDoc, list[ExpLabel]]:
-    """R1-LAY04: lệch lưới 8px (x lệch ~4px khỏi mốc gần nhất)."""
+    """R1-LAY04: lệch lưới 8px (x lệch ~4px khỏi mốc gần nhất).
+
+    LAY-04 chỉ chạy trên toạ độ pixel-exact (source != "vision") — toạ độ CV nhiễu
+    quá để đo bám lưới. Vì vậy element đột biến phải có source="pixel" thì rule mới
+    fire (mô phỏng nguồn toạ độ chính xác). Xem r1_geometry.check_grid_alignment."""
     e = _find(doc, "e3")  # text mobile_login
     e.bbox = BBox(x=99, y=216, w=168, h=32)  # 99 % 8 = 3 → off=3 (>2, <6) → bad_x
+    e.source = "pixel"  # grid chỉ đo được trên toạ độ chính xác
     _renorm(doc, e)
     return doc, [_lbl("R1-LAY04", "e3", "trivial", "medium")]
 

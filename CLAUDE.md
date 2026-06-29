@@ -154,7 +154,14 @@ candidate) · 1 lần `codex exec`/ảnh (rẻ). Backend chọn qua env `AGENT_B
 - [x] **Backend Cline** (`src/ui_defect/agents/cline_client.py` + `backends.py` `AGENT_BACKEND=cline`) — cùng giao diện
       `(prompt,schema)→dict`, cấu hình lệnh qua env `CLINE_*`, schema nhúng prompt + trích JSON. Có 9 unit
       test mock subprocess. Default `CLINE_PROMPT_MODE=stdin` (an toàn trên Windows).
-- [x] pytest: **151 pass** (2026-06-05, +30 owleyes rule-only, +8 agent, fix CNT-02 FP SCREAMING_SNAKE).
+- [x] pytest: **193 pass** non-slow (2026-06-29; trước đó 151 @ 2026-06-05).
+- [x] **Audit & xử lý False-Positive rule engine** (2026-06-29) — `docs/F4.1-fp-audit.md`.
+      Phát hiện: ảnh **normal** fire ~730 candidate/8 ảnh (FP rate 100%) — standard_v1 synthetic
+      không bắt được. Vá 4 nguồn FP chính (giữ recall, bug-case owleyes vẫn pass):
+      **R1-LAY04** chỉ chạy `source=="pixel"` (toạ độ CV nhiễu không đo được lưới) →358→0;
+      **R1-ENV01/02** bỏ nội dung hệ thống status bar (`_is_system_strip`, ≥60% trong strip) →270→28;
+      **R3-IMG12** bỏ icon-icon + đồ hoạ nhỏ (<56×dpr) →66→0; **A9 spinner/skeleton/overlay**
+      (temporal, 1 frame) hạ severity HIGH→low. FP lộ ra (min_severity=low): ~93→**68**.
 - [x] **OwlEyes dataset integration** (2026-06-05):
       - `data/owleyes_samples/`: 30 bug + 8 normal ảnh mẫu xem tay (commit vào repo).
       - `tests/integration/test_owleyes.py`: 30 rule-only cases + 8 agent cases (`AGENT_BUG_CASES`).

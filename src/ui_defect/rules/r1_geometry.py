@@ -511,6 +511,19 @@ def check_safe_area(doc: CanonicalDoc) -> list[CandidateIssue]:
 
     _SAFE_OVERLAP_MIN = 10.0  # element phải overlap vùng > 10px để fire
 
+    def _is_system_strip(elem, strip_h: float) -> bool:
+        """Element là nội dung CỦA status bar / safe-strip hệ thống (giờ, sóng, pin,
+        wifi…) chứ KHÔNG phải nội dung app bị che. Dấu hiệu: không tương tác, là
+        icon/image/text NẰM PHẦN LỚN trong strip (≥60% chiều cao). Đây là nguồn FP chính
+        trên ảnh thật (CV bắt ~18 icon/ảnh trong dải status bar, hộp hay lú vài px xuống
+        dưới mép). Nội dung app bị che thật sẽ là button/input, hoặc element nằm chủ yếu
+        DƯỚI strip (chỉ phần nhỏ bị che)."""
+        bb = elem.bbox
+        if elem.interactive or elem.role not in {"icon", "image", "text"} or bb.h <= 0:
+            return False
+        overlap = max(0.0, min(bb.y + bb.h, strip_h) - bb.y)
+        return (overlap / bb.h) >= 0.6
+
     for elem in doc.elements:
         if not _visible(elem):
             continue
@@ -528,8 +541,8 @@ def check_safe_area(doc: CanonicalDoc) -> list[CandidateIssue]:
         # --- R1-ENV01: safe_area overlap ---
         sa_violations: list[str] = []
 
-        # Top (notch / status bar)
-        if sa.top > 0:
+        # Top (notch / status bar) — bỏ qua nội dung hệ thống của chính status bar
+        if sa.top > 0 and not _is_system_strip(elem, sa.top):
             overlap_top = max(0.0, min(b.y + b.h, sa.top) - b.y)
             if overlap_top > _SAFE_OVERLAP_MIN:
                 sa_violations.append(f"top={overlap_top:.1f}px")
@@ -570,8 +583,8 @@ def check_safe_area(doc: CanonicalDoc) -> list[CandidateIssue]:
                 )
             )
 
-        # --- R1-ENV02: status bar overlap ---
-        if status_bar_h > 0 and b.y < status_bar_h + 4.0:
+        # --- R1-ENV02: status bar overlap (bỏ nội dung hệ thống của status bar) ---
+        if status_bar_h > 0 and b.y < status_bar_h + 4.0 and not _is_system_strip(elem, status_bar_h):
             overlap = status_bar_h + 4.0 - b.y
             if overlap > 0:
                 sev2 = apply_modifiers(  # type: ignore[arg-type]
@@ -627,6 +640,11 @@ def check_grid_alignment(doc: CanonicalDoc) -> list[CandidateIssue]:
     R1-LAY04: cạnh trái/trên của element không bám lưới GRID_UNIT (8 × dpr) quá
     GRID_TOLERANCE_PX. Tất định nhưng dễ false-positive → severity thấp + confidence thấp
     (agent xác nhận). Chỉ xét element nội dung (text/button/input/icon/image), bỏ container.
+
+    LƯU Ý (precision): chỉ chạy trên element có toạ độ CHÍNH XÁC (`source != "vision"`).
+    Toạ độ từ CV (vision) luôn lệch ±vài px do nhiễu detector → mọi element đều "lệch lưới"
+    (≈75% với tol=2px/unit=16px) → flood false-positive. Vì pipeline hiện vision-only,
+    rule này nằm im cho tới khi có nguồn toạ độ pixel-exact. Xem F0.4 / docs FP audit.
     """
     issues: list[CandidateIssue] = []
     dpr = doc.screen.viewport.dpr
@@ -636,6 +654,9 @@ def check_grid_alignment(doc: CanonicalDoc) -> list[CandidateIssue]:
 
     for elem in doc.elements:
         if not _visible(elem):
+            continue
+        # Toạ độ vision (CV) quá nhiễu để đo bám lưới → bỏ (tránh FP hàng loạt).
+        if elem.source == "vision":
             continue
         if elem.role not in _ROLES:
             continue

@@ -115,7 +115,7 @@
     {
       "id": "e3",
       "role": "text",
-      "source": "vision",
+      "source": "pixel",
       "confidence": 0.95,
       "bbox": {
         "x": 99.0,

@@ -355,6 +355,12 @@ def patterns_to_candidates(detections: list[PatternDetection]) -> list[Candidate
     result = []
     for d in detections:
         sev, sev_range = severity_map.get(d.pattern_type, ("medium", SeverityRange(min="low", max="high")))
+        # Pattern "kẹt" (spinner/skeleton/overlay) cần ≥2 frame mới xác nhận được; từ 1
+        # ảnh tĩnh KHÔNG thể chắc → hạ severity xuống low (giữ confidence ≥0.4 để agent
+        # còn xác nhận). Tránh báo HIGH nhầm cho avatar/nút tròn = spinner. (FP audit.)
+        if d.temporal:
+            sev = "low"
+            sev_range = SeverityRange(min="trivial", max="medium")
         result.append(CandidateIssue(
             rule=d.rule_id,
             element=None,

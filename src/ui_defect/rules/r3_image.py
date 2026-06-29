@@ -244,6 +244,11 @@ def check_hash_duplicates(doc: CanonicalDoc) -> list[CandidateIssue]:
     duplicate_pairs = getattr(doc, "duplicate_pairs", None) or []
     elems = _elem_map(doc)
 
+    # Chỉ soi ảnh NỘI DUNG đủ lớn (banner/hero/thumbnail). Đồ hoạ nhỏ lặp lại là trang
+    # trí chủ ý → FP. Ngưỡng cạnh tối thiểu scale theo dpr. (FP audit: dup thật ~38px.)
+    _dpr = doc.screen.viewport.dpr or 1.0
+    _dup_min_side = 56.0 * _dpr
+
     for pair in duplicate_pairs:
         # Pair expected: {"a": id_a, "b": id_b, "hamming": int}
         id_a = pair.get("a") or pair.get("elem_a")
@@ -258,6 +263,19 @@ def check_hash_duplicates(doc: CanonicalDoc) -> list[CandidateIssue]:
         if elem_a is None or elem_b is None:
             continue
         if not _visible(elem_a) or not _visible(elem_b):
+            continue
+
+        # Icon trùng icon = tái sử dụng CHỦ Ý (chevron, sao, nút lặp trong list…) →
+        # gần như luôn là false-positive trên UI thật. Chỉ soi ảnh nội dung trùng
+        # (banner/hero/thumbnail) — đó mới là lỗi copy nhầm. (FP audit: 66 FP/8 ảnh.)
+        if elem_a.role == "icon" and elem_b.role == "icon":
+            continue
+
+        # Bỏ qua đồ hoạ nhỏ trùng nhau (cạnh < ngưỡng) — trang trí lặp chủ ý, không phải
+        # lỗi copy nhầm. Chỉ giữ ảnh nội dung đủ lớn.
+        a_small = min(elem_a.bbox.w, elem_a.bbox.h) < _dup_min_side
+        b_small = min(elem_b.bbox.w, elem_b.bbox.h) < _dup_min_side
+        if a_small or b_small:
             continue
 
         # Loại trừ trường hợp chủ ý: cùng parent list-row

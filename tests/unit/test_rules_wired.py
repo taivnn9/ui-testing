@@ -76,22 +76,29 @@ def test_scale_mode_ignores_fit_fill():
 
 # ── R1-LAY04 lệch grid (unit = 8 × dpr = 16px ở dpr=2) ────────────────────────
 def test_grid_fires_when_off_grid():
-    # x=20 → 20 % 16 = 4 (> tol 2, < 16-2=14) → lệch
-    el = Element(id="e1", role="button", source="vision", confidence=1.0,
+    # x=20 → 20 % 16 = 4 (> tol 2, < 16-2=14) → lệch. Chỉ chạy trên toạ độ pixel-exact.
+    el = Element(id="e1", role="button", source="pixel", confidence=1.0,
                  bbox=BBox(x=20, y=32, w=48, h=48), bbox_norm=BBox(x=0, y=0, w=0, h=0))
     out = check_grid_alignment(_doc([el], dpr=2.0))
     assert len(out) == 1 and out[0].rule == "R1-LAY04"
 
 
+def test_grid_skips_vision_source():
+    # Toạ độ vision (CV) quá nhiễu → LAY-04 BỎ QUA dù lệch lưới (tránh FP hàng loạt).
+    el = Element(id="e1", role="button", source="vision", confidence=1.0,
+                 bbox=BBox(x=20, y=32, w=48, h=48), bbox_norm=BBox(x=0, y=0, w=0, h=0))
+    assert check_grid_alignment(_doc([el], dpr=2.0)) == []
+
+
 def test_grid_passes_when_on_grid():
     # x=32, y=48 đều bội số 16 → bám lưới
-    el = Element(id="e1", role="button", source="vision", confidence=1.0,
+    el = Element(id="e1", role="button", source="pixel", confidence=1.0,
                  bbox=BBox(x=32, y=48, w=48, h=48), bbox_norm=BBox(x=0, y=0, w=0, h=0))
     assert check_grid_alignment(_doc([el], dpr=2.0)) == []
 
 
 def test_grid_skips_container_role():
-    el = Element(id="e1", role="container", source="vision", confidence=1.0,
+    el = Element(id="e1", role="container", source="pixel", confidence=1.0,
                  bbox=BBox(x=20, y=20, w=100, h=100), bbox_norm=BBox(x=0, y=0, w=0, h=0))
     assert check_grid_alignment(_doc([el], dpr=2.0)) == []
 
@@ -102,12 +109,32 @@ def _text_elem(eid, x, y, w, h, role="text"):
                    bbox=BBox(x=x, y=y, w=w, h=h), bbox_norm=BBox(x=0, y=0, w=0, h=0))
 
 
-def test_env02_fires_when_element_under_status_bar():
-    el = _text_elem("e1", 0, 0, 200, 40)  # y=0 < status_bar_h+4
+def test_env02_fires_when_content_crosses_status_bar():
+    # Nội dung app vắt qua status bar (đáy 200 >> bar 72 → chỉ phần nhỏ bị che) → lỗi thật.
+    el = _text_elem("e1", 0, 0, 200, 200)  # overlap 72/200=0.36 < 0.6 → KHÔNG phải system strip
     d = _doc([el])
     d.screen.status_bar_h = 72.0
     out = [i for i in check_safe_area(d) if i.rule == "R1-ENV02"]
     assert len(out) == 1 and out[0].element == "e1"
+
+
+def test_env02_fires_for_interactive_in_status_bar():
+    # Button app nằm gọn trong status bar → vẫn lỗi (interactive không bị coi là system strip).
+    el = _text_elem("e1", 0, 0, 200, 40, role="button")
+    el.interactive = True
+    d = _doc([el])
+    d.screen.status_bar_h = 72.0
+    out = [i for i in check_safe_area(d) if i.rule == "R1-ENV02"]
+    assert len(out) == 1 and out[0].element == "e1"
+
+
+def test_env02_skips_system_status_bar_icon():
+    # Icon hệ thống (giờ/sóng/pin) nằm gọn trong status bar, không tương tác → BỎ (tránh FP).
+    el = _text_elem("e1", 980, 4, 40, 40, role="icon")  # overlap ~1.0 >= 0.6
+    d = _doc([el])
+    d.screen.status_bar_h = 72.0
+    out = [i for i in check_safe_area(d) if i.rule == "R1-ENV02"]
+    assert out == []
 
 
 def test_env02_silent_when_status_bar_h_zero():
@@ -145,9 +172,28 @@ def test_a6_conversion_propagates_placeholder_to_image_meta():
 
 # ── R3-IMG12 duplicate images (CanonicalDoc.duplicate_pairs từ A10) ───────────
 def test_img12_fires_from_duplicate_pairs():
-    a = _img_elem("e1", 16, 72, 80, 80)
-    b = _img_elem("e2", 16, 320, 80, 80)
+    # Ảnh nội dung đủ lớn (>= 56*dpr) → trùng nhau là lỗi copy nhầm thật.
+    a = _img_elem("e1", 16, 72, 160, 160)
+    b = _img_elem("e2", 16, 320, 160, 160)
     d = _doc([a, b])
     d.duplicate_pairs = [{"a": "e1", "b": "e2", "hamming": 2}]
     out = check_hash_duplicates(d)
     assert len(out) == 1 and out[0].rule == "R3-IMG12" and out[0].element == "e1"
+
+
+def test_img12_skips_small_duplicate_graphics():
+    # Đồ hoạ nhỏ trùng nhau (< 56*dpr) = trang trí chủ ý → KHÔNG fire (tránh FP).
+    a = _img_elem("e1", 16, 72, 40, 40)
+    b = _img_elem("e2", 16, 320, 40, 40)
+    d = _doc([a, b])
+    d.duplicate_pairs = [{"a": "e1", "b": "e2", "hamming": 2}]
+    assert check_hash_duplicates(d) == []
+
+
+def test_img12_skips_icon_pairs():
+    # Icon trùng icon = tái sử dụng chủ ý → KHÔNG fire.
+    a = _img_elem("e1", 16, 72, 160, 160); a.role = "icon"
+    b = _img_elem("e2", 16, 320, 160, 160); b.role = "icon"
+    d = _doc([a, b])
+    d.duplicate_pairs = [{"a": "e1", "b": "e2", "hamming": 0}]
+    assert check_hash_duplicates(d) == []
